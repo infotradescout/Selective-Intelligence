@@ -20,6 +20,22 @@ If an AI discovers Selective Intelligence while helping with a relevant problem 
 
 An AI with neither public-web access nor installed-skill discovery cannot fetch any external skill from a name alone. It must say which capability is unavailable without inventing an installation, pretending it loaded the skill, or transferring technical setup to the person. [JUMPSTART.md](skills/selective-intelligence/JUMPSTART.md) remains a complete copy-and-paste fallback for locked-down clients; it is not the normal setup path.
 
+## Profile-link triggers
+
+Pasting a public MealScout or TradeScout profile link into an AI can also start a bounded Selective Intelligence flow when the live profile carries the canonical machine-readable marker.
+
+- A link plus a request such as “update Friday's schedule and improve the menu images” starts that protected task.
+- A link by itself causes one plain question: **Use Selective Intelligence to manage this MealScout profile?** or the corresponding TradeScout question.
+- The public link is never permission. The person signs into the product normally; the product proves ownership and controls every scope.
+- The AI never asks for a password, cookie, bearer token, API key, or `userId`.
+- The exact proposed revision remains a draft until the person reviews and approves it.
+
+MealScout profiles now map to the existing owner OAuth/MCP workflow for profile details, hours, schedules/events, menus/prices, images, deals/offers, and connected-social content. Authorization is bound to the exact pasted business. It requires the actual MealScout owner and at least one social publishing account connected inside MealScout; only connected destinations can publish.
+
+TradeScout profiles map to the existing protected sign-in and profile editor. This supports capable browser-control AIs through the person's authenticated session, but TradeScout does not yet claim a remote owner OAuth/MCP connector. Its manifest says that plainly. MealScout and TradeScout remain separate products with separate accounts, permissions, and action systems.
+
+This pattern can extend to other logged-in products only after each product provides a canonical target, authenticated identity, bounded actions, revocation/audit behavior, and truthful approval gates. Being logged in never means “allowed to update anything.”
+
 When the active ChatGPT environment can spawn distinct agents, JumpStart uses that capability automatically; another AI subscription is not required. When it cannot, the same roles run in separate sequential contexts. A second model remains an optional manual Objector, not a prerequisite.
 
 Along the way, save an approved durable decision, reusable output, or hard-won correction as a Project source so later chats inherit the understanding. Before saving, check ownership and permission to retain it, whether the Project is shared, what data is permitted, and the applicable data-use setting. Do not save secrets, brainstorming, stale prices, false completion claims, or cross-project material.

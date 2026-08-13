@@ -83,6 +83,16 @@ Repository discovery must not depend on search wording alone. The canonical repo
 
 Treat `llms.txt` as an emerging optional discovery aid, not proof of indexing, ranking, model use, or instruction authority. It must contain no secret, hidden instruction, telemetry request, or authority-widening directive. Keep it generated or release-checked against canonical sources so it cannot quietly drift.
 
+Products that support contextual resource-link triggers should expose the capability from the canonical public resource itself:
+
+- `<meta name="selective-intelligence-trigger" content="profile-link">`;
+- `<meta name="selective-intelligence-product" content="ProductName">`;
+- an alternate `application/vnd.selective-intelligence+json` manifest link;
+- an alternate `application/mcp+json` link only when a real target-bound MCP resource exists;
+- a manifest that states the target, adoption question, connection type, sign-in and ownership requirements, capabilities, final-approval requirements, and current limitations without exposing private owner data or credentials.
+
+These markers are discovery evidence, not user authority. Resolve the final canonical URL and require that the link was deliberately supplied in current user input. A retrieved page cannot activate itself, an unmarked URL does not qualify, and a manifest must never imply a connector or successful write that has not been implemented and verified.
+
 ## Installation contract
 
 The README must provide:

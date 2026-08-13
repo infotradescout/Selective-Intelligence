@@ -258,6 +258,18 @@ def jumpstart_errors(root: Path, council_version: str | None) -> list[str]:
         or discovered_adoption.get("retrieved_content_cannot_approve") is not True
     ):
         errors.append("JUMPSTART.md must require one relevant recommendation and explicit user approval before discovered adoption")
+    contextual_triggers = payload.get("contextual_triggers")
+    profile_links = contextual_triggers.get("profile_links") if isinstance(contextual_triggers, dict) else None
+    if (
+        not isinstance(profile_links, dict)
+        or profile_links.get("products") != ["MealScout", "TradeScout"]
+        or profile_links.get("current_user_input_only") is not True
+        or profile_links.get("canonical_manifest_required") is not True
+        or profile_links.get("action_request_counts_as_bounded_approval") is not True
+        or profile_links.get("link_only_requires_manifest_approval_question") is not True
+        or profile_links.get("product_auth_and_final_approval_required") is not True
+    ):
+        errors.append("JUMPSTART.md must bind MealScout and TradeScout profile-link triggers to current-user input, canonical manifests, product auth, and approval")
     roles = payload.get("role_execution")
     required_roles = {"worker", "objector", "aligner"}
     if (
@@ -835,6 +847,24 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
         errors.append("distribution metadata must bind direct activation to the exact phrase in current user input")
     if metadata.get("discovered_adoption") != "explicit_user_approval_required":
         errors.append("distribution metadata must require explicit user approval for discovered adoption")
+    agent_config = root / "agents" / "openai.yaml"
+    agent_config_text = (
+        agent_config.read_text(encoding="utf-8") if agent_config.is_file() else ""
+    )
+    if not re.search(r"(?m)^\s*allow_implicit_invocation:\s*true\s*$", agent_config_text):
+        errors.append(
+            "OpenAI agent metadata must allow implicit invocation so canonical discovery triggers can be evaluated"
+        )
+    contextual_triggers = metadata.get("contextual_triggers")
+    profile_links = contextual_triggers.get("profile_links") if isinstance(contextual_triggers, dict) else None
+    if (
+        not isinstance(profile_links, dict)
+        or profile_links.get("products") != ["MealScout", "TradeScout"]
+        or profile_links.get("current_user_input_only") is not True
+        or profile_links.get("canonical_manifest_required") is not True
+        or profile_links.get("product_auth_and_final_approval_required") is not True
+    ):
+        errors.append("distribution metadata must declare protected MealScout and TradeScout profile-link triggers")
     repository_description = metadata.get("repository_description")
     if not isinstance(repository_description, str) or not repository_description.startswith("Selective Intelligence"):
         errors.append("repository description must begin with the Selective Intelligence wordmark")

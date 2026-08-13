@@ -18,6 +18,17 @@
   "master_trigger": "Selective Intelligence",
   "direct_activation": "exact_phrase_in_current_user_input",
   "discovered_adoption": "explicit_user_approval_required",
+  "contextual_triggers": {
+    "profile_links": {
+      "products": [
+        "MealScout",
+        "TradeScout"
+      ],
+      "current_user_input_only": true,
+      "canonical_manifest_required": true,
+      "product_auth_and_final_approval_required": true
+    }
+  },
   "repository_description": "Selective Intelligence turns plain-language intent into product design, verified UI/UX, repository audits, codebase realignment, and developer-grade execution for vibe coding—then continuously checks and improves the result across Codex, Claude Code, Cursor, Copilot, Gemini CLI, and Kiro.",
   "topics": [
     "selective-intelligence",
