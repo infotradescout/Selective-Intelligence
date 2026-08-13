@@ -2,6 +2,8 @@
 
 Use this reference for every user-facing surface and every request where the output medium affects usability.
 
+Apply [product-design-intelligence.md](product-design-intelligence.md) first. This reference implements and verifies a selected experience model; it cannot rescue an interface whose underlying product form is wrong.
+
 ## Contents
 
 - [UI/UX is product behavior](#uiux-is-product-behavior)
@@ -91,6 +93,8 @@ Do not default to:
 - mobile layouts produced only by stacking desktop blocks.
 
 These patterns are not universally forbidden. They require a product reason rather than AI habit.
+
+Treat a complaint about landing pages, generic dashboards, cards, or long vertical scrolling as a possible rejection of the interaction model. Do not respond only with tighter spacing, new colors, or rearranged sections. Return to the Experience Model and compare job-specific alternatives.
 
 ## Interaction requirements
 
@@ -208,6 +212,8 @@ An attractive source file is not proof. The rendered PDF is the product to inspe
 - **Not aligned:** hierarchy, language, behavior, or output medium contradicts actual intent.
 
 Never collapse these verdicts into “looks good.”
+
+These are release-checkpoint verdicts, not permanent completion claims. Preserve material weaknesses, untested states, observed friction, and the next highest-value improvement after every handoff.
 
 ## Agent response economy
 

@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If Selective Intelligence helps your work, cite this software and preserve the canonical repository link."
+title: "Selective Intelligence"
+type: software
+version: 0.3.0
+authors:
+  - name: "Platynum Standard"
+repository-code: "https://github.com/infotradescout/Selective-Intelligence"
+url: "https://github.com/infotradescout/Selective-Intelligence"
+license: CC0-1.0
+keywords:
+  - artificial intelligence
+  - agent skills
+  - intent alignment
+  - product design
+  - user experience
+  - vibe coding
+  - repository audit

@@ -41,12 +41,20 @@ When the checks pass, direct the person to the response message menu and the cur
 
 ### Orchestrator
 
-- Recover actual intent and its authority.
+- Reconstruct candidate intent while preserving the authoritative seed separately.
 - Define the finished outcome, prohibitions, scope, evidence boundary, permissions, budget, and proof.
 - Route the work to the correct product or brand.
 - Create bounded packets and preserve their identity and revision.
 - Keep the user or existing human quorum as final authority.
 - Synthesize the result without hiding objections or uncertainty.
+
+### Intent Objector
+
+- Run before the Worker in a context distinct from the Orchestrator.
+- Challenge the candidate interpretation itself against the authoritative seed.
+- Record one substantive competing interpretation and the observable consequence that distinguishes it.
+- Resolve the challenge as candidate supported or candidate revised and bind the record to the exact candidate digest and evidence.
+- Never treat a role label, boolean, fluent restatement, hash, or downstream agreement as proof that intent was challenged.
 
 ### Worker
 
@@ -101,7 +109,7 @@ High-risk or self-referential work should use the strongest practical grade prop
 
 Inspect capabilities rather than assuming a named plan or model exposes them.
 
-1. If bounded agent spawning is available, keep the Orchestrator in the parent context and automatically spawn separate Worker, Objector, and Aligner agents. Add Reserve only when justified.
+1. If bounded agent spawning is available, keep the Orchestrator in the parent context and automatically spawn a pre-lock Intent Objector followed by separate Worker, implementation Objector, and Aligner agents. Add Reserve only when justified.
 2. Give each agent one role, one packet, a bounded evidence set, and a return contract.
 3. Do not allow Worker and Objector to share an execution context or mutate the same artifact concurrently.
 4. If spawning is unavailable, emit portable packets and use fresh sequential chats or contexts under the same account.
@@ -133,7 +141,9 @@ Use this order:
 
 ```text
 user outcome
-  → Intent Lock
+  → candidate Intent Reconstruction
+  → bound Intent Challenge
+  → sufficient Intent Lock
   → Worker Packet
   → Worker result and proof
   → Objector Packet
@@ -149,6 +159,7 @@ Every packet carries:
 - stable packet and parent-result identifiers;
 - project or brand boundary;
 - Intent Lock or exact reference and revision;
+- the exact bound Intent Challenge for every post-reconstruction role packet;
 - source and evidence references with sensitivity;
 - permitted and approval-required actions;
 - exact task or review targets;

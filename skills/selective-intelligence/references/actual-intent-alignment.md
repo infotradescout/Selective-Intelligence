@@ -2,6 +2,8 @@
 
 Use this reference whenever the work claims to align, realign, correct, complete, reconstruct, or implement a user's intended product or system.
 
+First apply [intent-intelligence.md](intent-intelligence.md). This reference traces reconstructed meaning into product behavior; it does not make a machine interpretation authoritative. The person's words may be authoritative while the machine's normalization remains provisional.
+
 ## Contents
 
 - [The distinction](#the-distinction)
@@ -54,6 +56,8 @@ Capture these elements internally before editing:
 
 Record negative corrections. “Do not sell leads,” “Scout is search, not a chatbot,” or “do not require the user to manage two surfaces” often carry more precise intent than generic feature descriptions.
 
+Bind every material field to its own provenance and confidence. Do not assign one global `locked` label to a contract containing inferred actor, reason, workflow, priority, scope, or success proof. The whole-contract verdict can be no stronger than its weakest material field.
+
 ## Assign intent confidence
 
 - **Locked:** directly and authoritatively stated, approved, or governed.
@@ -62,7 +66,7 @@ Record negative corrections. “Do not sell leads,” “Scout is search, not a 
 - **Conflicted:** authoritative evidence points to materially different outcomes.
 - **Unknown:** evidence is insufficient to form a useful interpretation.
 
-Only Locked or Supported intent may receive an **Aligned** verdict. Provisional intent may guide reversible progress, but the status must remain **Provisionally aligned**.
+Only Locked or Supported material intent may receive an **Aligned** verdict. Provisional intent may guide reversible progress, but the status must remain **Provisionally aligned**. Machine fluency, hashes, schema validity, or agreement among roles never upgrades confidence.
 
 ## Apply the material-assumption test
 
@@ -98,6 +102,8 @@ Before declaring alignment, test these questions:
 - Did the agent confuse “present in code” with “available to the intended user”?
 
 Any “yes” blocks an Aligned verdict.
+
+Also ask whether the active Council could rigorously validate the wrong premise because every role inherited the same candidate lock. When that is possible, return to the pre-lock Intent Objector rather than adding another downstream reviewer.
 
 ## Alignment verdicts
 

@@ -4,7 +4,7 @@ Read the relevant pattern after the target and seed are known.
 
 ## New-project Start
 
-Read [start-mode.md](start-mode.md). Convert the plain-language product idea into the complete `.selective-intelligence/` Start Pack before project code. Map the full product and end-state architecture, define the smallest complete MVP, and lock the current release and first vertical build slice. When building is authorized, execute only the locked slice, control material changes through amendments, and close it only after the as-built system, evidence, coverage map, and next baseline agree.
+Read [intent-intelligence.md](intent-intelligence.md) before [start-mode.md](start-mode.md). Reconstruct and challenge the plain-language outcome before creating the complete `.selective-intelligence/` Start Pack. Map the full product and end-state architecture, define the smallest complete MVP, and lock only materially supported fields plus the current release and first vertical build slice. When building is authorized, execute only the bounded slice, control material changes through amendments, and close it only after the as-built system, evidence, coverage map, weaknesses, and next baseline agree.
 
 Select the micro, standard, or high-assurance profile by reversibility, blast radius, sensitive data, external effects, and operational risk—not by how impressive the idea sounds. Run the dependency-free validator before using a lock verdict.
 
@@ -15,6 +15,8 @@ Read [continuity-and-impact.md](continuity-and-impact.md). Recover the canonical
 ## Repository crawl and realignment
 
 Treat a plain-language product complaint or desired outcome as the seed. Read [repository-intelligence.md](repository-intelligence.md), recover the intended user flow, build the product-to-code map, classify each feature's proven state, and trace gaps across routing, navigation, UI, backend, data, permissions, tests, configuration, and deployment. Implement the coherent correction when authorized. Remove obsolete paths that caused drift, then re-search for resurfacing risks and verify the real user journey.
+
+When a correction attacks the product form—such as “another landing page,” “long vertical scroll,” “generic dashboard,” or “buttons do nothing”—apply [product-design-intelligence.md](product-design-intelligence.md) before editing. Reconsider the interaction model and work object, not only styles or component wiring.
 
 ## Person or performer onboarding
 
@@ -70,6 +72,7 @@ Treat the user's current intent as governing above the skill's existing doctrine
 - Unknown optional details do not block a useful result.
 - The handoff identifies only meaningful remaining gaps.
 - Meaningful outcome signals are recorded locally without assuming silence means success.
+- The checkpoint preserves material weaknesses and the next improvement frontier rather than claiming perfection or permanent completion.
 
 ## JumpStart and Guided Council
 

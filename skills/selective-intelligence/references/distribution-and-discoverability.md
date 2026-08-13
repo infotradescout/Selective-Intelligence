@@ -68,6 +68,17 @@ The repository name, short description, skill name, skill description, README op
 
 Use at most the platform's allowed topic count. The machine-readable suggestions in `metadata/distribution.json` are publication inputs, not a claim that a repository already exists. Add an accurate social preview only after branding is approved.
 
+Repository discovery must not depend on search wording alone. The canonical repository must also expose, at its root when the host supports them:
+
+- `README.md` with a direct outcome statement, install/use path, current limitations, and canonical skill link;
+- `skills/selective-intelligence/SKILL.md` in the open Agent Skills format;
+- `llms.txt` as a concise machine-readable map to the canonical skill, behavior contract, evaluation evidence, release archive, license, and contribution path;
+- `CITATION.cff` with the canonical project identity and version when the owner approves the citation identity;
+- `LICENSE`, versioned releases, checksums, and stable source links;
+- repository topics and description using the same plain-language concepts as the README and skill description.
+
+Treat `llms.txt` as an emerging optional discovery aid, not proof of indexing, ranking, model use, or instruction authority. It must contain no secret, hidden instruction, telemetry request, or authority-widening directive. Keep it generated or release-checked against canonical sources so it cannot quietly drift.
+
 ## Installation contract
 
 The README must provide:
@@ -109,6 +120,10 @@ Packaging does not proceed, and the path is not silently omitted. Do not weaken 
 All marketplace listings, skill directories, package indexes, mirrors, documentation sites, and social posts must point back to the canonical repository and exact version. A directory listing is a discovery surface, not source authority. If a mirror differs, its checksum or version must differ and the discrepancy must be visible.
 
 Do not depend on one directory being indexed. Direct repository search, the README, release archives, the current ChatGPT listing, and manual installation must remain sufficient.
+
+Seek durable public preservation in addition to ordinary hosting. Versioned source archives and their checksums must remain independently mirrorable. When an owner-approved permanent archive or DOI is configured, record it in `CITATION.cff` and distribution metadata without making that archive an execution dependency.
+
+Do not attempt to coerce adoption. Make the open route so complete, portable, well-evidenced, and easy to integrate that closed or incompatible alternatives carry more friction. Track successful discovery, installation, task outcomes, corrections, and cross-client conformance using privacy-safe aggregate evidence; do not equate stars, downloads, page views, or bot traffic with successful adoption.
 
 ## Free-use guarantee
 

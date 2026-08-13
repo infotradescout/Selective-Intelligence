@@ -27,7 +27,7 @@ from typing import Any, Iterable
 from urllib.parse import parse_qsl, urlparse
 
 
-SCHEMA_VERSION = "0.2.0"
+SCHEMA_VERSION = "0.3.0"
 PACKET_TYPES = {
     "council_case",
     "worker_packet",
@@ -38,7 +38,7 @@ PACKET_TYPES = {
     "alignment_record",
     "resume_packet",
 }
-ROLES = {"orchestrator", "worker", "objector", "aligner", "reserve"}
+ROLES = {"orchestrator", "intent_objector", "worker", "objector", "aligner", "reserve"}
 INDEPENDENCE_GRADES = {
     "not_applicable",
     "separate_context_same_model",
@@ -424,6 +424,7 @@ def validate_ledger(
     seen_ids: set[str] = set()
     allowed_events = {
         "case_initialized",
+        "intent_challenge_recorded",
         "packet_exported",
         "worker_response_imported",
         "objector_response_imported",
@@ -537,6 +538,54 @@ def validate_intent_lock(value: Any, path: str, errors: list[Diagnostic]) -> Non
         add_error(errors, "GC062B", "locked or supported intent cannot retain material open decisions", f"{path}.material_open_decisions")
     if not isinstance(value.get("permission_policy_digest"), str) or not HEX64.fullmatch(value["permission_policy_digest"]):
         add_error(errors, "GC062C", "permission_policy_digest must be SHA-256", f"{path}.permission_policy_digest")
+
+
+def validate_intent_challenge(value: Any, path: str, errors: list[Diagnostic]) -> None:
+    if value is None:
+        return
+    required = {
+        "candidate_digest",
+        "authoritative_source_id",
+        "challenger_run",
+        "independence_grade",
+        "competing_interpretation",
+        "consequence_difference",
+        "resolution",
+        "evidence_refs",
+        "challenged_at",
+    }
+    if not exact_keys(value, required, set(), path, errors):
+        return
+    if not isinstance(value.get("candidate_digest"), str) or not HEX64.fullmatch(value["candidate_digest"]):
+        add_error(errors, "GC062D", "candidate_digest must be SHA-256", f"{path}.candidate_digest")
+    if not valid_id(value.get("authoritative_source_id")):
+        add_error(errors, "GC062E", "authoritative_source_id is invalid", f"{path}.authoritative_source_id")
+    validate_role_run(value.get("challenger_run"), f"{path}.challenger_run", errors)
+    if isinstance(value.get("challenger_run"), dict) and value["challenger_run"].get("role") != "intent_objector":
+        add_error(errors, "GC062F", "intent challenge requires an intent_objector run", f"{path}.challenger_run.role")
+    if value.get("independence_grade") not in INDEPENDENCE_GRADES - {"not_applicable"}:
+        add_error(errors, "GC062G", "intent challenge independence is invalid", f"{path}.independence_grade")
+    for key in ("competing_interpretation", "consequence_difference"):
+        if not meaningful(value.get(key), 20):
+            add_error(errors, "GC062H", f"{key} must record a substantive challenge", f"{path}.{key}")
+    if value.get("resolution") not in {"candidate_supported", "candidate_revised"}:
+        add_error(errors, "GC062I", "intent challenge must record a resolved candidate verdict", f"{path}.resolution")
+    if not unique_strings(value.get("evidence_refs"), allow_empty=False):
+        add_error(errors, "GC062J", "intent challenge needs evidence references", f"{path}.evidence_refs")
+    if not valid_timestamp(value.get("challenged_at")):
+        add_error(errors, "GC062K", "intent challenge timestamp is invalid", f"{path}.challenged_at")
+
+
+def validate_intent_challenge_binding(
+    challenge: Any,
+    intent_lock: Any,
+    path: str,
+    errors: list[Diagnostic],
+) -> None:
+    validate_intent_challenge(challenge, path, errors)
+    if isinstance(challenge, dict) and isinstance(intent_lock, dict):
+        if challenge.get("candidate_digest") != sha256_value(intent_lock):
+            add_error(errors, "GC062L", "intent challenge is not bound to the current candidate", f"{path}.candidate_digest")
 
 
 def validate_project_boundary(value: Any, path: str, errors: list[Diagnostic]) -> None:
@@ -1134,6 +1183,7 @@ def validate_case(case: dict[str, Any], errors: list[Diagnostic]) -> None:
         "canonical_digest",
         "start_pack_binding",
         "intent_lock",
+        "intent_challenge",
         "project_boundary",
         "council_mode",
         "required_independence",
@@ -1163,6 +1213,7 @@ def validate_case(case: dict[str, Any], errors: list[Diagnostic]) -> None:
         add_error(errors, "GC201", "revision must be a positive integer", "$.revision")
     validate_start_pack_binding(case.get("start_pack_binding"), "$.start_pack_binding", errors)
     validate_intent_lock(case.get("intent_lock"), "$.intent_lock", errors)
+    validate_intent_challenge_binding(case.get("intent_challenge"), case.get("intent_lock"), "$.intent_challenge", errors)
     validate_project_boundary(case.get("project_boundary"), "$.project_boundary", errors)
     if case.get("council_mode") not in {"single_model", "multi_provider"}:
         add_error(errors, "GC202", "council_mode is invalid", "$.council_mode")
@@ -1244,6 +1295,29 @@ def validate_case(case: dict[str, Any], errors: list[Diagnostic]) -> None:
         if isinstance(item, dict) and item.get("source_id") not in source_ids:
             add_error(errors, "GC215", "evidence references an unknown source", f"$.evidence[{index}].source_id")
 
+    challenge = case.get("intent_challenge")
+    if case.get("status") != "draft" and challenge is None:
+        add_error(errors, "GC213A", "non-draft Council work requires a bound intent challenge", "$.intent_challenge")
+    if isinstance(challenge, dict):
+        source = next(
+            (item for item in sources if isinstance(item, dict) and item.get("source_id") == challenge.get("authoritative_source_id")),
+            None,
+        )
+        if source is None or source.get("authority") != "authoritative":
+            add_error(errors, "GC213B", "intent challenge must bind an authoritative source", "$.intent_challenge.authoritative_source_id")
+        if not set(challenge.get("evidence_refs", [])).issubset(evidence_ids):
+            add_error(errors, "GC213C", "intent challenge references unknown evidence", "$.intent_challenge.evidence_refs")
+        challenger = challenge.get("challenger_run")
+        registered = next(
+            (item for item in runs if isinstance(item, dict) and isinstance(challenger, dict) and item.get("run_id") == challenger.get("run_id")),
+            None,
+        )
+        if registered != challenger:
+            add_error(errors, "GC213D", "intent challenge run is not exactly registered in role history", "$.intent_challenge.challenger_run")
+        orchestrator = next((item for item in runs if isinstance(item, dict) and item.get("role") == "orchestrator"), None)
+        if isinstance(orchestrator, dict) and isinstance(challenger, dict):
+            if challenge.get("independence_grade") != independence_grade(orchestrator, challenger):
+                add_error(errors, "GC213E", "intent challenge independence grade is inaccurate", "$.intent_challenge.independence_grade")
     validate_task(case.get("task"), "$.task", errors)
     task = case.get("task", {}) if isinstance(case.get("task"), dict) else {}
     if not set(task.get("source_ids", [])).issubset(source_ids):
@@ -1366,7 +1440,7 @@ def validate_case(case: dict[str, Any], errors: list[Diagnostic]) -> None:
 def validate_worker_packet(document: dict[str, Any], errors: list[Diagnostic]) -> None:
     required = {
         "schema_version", "packet_type", "packet_id", "created_at", "parent", "canonical_digest",
-        "start_pack_binding", "intent_lock", "project_boundary", "role_run", "permissions",
+        "start_pack_binding", "intent_lock", "intent_challenge", "project_boundary", "role_run", "permissions",
         "budget_lock", "capabilities", "sources", "evidence", "task", "prior_objections", "continuity",
     }
     if not exact_keys(document, required, set(), "$", errors):
@@ -1377,6 +1451,9 @@ def validate_worker_packet(document: dict[str, Any], errors: list[Diagnostic]) -
         add_error(errors, "GC230", "worker packet parent must be a council case", "$.parent.packet_type")
     validate_start_pack_binding(document.get("start_pack_binding"), "$.start_pack_binding", errors)
     validate_intent_lock(document.get("intent_lock"), "$.intent_lock", errors)
+    validate_intent_challenge_binding(document.get("intent_challenge"), document.get("intent_lock"), "$.intent_challenge", errors)
+    if document.get("intent_challenge") is None:
+        add_error(errors, "GC230A", "worker packet requires a bound intent challenge", "$.intent_challenge")
     validate_project_boundary(document.get("project_boundary"), "$.project_boundary", errors)
     validate_role_run(document.get("role_run"), "$.role_run", errors)
     if isinstance(document.get("role_run"), dict) and document["role_run"].get("role") != "worker":
@@ -1478,7 +1555,7 @@ def validate_finding(value: Any, path: str, errors: list[Diagnostic]) -> None:
 def validate_objector_packet(document: dict[str, Any], errors: list[Diagnostic]) -> None:
     required = {
         "schema_version", "packet_type", "packet_id", "created_at", "parent", "canonical_digest",
-        "start_pack_binding", "intent_lock", "project_boundary", "role_run", "independence_grade",
+        "start_pack_binding", "intent_lock", "intent_challenge", "project_boundary", "role_run", "independence_grade",
         "permitted_actions", "sources", "evidence", "task", "worker_response_digest", "worker_summary", "proofs",
     }
     if not exact_keys(document, required, set(), "$", errors):
@@ -1489,6 +1566,7 @@ def validate_objector_packet(document: dict[str, Any], errors: list[Diagnostic])
         add_error(errors, "GC248", "objector packet parent must be a council case", "$.parent.packet_type")
     validate_start_pack_binding(document.get("start_pack_binding"), "$.start_pack_binding", errors)
     validate_intent_lock(document.get("intent_lock"), "$.intent_lock", errors)
+    validate_intent_challenge_binding(document.get("intent_challenge"), document.get("intent_lock"), "$.intent_challenge", errors)
     validate_project_boundary(document.get("project_boundary"), "$.project_boundary", errors)
     validate_role_run(document.get("role_run"), "$.role_run", errors)
     if isinstance(document.get("role_run"), dict) and document["role_run"].get("role") != "objector":
@@ -1551,7 +1629,7 @@ def validate_objector_response(document: dict[str, Any], errors: list[Diagnostic
 def validate_alignment_packet(document: dict[str, Any], errors: list[Diagnostic]) -> None:
     required = {
         "schema_version", "packet_type", "packet_id", "created_at", "parent", "canonical_digest",
-        "start_pack_binding", "intent_lock", "project_boundary", "role_run", "sources", "evidence",
+        "start_pack_binding", "intent_lock", "intent_challenge", "project_boundary", "role_run", "sources", "evidence",
         "task", "worker_response_digest", "proofs", "objector_response_digest", "findings",
     }
     if not exact_keys(document, required, set(), "$", errors):
@@ -1562,6 +1640,7 @@ def validate_alignment_packet(document: dict[str, Any], errors: list[Diagnostic]
         add_error(errors, "GC261", "alignment packet parent must be a council case", "$.parent.packet_type")
     validate_start_pack_binding(document.get("start_pack_binding"), "$.start_pack_binding", errors)
     validate_intent_lock(document.get("intent_lock"), "$.intent_lock", errors)
+    validate_intent_challenge_binding(document.get("intent_challenge"), document.get("intent_lock"), "$.intent_challenge", errors)
     validate_project_boundary(document.get("project_boundary"), "$.project_boundary", errors)
     validate_role_run(document.get("role_run"), "$.role_run", errors)
     if isinstance(document.get("role_run"), dict) and document["role_run"].get("role") != "aligner":
@@ -1677,7 +1756,7 @@ def validate_alignment_record(document: dict[str, Any], errors: list[Diagnostic]
 def validate_resume_packet(document: dict[str, Any], errors: list[Diagnostic]) -> None:
     required = {
         "schema_version", "packet_type", "packet_id", "created_at", "parent", "canonical_digest",
-        "start_pack_binding", "intent_lock", "project_boundary", "case_status", "role_runs", "task",
+        "start_pack_binding", "intent_lock", "intent_challenge", "project_boundary", "case_status", "role_runs", "task",
         "worker_response", "objector_response", "alignment_record", "proofs", "invalidated_proof_ids",
         "continuity", "next_required_role", "provenance_head",
     }
@@ -1689,6 +1768,7 @@ def validate_resume_packet(document: dict[str, Any], errors: list[Diagnostic]) -
         add_error(errors, "GC293", "resume parent must be a council case", "$.parent.packet_type")
     validate_start_pack_binding(document.get("start_pack_binding"), "$.start_pack_binding", errors)
     validate_intent_lock(document.get("intent_lock"), "$.intent_lock", errors)
+    validate_intent_challenge_binding(document.get("intent_challenge"), document.get("intent_lock"), "$.intent_challenge", errors)
     validate_project_boundary(document.get("project_boundary"), "$.project_boundary", errors)
     runs = document.get("role_runs")
     if not isinstance(runs, list) or not runs:
@@ -1961,6 +2041,7 @@ def make_worker_packet(case: dict[str, Any], run: dict[str, Any]) -> dict[str, A
         "canonical_digest": "",
         "start_pack_binding": copy.deepcopy(case["start_pack_binding"]),
         "intent_lock": copy.deepcopy(case["intent_lock"]),
+        "intent_challenge": copy.deepcopy(case["intent_challenge"]),
         "project_boundary": copy.deepcopy(case["project_boundary"]),
         "role_run": copy.deepcopy(run),
         "permissions": filtered_permissions(case),
@@ -1997,6 +2078,7 @@ def make_objector_packet(case: dict[str, Any], run: dict[str, Any]) -> dict[str,
         "canonical_digest": "",
         "start_pack_binding": copy.deepcopy(case["start_pack_binding"]),
         "intent_lock": copy.deepcopy(case["intent_lock"]),
+        "intent_challenge": copy.deepcopy(case["intent_challenge"]),
         "project_boundary": copy.deepcopy(case["project_boundary"]),
         "role_run": copy.deepcopy(run),
         "independence_grade": grade,
@@ -2022,6 +2104,7 @@ def make_alignment_packet(case: dict[str, Any], run: dict[str, Any]) -> dict[str
         "canonical_digest": "",
         "start_pack_binding": copy.deepcopy(case["start_pack_binding"]),
         "intent_lock": copy.deepcopy(case["intent_lock"]),
+        "intent_challenge": copy.deepcopy(case["intent_challenge"]),
         "project_boundary": copy.deepcopy(case["project_boundary"]),
         "role_run": copy.deepcopy(run),
         "sources": sources,
@@ -2228,7 +2311,7 @@ def apply_alignment(case: dict[str, Any], alignment: dict[str, Any]) -> None:
 
 def next_required_role(case: dict[str, Any]) -> str:
     return {
-        "draft": "orchestrator",
+        "draft": "intent_objector",
         "ready_for_worker": "worker",
         "worker_complete": "objector",
         "objection_open": "aligner",
@@ -2254,6 +2337,7 @@ def make_resume_packet(case: dict[str, Any]) -> dict[str, Any]:
         "canonical_digest": "",
         "start_pack_binding": copy.deepcopy(case["start_pack_binding"]),
         "intent_lock": copy.deepcopy(case["intent_lock"]),
+        "intent_challenge": copy.deepcopy(case["intent_challenge"]),
         "project_boundary": copy.deepcopy(case["project_boundary"]),
         "case_status": case["status"],
         "role_runs": copy.deepcopy(case["role_runs"]),
@@ -2282,9 +2366,41 @@ def command_init(args: argparse.Namespace) -> int:
         args.surface, args.context_id, args.billing_pool_id, args.data_class, None,
     )
     orchestrator_run["completed_at"] = now
-    source_id = "source-user-intent"
-    evidence_id = "evidence-user-intent"
-    capability_id = "intent-recovery"
+    source_id = "source-intent-seed"
+    evidence_id = "evidence-intent-seed"
+    capability_id = "intent-reconstruction"
+    authoritative_seed = getattr(args, "authoritative_seed_summary", None)
+    challenge_fields = {
+        "context_id": getattr(args, "intent_challenger_context_id", None),
+        "competing_interpretation": getattr(args, "intent_competing_interpretation", None),
+        "consequence_difference": getattr(args, "intent_consequence_difference", None),
+        "resolution": getattr(args, "intent_challenge_resolution", None),
+    }
+    challenge_supplied = [value is not None for value in challenge_fields.values()]
+    if any(challenge_supplied) and not all(challenge_supplied):
+        print(
+            "intent challenge requires a distinct context, competing interpretation, "
+            "consequence difference, and resolved verdict",
+            file=sys.stderr,
+        )
+        return 2
+    challenge_complete = all(challenge_supplied)
+    if args.confidence in {"locked", "supported"} and not authoritative_seed:
+        print(
+            "locked or supported intent requires --authoritative-seed-summary; "
+            "a candidate outcome summary cannot authorize itself",
+            file=sys.stderr,
+        )
+        return 2
+    if challenge_complete and not authoritative_seed:
+        print("intent challenge requires a separately preserved authoritative seed", file=sys.stderr)
+        return 2
+    if challenge_complete and args.confidence in {"conflicted", "unknown"}:
+        print("intent challenge cannot clear conflicted or unknown material intent", file=sys.stderr)
+        return 2
+    if challenge_complete and challenge_fields["context_id"] == args.context_id:
+        print("intent challenge requires a context distinct from the orchestrator", file=sys.stderr)
+        return 2
     adapter_digest = sha256_value(
         {"adapter_id": args.adapter_id, "adapter_version": args.adapter_version, "project_id": args.project_id}
     )
@@ -2297,6 +2413,57 @@ def command_init(args: argparse.Namespace) -> int:
     }
     permission_policy["policy_digest"] = permission_policy_digest(permission_policy)
     start_binding = load_start_pack_binding(Path(args.start_pack_root)) if args.start_pack_root else None
+    intent_lock = {
+        "outcome": args.outcome,
+        "reason": args.reason,
+        "primary_user": args.primary_user,
+        "job": args.job,
+        "non_negotiables": list(dict.fromkeys(args.non_negotiable or ["Preserve truthful evidence and human authority."])),
+        "prohibitions": list(dict.fromkeys(args.prohibition or [])),
+        "tradeoff_rules": list(dict.fromkeys(args.tradeoff_rule or ["Truth and safety outrank speed."])),
+        "included_scope": list(dict.fromkeys(args.included_scope)),
+        "excluded_scope": list(dict.fromkeys(args.excluded_scope or [])),
+        "material_open_decisions": list(dict.fromkeys(args.open_decision or [])),
+        "confidence": args.confidence,
+        "source_precedence": ["current user authority", "sealed project authority", "approved evidence"],
+        "success_criteria": list(dict.fromkeys(args.success_criterion)),
+        "authority_owner": args.authority_owner,
+        "permission_boundaries": ["All external and mutating actions require an exact recorded approval."],
+        "permission_policy_id": permission_policy["policy_id"],
+        "permission_policy_digest": permission_policy["policy_digest"],
+    }
+    challenge_run: dict[str, Any] | None = None
+    intent_challenge: dict[str, Any] | None = None
+    role_runs = [orchestrator_run]
+    if challenge_complete:
+        challenge_run = make_run(
+            "intent_objector",
+            getattr(args, "intent_challenger_run_id", None) or new_id("run-intent-objector"),
+            getattr(args, "intent_challenger_provider", None) or args.provider,
+            getattr(args, "intent_challenger_model", None) or args.model,
+            getattr(args, "intent_challenger_surface", None) or args.surface,
+            challenge_fields["context_id"],
+            args.billing_pool_id,
+            args.data_class,
+            orchestrator_run["run_id"],
+        )
+        challenge_run["completed_at"] = now
+        grade = independence_grade(orchestrator_run, challenge_run)
+        if grade == "not_applicable":
+            print("intent challenge did not achieve a distinct review context", file=sys.stderr)
+            return 2
+        role_runs.append(challenge_run)
+        intent_challenge = {
+            "candidate_digest": sha256_value(intent_lock),
+            "authoritative_source_id": source_id,
+            "challenger_run": copy.deepcopy(challenge_run),
+            "independence_grade": grade,
+            "competing_interpretation": challenge_fields["competing_interpretation"],
+            "consequence_difference": challenge_fields["consequence_difference"],
+            "resolution": challenge_fields["resolution"],
+            "evidence_refs": [evidence_id],
+            "challenged_at": now,
+        }
     case: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "packet_type": "council_case",
@@ -2306,25 +2473,8 @@ def command_init(args: argparse.Namespace) -> int:
         "revision": 1,
         "canonical_digest": "",
         "start_pack_binding": start_binding,
-        "intent_lock": {
-            "outcome": args.outcome,
-            "reason": args.reason,
-            "primary_user": args.primary_user,
-            "job": args.job,
-            "non_negotiables": list(dict.fromkeys(args.non_negotiable or ["Preserve truthful evidence and human authority."])),
-            "prohibitions": list(dict.fromkeys(args.prohibition or [])),
-            "tradeoff_rules": list(dict.fromkeys(args.tradeoff_rule or ["Truth and safety outrank speed."])),
-            "included_scope": list(dict.fromkeys(args.included_scope)),
-            "excluded_scope": list(dict.fromkeys(args.excluded_scope or [])),
-            "material_open_decisions": list(dict.fromkeys(args.open_decision or [])),
-            "confidence": args.confidence,
-            "source_precedence": ["current user authority", "sealed project authority", "approved evidence"],
-            "success_criteria": list(dict.fromkeys(args.success_criterion)),
-            "authority_owner": args.authority_owner,
-            "permission_boundaries": ["All external and mutating actions require an exact recorded approval."],
-            "permission_policy_id": permission_policy["policy_id"],
-            "permission_policy_digest": permission_policy["policy_digest"],
-        },
+        "intent_lock": intent_lock,
+        "intent_challenge": intent_challenge,
         "project_boundary": {
             "project_id": args.project_id,
             "adapter_id": args.adapter_id,
@@ -2335,7 +2485,7 @@ def command_init(args: argparse.Namespace) -> int:
         },
         "council_mode": args.mode,
         "required_independence": args.required_independence,
-        "role_runs": [orchestrator_run],
+        "role_runs": role_runs,
         "permissions": permission_policy,
         "budget_lock": {
             "currency": args.currency,
@@ -2360,7 +2510,7 @@ def command_init(args: argparse.Namespace) -> int:
             {
                 "capability_id": capability_id,
                 "disposition": "reuse",
-                "canonical_owner": "Selective Intelligence actual-intent alignment",
+                "canonical_owner": "Selective Intelligence intent reconstruction",
                 "evidence_refs": [evidence_id],
             }
         ],
@@ -2368,28 +2518,28 @@ def command_init(args: argparse.Namespace) -> int:
             {
                 "source_id": source_id,
                 "provider": "user",
-                "immutable_id": sha256_value({"case": case_id, "outcome": args.outcome}),
-                "title": "Authorized outcome summary",
-                "source_type": "user_instruction_summary",
+                "immutable_id": sha256_value({"case": case_id, "seed": authoritative_seed or args.outcome}),
+                "title": "Authoritative intent seed" if authoritative_seed else "Candidate intake summary",
+                "source_type": "user_intent_seed" if authoritative_seed else "candidate_intent_summary",
                 "project_id": args.project_id,
-                "authority": "authoritative",
+                "authority": "authoritative" if authoritative_seed else "draft",
                 "sensitivity": args.sensitivity,
                 "data_classes": list(dict.fromkeys(args.data_class)),
                 "version": "1",
                 "modified_at": now,
                 "validated_at": now,
-                "summary": args.outcome,
+                "summary": authoritative_seed or args.outcome,
             }
         ],
         "evidence": [
             {
                 "evidence_id": evidence_id,
                 "source_id": source_id,
-                "locator": "normalized authorized intake",
-                "summary": args.outcome,
-                "classification": "confirmed",
+                "locator": "authoritative seed summary" if authoritative_seed else "machine candidate intake",
+                "summary": authoritative_seed or args.outcome,
+                "classification": "confirmed" if authoritative_seed else "inferred",
                 "observed_at": now,
-                "content_digest": sha256_value({"outcome": args.outcome, "job": args.job}),
+                "content_digest": sha256_value({"seed": authoritative_seed or args.outcome, "candidate_job": args.job}),
             }
         ],
         "task": {
@@ -2410,16 +2560,24 @@ def command_init(args: argparse.Namespace) -> int:
         "proofs": [],
         "invalidated_proof_ids": [],
         "continuity": {
-            "current_state_summary": "Intent locked and ready for a bounded worker packet.",
+            "current_state_summary": (
+                "Intent reconstruction challenged and sufficient for a bounded worker packet."
+                if challenge_complete
+                else "Candidate intent reconstructed; pre-lock challenge remains required."
+            ),
             "repository": None,
             "uncommitted_changes": [],
             "migrations": [],
             "external_actions": [],
-            "completed_steps": ["intent_locked"],
-            "next_safe_action": "Export a bounded worker packet into a distinct context.",
+            "completed_steps": ["intent_reconstructed", "intent_challenged"] if challenge_complete else ["intent_reconstructed"],
+            "next_safe_action": (
+                "Export a bounded worker packet into a distinct context."
+                if challenge_complete
+                else "Challenge the candidate meaning against the authoritative seed before material work."
+            ),
             "checkpointed_at": now,
         },
-        "status": "ready_for_worker",
+        "status": "ready_for_worker" if challenge_complete else "draft",
         "provenance_ledger": [],
     }
     append_ledger(
@@ -2432,6 +2590,17 @@ def command_init(args: argparse.Namespace) -> int:
         subject_revision="case-revision-1",
         validation_status="passed",
     )
+    if challenge_run is not None and intent_challenge is not None:
+        append_ledger(
+            case,
+            challenge_run["run_id"],
+            "intent_challenge_recorded",
+            f"{case_id}:intent-challenge",
+            sha256_value(intent_challenge),
+            material=True,
+            subject_revision="case-revision-1",
+            validation_status="passed",
+        )
     stamp_document(case)
     errors = validate_document(case, Path(args.start_pack_root) if args.start_pack_root else None)
     if errors:
@@ -2704,6 +2873,13 @@ def self_test() -> tuple[list[str], list[str]]:
             primary_user="A beginner", job="Complete one bounded outcome", non_negotiable=[], prohibition=[],
             tradeoff_rule=[], included_scope=["One bounded Guided Council result"], excluded_scope=[],
             open_decision=[], confidence="locked", permission_policy_id="policy-default-deny",
+            authoritative_seed_summary="Produce a verified council result.",
+            intent_challenger_run_id="run-intent-objector", intent_challenger_provider="openai",
+            intent_challenger_model="model-a", intent_challenger_surface="chat",
+            intent_challenger_context_id="ctx-intent-objector",
+            intent_competing_interpretation="The request could mean producing a persuasive plan without executing or proving the outcome.",
+            intent_consequence_difference="That reading would stop at prose while the intended reading requires an observed bounded result.",
+            intent_challenge_resolution="candidate_supported",
             success_criterion=["The result has evidence and an alignment pass."], authority_owner="human-owner",
             project_id="project-a", adapter_id="generic", adapter_version="1", destination=["local"],
             mode="single_model", required_independence="separate_context_same_model", currency="USD",
@@ -2714,6 +2890,65 @@ def self_test() -> tuple[list[str], list[str]]:
             init_code = command_init(init_args)
         case = read_json(case_path)
         check("init creates a valid Start-Pack-bound case", init_code == 0 and not validate_document(case, start_root))
+
+        candidate_args = copy.deepcopy(init_args)
+        candidate_path = root / "candidate-case.json"
+        candidate_args.output = str(candidate_path)
+        candidate_args.case_id = "case-candidate"
+        candidate_args.confidence = "provisional"
+        candidate_args.authoritative_seed_summary = None
+        candidate_args.intent_challenger_run_id = None
+        candidate_args.intent_challenger_provider = None
+        candidate_args.intent_challenger_model = None
+        candidate_args.intent_challenger_surface = None
+        candidate_args.intent_challenger_context_id = None
+        candidate_args.intent_competing_interpretation = None
+        candidate_args.intent_consequence_difference = None
+        candidate_args.intent_challenge_resolution = None
+        with contextlib.redirect_stdout(io.StringIO()):
+            candidate_code = command_init(candidate_args)
+        candidate_case = read_json(candidate_path)
+        check(
+            "machine candidate defaults to provisional draft before intent challenge",
+            candidate_code == 0
+            and candidate_case["status"] == "draft"
+            and candidate_case["intent_lock"]["confidence"] == "provisional"
+            and candidate_case["sources"][0]["authority"] == "draft"
+            and candidate_case["evidence"][0]["classification"] == "inferred",
+        )
+
+        unauthorized_lock_args = copy.deepcopy(init_args)
+        unauthorized_lock_path = root / "unauthorized-lock.json"
+        unauthorized_lock_args.output = str(unauthorized_lock_path)
+        unauthorized_lock_args.case_id = "case-unauthorized-lock"
+        unauthorized_lock_args.authoritative_seed_summary = None
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            unauthorized_lock_code = command_init(unauthorized_lock_args)
+        check(
+            "candidate paraphrase cannot authorize a locked intent",
+            unauthorized_lock_code == 2 and not unauthorized_lock_path.exists(),
+        )
+
+        ceremonial_args = copy.deepcopy(candidate_args)
+        ceremonial_path = root / "ceremonial-challenge.json"
+        ceremonial_args.output = str(ceremonial_path)
+        ceremonial_args.case_id = "case-ceremonial-challenge"
+        ceremonial_args.authoritative_seed_summary = "Produce a verified council result."
+        ceremonial_args.intent_challenger_context_id = "ctx-claim-only"
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            ceremonial_code = command_init(ceremonial_args)
+        check(
+            "intent challenge cannot be asserted as a context-only checkbox",
+            ceremonial_code == 2 and not ceremonial_path.exists(),
+        )
+
+        stale_challenge = copy.deepcopy(case)
+        stale_challenge["intent_challenge"]["candidate_digest"] = "0" * 64
+        stamp_document(stale_challenge)
+        check(
+            "intent challenge stays bound to the exact candidate meaning",
+            "GC062L" in error_codes(stale_challenge),
+        )
 
         tampered = copy.deepcopy(case)
         tampered["intent_lock"]["outcome"] = "tampered"
@@ -2800,6 +3035,7 @@ def self_test() -> tuple[list[str], list[str]]:
                 "amount_minor_units": None, "billing_pool_id": None, "price_evidence_ids": [],
             }
         ]
+        allowed_read["intent_challenge"]["candidate_digest"] = sha256_value(allowed_read["intent_lock"])
         stamp_document(allowed_read)
         check("read allow remains separate from write authority", not error_codes(allowed_read))
         write_allow = copy.deepcopy(approval_missing)
@@ -2940,7 +3176,7 @@ def self_test() -> tuple[list[str], list[str]]:
                 "proofs": [
                     {
                         "proof_id": "proof-outcome", "status": "valid", "claim": "The bounded result exists.",
-                        "evidence_refs": ["evidence-user-intent"], "revision": "rev-a", "observed_at": utc_now(),
+                        "evidence_refs": ["evidence-intent-seed"], "revision": "rev-a", "observed_at": utc_now(),
                         "supersedes": None,
                     }
                 ],
@@ -3055,7 +3291,7 @@ def self_test() -> tuple[list[str], list[str]]:
                             {
                                 "proof_id": "proof-outcome-v2", "status": "valid",
                                 "claim": "The corrected bounded result is revalidated.",
-                                "evidence_refs": ["evidence-user-intent"], "revision": "rev-b",
+                                "evidence_refs": ["evidence-intent-seed"], "revision": "rev-b",
                                 "observed_at": utc_now(), "supersedes": "proof-outcome",
                             }
                         ],
@@ -3210,7 +3446,32 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument(
         "--confidence",
         choices=("locked", "supported", "provisional", "conflicted", "unknown"),
-        default="locked",
+        default="provisional",
+    )
+    init.add_argument(
+        "--authoritative-seed-summary",
+        help="Faithful minimal summary of the authoritative human seed, kept separate from the candidate outcome",
+    )
+    init.add_argument("--intent-challenger-run-id")
+    init.add_argument("--intent-challenger-provider")
+    init.add_argument("--intent-challenger-model")
+    init.add_argument("--intent-challenger-surface")
+    init.add_argument(
+        "--intent-challenger-context-id",
+        help="Distinct context that challenged the candidate interpretation",
+    )
+    init.add_argument(
+        "--intent-competing-interpretation",
+        help="Substantive plausible alternative considered before Worker export",
+    )
+    init.add_argument(
+        "--intent-consequence-difference",
+        help="Observable product consequence that distinguishes the competing reading",
+    )
+    init.add_argument(
+        "--intent-challenge-resolution",
+        choices=("candidate_supported", "candidate_revised"),
+        help="Resolved challenge verdict bound to the final candidate digest",
     )
     init.add_argument("--permission-policy-id", default="policy-default-deny")
     init.add_argument("--authority-owner", required=True)

@@ -1,7 +1,9 @@
 interface:
   display_name: "Selective Intelligence"
-  short_description: "JumpStart, council, resume, and realign systems"
-  default_prompt: "Use $selective-intelligence to JumpStart, resume, realign, or complete this work by locking actual intent, running the smallest sufficient Guided Council, and verifying the authorized outcome with evidence."
+  short_description: "Recover intent, design useful products, and bridge execution"
+  default_prompt: "Use $selective-intelligence to reconstruct and challenge actual intent, choose the right product and UI/UX experience, bridge plain-language ownership into developer-grade execution, verify the human outcome, and preserve the next improvement frontier."
+  icon_small: "assets/icon.svg"
+  icon_large: "assets/icon.svg"
 policy:
   products:
   - "chatgpt"
