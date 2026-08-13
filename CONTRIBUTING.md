@@ -2,6 +2,8 @@
 
 Selective Intelligence is open infrastructure under CC0. Contributions are welcome from product owners, designers, developers, researchers, and people who found a real failure while using an AI—not only from specialists who know the repository already.
 
+The easiest paths are the [Worked / Partly / Wrong feedback form](https://github.com/infotradescout/Selective-Intelligence/issues/new?template=feedback.yml) and the [improvement suggestion form](https://github.com/infotradescout/Selective-Intelligence/issues/new?template=suggestion.yml). No code change is required. For a security problem, use [private vulnerability reporting](https://github.com/infotradescout/Selective-Intelligence/security/advisories/new) instead of a public issue.
+
 ## Start with the observed failure
 
 Describe:

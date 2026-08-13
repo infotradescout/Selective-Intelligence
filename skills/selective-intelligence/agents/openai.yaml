@@ -1,7 +1,7 @@
 interface:
   display_name: "Selective Intelligence"
-  short_description: "Recover intent, design useful products, and bridge execution"
-  default_prompt: "Use $selective-intelligence to reconstruct and challenge actual intent, choose the right product and UI/UX experience, bridge plain-language ownership into developer-grade execution, verify the human outcome, and preserve the next improvement frontier."
+  short_description: "Selective Intelligence"
+  default_prompt: "Selective Intelligence"
   icon_small: "assets/icon.svg"
   icon_large: "assets/icon.svg"
 policy:
@@ -10,4 +10,4 @@ policy:
   - "codex"
   - "api"
   - "atlas"
-  allow_implicit_invocation: true
+  allow_implicit_invocation: false

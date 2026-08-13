@@ -1,0 +1,70 @@
+name: Did Selective Intelligence work?
+description: Tell us whether the outcome worked, partly worked, or was wrong.
+title: "[Feedback]: "
+labels:
+  - feedback
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Share only what is safe to make public. Do not include secrets, private prompts, personal data, or proprietary code.
+
+  - type: dropdown
+    id: outcome
+    attributes:
+      label: Outcome
+      description: Which answer best matches the result?
+      options:
+        - Worked
+        - Partly
+        - Wrong
+    validations:
+      required: true
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: Where did you use it?
+      options:
+        - ChatGPT
+        - Codex
+        - Claude Code
+        - Cursor
+        - GitHub Copilot
+        - Gemini CLI
+        - Kiro
+        - Another Agent Skills client
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: What were you trying to accomplish?
+      description: A short, redacted description is enough.
+      placeholder: I wanted the AI to...
+    validations:
+      required: true
+
+  - type: textarea
+    id: result
+    attributes:
+      label: What happened?
+      description: Say what helped, what failed, or what was misunderstood.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit (optional)
+      description: Include this only if it is easy to find.
+      placeholder: 0.3.0 or a commit link
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Public information check
+      options:
+        - label: I removed secrets, private prompts, personal data, and proprietary code.
+          required: true

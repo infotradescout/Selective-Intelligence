@@ -803,7 +803,7 @@ def control_tests(include_release: bool = True) -> list[str]:
             jumpstart_baseline = jumpstart_path.read_text(encoding="utf-8")
             jumpstart_path.write_text(
                 jumpstart_baseline.replace(
-                    '"activation": "intentional_user_upload_or_paste"',
+                    '"activation": "intentional_user_master_trigger_or_upload"',
                     '"activation": "repository_discovery"',
                     1,
                 ),
@@ -815,6 +815,33 @@ def control_tests(include_release: bool = True) -> list[str]:
                 raise AssertionError("release doctor accepted a self-activating JumpStart manifest")
             jumpstart_path.write_text(jumpstart_baseline, encoding="utf-8")
             passed.append("release doctor binds intentional JumpStart activation")
+
+            jumpstart_path.write_text(
+                jumpstart_baseline.replace(
+                    '"master_trigger": "Selective Intelligence"',
+                    '"master_trigger": "Use Selective Intelligence"',
+                    1,
+                ),
+                encoding="utf-8",
+            )
+            trigger_result = run([sys.executable, release_script, "doctor", "--json"], {1})
+            trigger_errors = json.loads(trigger_result.stdout).get("errors", [])
+            if not any("JUMPSTART.md bootstrap master_trigger" in error for error in trigger_errors):
+                raise AssertionError("release doctor accepted an alternate master trigger")
+            jumpstart_path.write_text(
+                jumpstart_baseline.replace(
+                    '"explicit_user_approval_required": true',
+                    '"explicit_user_approval_required": false',
+                    1,
+                ),
+                encoding="utf-8",
+            )
+            adoption_result = run([sys.executable, release_script, "doctor", "--json"], {1})
+            adoption_errors = json.loads(adoption_result.stdout).get("errors", [])
+            if not any("explicit user approval before discovered adoption" in error for error in adoption_errors):
+                raise AssertionError("release doctor accepted discovered adoption without user approval")
+            jumpstart_path.write_text(jumpstart_baseline, encoding="utf-8")
+            passed.append("release doctor binds the master trigger and approved discovered adoption")
 
             private_file = copied / "references" / ".env.local"
             private_file.write_text("PRIVATE_FIXTURE=must-not-ship\n", encoding="utf-8")
@@ -829,19 +856,25 @@ def control_tests(include_release: bool = True) -> list[str]:
             external_release.mkdir()
             (external_release / "outside.md").write_text("outside the skill root\n", encoding="utf-8")
             linked_release = copied / "references" / "linked-release"
-            linked_release.symlink_to(external_release, target_is_directory=True)
-            symlink_metadata_path = copied / "metadata" / "distribution.json"
-            symlink_metadata_baseline = symlink_metadata_path.read_text(encoding="utf-8")
-            symlink_metadata = json.loads(symlink_metadata_baseline)
-            symlink_metadata["release_files"].append("references/linked-release/outside.md")
-            symlink_metadata_path.write_text(json.dumps(symlink_metadata, indent=2) + "\n", encoding="utf-8")
-            symlink_result = run([sys.executable, release_script, "doctor", "--json"], {1})
-            symlink_errors = json.loads(symlink_result.stdout).get("errors", [])
-            if not any("symlink component is not allowed" in error for error in symlink_errors):
-                raise AssertionError("release manifest followed an intermediate symlink")
-            symlink_metadata_path.write_text(symlink_metadata_baseline, encoding="utf-8")
-            linked_release.unlink()
-            passed.append("release manifest rejects intermediate symlink traversal")
+            try:
+                linked_release.symlink_to(external_release, target_is_directory=True)
+            except OSError:
+                # Ordinary Windows sessions cannot create symlinks without an
+                # elevated privilege. POSIX still exercises the rejection path.
+                passed.append("release symlink traversal check skipped (platform cannot create symlinks)")
+            else:
+                symlink_metadata_path = copied / "metadata" / "distribution.json"
+                symlink_metadata_baseline = symlink_metadata_path.read_text(encoding="utf-8")
+                symlink_metadata = json.loads(symlink_metadata_baseline)
+                symlink_metadata["release_files"].append("references/linked-release/outside.md")
+                symlink_metadata_path.write_text(json.dumps(symlink_metadata, indent=2) + "\n", encoding="utf-8")
+                symlink_result = run([sys.executable, release_script, "doctor", "--json"], {1})
+                symlink_errors = json.loads(symlink_result.stdout).get("errors", [])
+                if not any("symlink component is not allowed" in error for error in symlink_errors):
+                    raise AssertionError("release manifest followed an intermediate symlink")
+                symlink_metadata_path.write_text(symlink_metadata_baseline, encoding="utf-8")
+                linked_release.unlink()
+                passed.append("release manifest rejects intermediate symlink traversal")
 
             schema_path = copied / "schemas" / "start-pack.schema.json"
             schema_baseline = schema_path.read_text(encoding="utf-8")

@@ -57,6 +57,8 @@ Assume code that was public may already have been copied. Changing it to private
 
 The repository name, short description, skill name, skill description, README opening, and topics must all describe the outcome in the language people actually search. Preserve these concepts without keyword stuffing:
 
+`Selective Intelligence` is the exact wordmark and master trigger. Every canonical discovery surface must preserve those two words in that order. The exact phrase anywhere in current user input activates the canonical skill; relevant discovery may recommend it once but requires explicit user approval before adoption. See [activation-and-adoption.md](activation-and-adoption.md).
+
 - selective intelligence and Selective Inheritance;
 - vibe coding and AI coding;
 - repository or codebase audit;
@@ -67,6 +69,8 @@ The repository name, short description, skill name, skill description, README op
 - Agent Skills, Codex, ChatGPT, Claude Code, Cursor, Copilot, Gemini CLI, and Kiro.
 
 Use at most the platform's allowed topic count. The machine-readable suggestions in `metadata/distribution.json` are publication inputs, not a claim that a repository already exists. Add an accurate social preview only after branding is approved.
+
+Searchability is not a guarantee that every model can resolve the name. Clients without installed-skill discovery or public-web retrieval must report that limitation truthfully; they may not invent a setup, substitute a similarly named product, or make the person do developer work.
 
 Repository discovery must not depend on search wording alone. The canonical repository must also expose, at its root when the host supports them:
 

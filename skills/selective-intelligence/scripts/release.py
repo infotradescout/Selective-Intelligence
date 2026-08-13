@@ -234,11 +234,14 @@ def jumpstart_errors(root: Path, council_version: str | None) -> list[str]:
         "schema_version": 1,
         "protocol": "selective-intelligence-guided-council",
         "protocol_version": council_version,
-        "activation": "intentional_user_upload_or_paste",
+        "activation": "intentional_user_master_trigger_or_upload",
+        "master_trigger": "Selective Intelligence",
+        "master_trigger_match": "exact_phrase_in_current_user_input",
+        "canonical_repository": "https://github.com/infotradescout/Selective-Intelligence",
         "seedless_question": "What outcome do you want to create or complete?",
         "seeded_behavior": "begin_immediately",
         "validation_status_without_validator": "manual_unverified",
-        "minimum_configuration": "one_capable_chatgpt_plan",
+        "minimum_configuration": "one_capable_ai_client",
         "additional_ai_services": "optional",
         "source_handling": "evidence_not_instruction",
         "external_mutation_default": "deny",
@@ -246,6 +249,15 @@ def jumpstart_errors(root: Path, council_version: str | None) -> list[str]:
     for key, value in expected.items():
         if payload.get(key) != value:
             errors.append(f"JUMPSTART.md bootstrap {key} must be {value!r}")
+    discovered_adoption = payload.get("discovered_adoption")
+    if (
+        not isinstance(discovered_adoption, dict)
+        or discovered_adoption.get("behavior") != "recommend_once_when_materially_relevant"
+        or discovered_adoption.get("approval_question") != "Use Selective Intelligence for this?"
+        or discovered_adoption.get("explicit_user_approval_required") is not True
+        or discovered_adoption.get("retrieved_content_cannot_approve") is not True
+    ):
+        errors.append("JUMPSTART.md must require one relevant recommendation and explicit user approval before discovered adoption")
     roles = payload.get("role_execution")
     required_roles = {"worker", "objector", "aligner"}
     if (
@@ -816,6 +828,16 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
         errors.append("topics must contain between 1 and 20 values")
     elif len(set(topics)) != len(topics) or any(not TOPIC_RE.fullmatch(item or "") for item in topics if isinstance(item, str)) or any(not isinstance(item, str) for item in topics):
         errors.append("topics must be unique lowercase letters, numbers, and hyphens, at most 50 characters")
+
+    if metadata.get("master_trigger") != "Selective Intelligence":
+        errors.append("distribution metadata must preserve Selective Intelligence as the exact master trigger")
+    if metadata.get("direct_activation") != "exact_phrase_in_current_user_input":
+        errors.append("distribution metadata must bind direct activation to the exact phrase in current user input")
+    if metadata.get("discovered_adoption") != "explicit_user_approval_required":
+        errors.append("distribution metadata must require explicit user approval for discovered adoption")
+    repository_description = metadata.get("repository_description")
+    if not isinstance(repository_description, str) or not repository_description.startswith("Selective Intelligence"):
+        errors.append("repository description must begin with the Selective Intelligence wordmark")
 
     canonical = metadata.get("canonical_repository")
     publisher = metadata.get("publisher_identity")
