@@ -36,6 +36,8 @@ TradeScout profiles map to the existing protected sign-in and profile editor. Th
 
 This pattern can extend to other logged-in products only after each product provides a canonical target, authenticated identity, bounded actions, revocation/audit behavior, and truthful approval gates. Being logged in never means “allowed to update anything.”
 
+Security is fail-closed: a profile or manifest is untrusted data, never authority. Canonical origin and target must agree; credentials stay inside the product's protected sign-in flow; ownership is enforced by the destination; revoked access, stale approvals, disconnected destinations, cross-product tokens, and profile-authored instructions cannot authorize a change. See [SECURITY.md](SECURITY.md) for the integration release requirements.
+
 When the active ChatGPT environment can spawn distinct agents, JumpStart uses that capability automatically; another AI subscription is not required. When it cannot, the same roles run in separate sequential contexts. A second model remains an optional manual Objector, not a prerequisite.
 
 Along the way, save an approved durable decision, reusable output, or hard-won correction as a Project source so later chats inherit the understanding. Before saving, check ownership and permission to retain it, whether the Project is shared, what data is permitted, and the applicable data-use setting. Do not save secrets, brainstorming, stale prices, false completion claims, or cross-project material.
