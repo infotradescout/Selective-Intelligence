@@ -2,14 +2,14 @@
 
 > Open, model-neutral Agent Skill for reconstructing intent, choosing and verifying product interaction models, bridging non-developer direction into developer-grade execution, realigning repositories, and retaining an explicit improvement frontier.
 
-Canonical repository: https://github.com/mrplatypus4777/Selective-Intelligence
-Canonical skill: https://github.com/mrplatypus4777/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md
-Zero-install entry point: https://github.com/mrplatypus4777/Selective-Intelligence/blob/main/skills/selective-intelligence/JUMPSTART.md
-Portable skill directory: https://github.com/mrplatypus4777/Selective-Intelligence/tree/main/skills/selective-intelligence
-Behavior cases: https://github.com/mrplatypus4777/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/behavior-cases.json
-Current evidence: https://github.com/mrplatypus4777/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-0.3.0.json
-Contribution guide: https://github.com/mrplatypus4777/Selective-Intelligence/blob/main/CONTRIBUTING.md
-License: https://github.com/mrplatypus4777/Selective-Intelligence/blob/main/LICENSE
+Canonical repository: https://github.com/infotradescout/Selective-Intelligence
+Canonical skill: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md
+Zero-install entry point: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/JUMPSTART.md
+Portable skill directory: https://github.com/infotradescout/Selective-Intelligence/tree/main/skills/selective-intelligence
+Behavior cases: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/behavior-cases.json
+Current evidence: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-0.3.0.json
+Contribution guide: https://github.com/infotradescout/Selective-Intelligence/blob/main/CONTRIBUTING.md
+License: https://github.com/infotradescout/Selective-Intelligence/blob/main/LICENSE
 
 Current evidence boundary: deterministic controls pass locally and six bounded smoke observations cover three of eight adversarial behavior cases. The complete repeated cross-client behavior suite has not passed and model equivalence is not claimed.
 

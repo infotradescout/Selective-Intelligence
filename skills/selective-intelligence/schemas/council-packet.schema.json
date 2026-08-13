@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/mrplatypus4777/Selective-Intelligence/main/skills/selective-intelligence/schemas/council-packet.schema.json",
+  "$id": "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/schemas/council-packet.schema.json",
   "title": "Selective Intelligence Guided Council Packet",
   "description": "Portable structural schema for Guided Council cases, role packets, role responses, alignment records, and resume packets. scripts/council.py is authoritative for cross-document bindings and semantic controls.",
   "oneOf": [

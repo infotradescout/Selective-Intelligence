@@ -2,7 +2,7 @@
 
 Selective Intelligence—formerly Selective Inheritance—is a free, portable Agent Skill that bridges plain-language product ownership and developer-grade execution. It reconstructs and challenges human intent before locking it, chooses and proves job-specific UI/UX interaction models, audits and realigns repositories, builds complete human value loops, and treats every release as an evidence-backed checkpoint with a visible improvement frontier—not a fictional state of perfection.
 
-Published by [Platynum Standard](https://github.com/Platynum-Standard). The canonical source is [mrplatypus4777/Selective-Intelligence](https://github.com/mrplatypus4777/Selective-Intelligence).
+Published by [Platynum Standard](https://github.com/Platynum-Standard). The canonical source is [infotradescout/Selective-Intelligence](https://github.com/infotradescout/Selective-Intelligence).
 
 > **📱 Mobile IDE on the way** — a self-hosted, mobile-first code editor is in build: clone it, deploy it, open the link on your phone, and edit from anywhere.
 
@@ -85,13 +85,13 @@ This keeps context from drifting when users are spamming requests.
 
 ## Portable installation
 
-The canonical portable source is the complete [`skills/selective-intelligence/`](https://github.com/mrplatypus4777/Selective-Intelligence/tree/main/skills/selective-intelligence) directory. Keep that directory intact: `SKILL.md`, `agents/`, `references/`, `schemas/`, `scripts/`, `metadata/`, `evals/`, `lanes/`, `subskills/`, and `tests/` form one skill.
+The canonical portable source is the complete [`skills/selective-intelligence/`](https://github.com/infotradescout/Selective-Intelligence/tree/main/skills/selective-intelligence) directory. Keep that directory intact: `SKILL.md`, `agents/`, `references/`, `schemas/`, `scripts/`, `metadata/`, `evals/`, `lanes/`, `subskills/`, and `tests/` form one skill.
 
 With GitHub CLI 2.90.0 or newer, preview and install it with:
 
 ```bash
-gh skill preview mrplatypus4777/Selective-Intelligence selective-intelligence
-gh skill install mrplatypus4777/Selective-Intelligence selective-intelligence
+gh skill preview infotradescout/Selective-Intelligence selective-intelligence
+gh skill install infotradescout/Selective-Intelligence selective-intelligence
 ```
 
 For a manual project-level installation, copy the canonical directory intact to `.agents/skills/selective-intelligence/`. A versioned release archive, once published, will extract as one complete `selective-intelligence/` directory.

@@ -5,8 +5,8 @@ type: software
 version: 0.3.0
 authors:
   - name: "Platynum Standard"
-repository-code: "https://github.com/mrplatypus4777/Selective-Intelligence"
-url: "https://github.com/mrplatypus4777/Selective-Intelligence"
+repository-code: "https://github.com/infotradescout/Selective-Intelligence"
+url: "https://github.com/infotradescout/Selective-Intelligence"
 license: CC0-1.0
 keywords:
   - artificial intelligence
