@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/Platynum-Standard/Selective-Intelligence/main/skills/selective-intelligence/schemas/council-packet.schema.json",
+  "$id": "https://raw.githubusercontent.com/mrplatypus4777/Selective-Intelligence/main/skills/selective-intelligence/schemas/council-packet.schema.json",
   "title": "Selective Intelligence Guided Council Packet",
   "description": "Portable structural schema for Guided Council cases, role packets, role responses, alignment records, and resume packets. scripts/council.py is authoritative for cross-document bindings and semantic controls.",
   "oneOf": [
@@ -175,7 +175,7 @@
       ],
       "properties": {
         "run_id": { "$ref": "#/$defs/id" },
-        "role": { "enum": ["orchestrator", "worker", "objector", "aligner", "reserve"] },
+        "role": { "enum": ["orchestrator", "intent_objector", "worker", "objector", "aligner", "reserve"] },
         "provider": { "$ref": "#/$defs/nonEmptyString" },
         "model": { "$ref": "#/$defs/nonEmptyString" },
         "surface": { "$ref": "#/$defs/nonEmptyString" },
@@ -197,6 +197,40 @@
         }
       },
       "additionalProperties": false
+    },
+    "intentChallenge": {
+      "type": "object",
+      "required": [
+        "candidate_digest",
+        "authoritative_source_id",
+        "challenger_run",
+        "independence_grade",
+        "competing_interpretation",
+        "consequence_difference",
+        "resolution",
+        "evidence_refs",
+        "challenged_at"
+      ],
+      "properties": {
+        "candidate_digest": { "$ref": "#/$defs/digest" },
+        "authoritative_source_id": { "$ref": "#/$defs/id" },
+        "challenger_run": { "$ref": "#/$defs/roleRun" },
+        "independence_grade": {
+          "enum": ["separate_context_same_model", "independent_model", "independent_human"]
+        },
+        "competing_interpretation": { "$ref": "#/$defs/nonEmptyString" },
+        "consequence_difference": { "$ref": "#/$defs/nonEmptyString" },
+        "resolution": { "enum": ["candidate_supported", "candidate_revised"] },
+        "evidence_refs": { "$ref": "#/$defs/nonEmptyUniqueStrings" },
+        "challenged_at": { "$ref": "#/$defs/timestamp" }
+      },
+      "additionalProperties": false
+    },
+    "intentChallengeOrNull": {
+      "oneOf": [
+        { "$ref": "#/$defs/intentChallenge" },
+        { "type": "null" }
+      ]
     },
     "approvalReceipt": {
       "type": "object",
@@ -827,13 +861,13 @@
       "type": "object",
       "required": [
         "schema_version", "packet_type", "packet_id", "created_at", "updated_at", "revision",
-        "canonical_digest", "start_pack_binding", "intent_lock", "project_boundary", "council_mode",
+        "canonical_digest", "start_pack_binding", "intent_lock", "intent_challenge", "project_boundary", "council_mode",
         "required_independence", "role_runs", "permissions", "budget_lock", "capabilities", "sources",
         "evidence", "task", "exports", "worker_response", "objector_response", "alignment_record",
         "proofs", "invalidated_proof_ids", "continuity", "status", "provenance_ledger"
       ],
       "properties": {
-        "schema_version": { "const": "0.2.0" },
+        "schema_version": { "const": "0.3.0" },
         "packet_type": { "const": "council_case" },
         "packet_id": { "$ref": "#/$defs/id" },
         "created_at": { "$ref": "#/$defs/timestamp" },
@@ -842,6 +876,7 @@
         "canonical_digest": { "$ref": "#/$defs/digest" },
         "start_pack_binding": { "$ref": "#/$defs/startPackBinding" },
         "intent_lock": { "$ref": "#/$defs/intentLock" },
+        "intent_challenge": { "$ref": "#/$defs/intentChallengeOrNull" },
         "project_boundary": { "$ref": "#/$defs/projectBoundary" },
         "council_mode": { "enum": ["single_model", "multi_provider"] },
         "required_independence": { "enum": ["separate_context_same_model", "independent_model", "independent_human"] },
@@ -873,11 +908,11 @@
       "type": "object",
       "required": [
         "schema_version", "packet_type", "packet_id", "created_at", "parent", "canonical_digest",
-        "start_pack_binding", "intent_lock", "project_boundary", "role_run", "permissions", "budget_lock",
+        "start_pack_binding", "intent_lock", "intent_challenge", "project_boundary", "role_run", "permissions", "budget_lock",
         "capabilities", "sources", "evidence", "task", "prior_objections", "continuity"
       ],
       "properties": {
-        "schema_version": { "const": "0.2.0" },
+        "schema_version": { "const": "0.3.0" },
         "packet_type": { "const": "worker_packet" },
         "packet_id": { "$ref": "#/$defs/id" },
         "created_at": { "$ref": "#/$defs/timestamp" },
@@ -885,6 +920,7 @@
         "canonical_digest": { "$ref": "#/$defs/digest" },
         "start_pack_binding": { "$ref": "#/$defs/startPackBinding" },
         "intent_lock": { "$ref": "#/$defs/intentLock" },
+        "intent_challenge": { "$ref": "#/$defs/intentChallenge" },
         "project_boundary": { "$ref": "#/$defs/projectBoundary" },
         "role_run": { "$ref": "#/$defs/roleRun" },
         "permissions": { "$ref": "#/$defs/permissions" },
@@ -905,7 +941,7 @@
         "role_run", "attempted_actions", "summary", "artifact_refs", "assumptions", "unknowns", "proofs"
       ],
       "properties": {
-        "schema_version": { "const": "0.2.0" },
+        "schema_version": { "const": "0.3.0" },
         "packet_type": { "const": "worker_response" },
         "packet_id": { "$ref": "#/$defs/id" },
         "created_at": { "$ref": "#/$defs/timestamp" },
@@ -925,11 +961,11 @@
       "type": "object",
       "required": [
         "schema_version", "packet_type", "packet_id", "created_at", "parent", "canonical_digest",
-        "start_pack_binding", "intent_lock", "project_boundary", "role_run", "independence_grade",
+        "start_pack_binding", "intent_lock", "intent_challenge", "project_boundary", "role_run", "independence_grade",
         "permitted_actions", "sources", "evidence", "task", "worker_response_digest", "worker_summary", "proofs"
       ],
       "properties": {
-        "schema_version": { "const": "0.2.0" },
+        "schema_version": { "const": "0.3.0" },
         "packet_type": { "const": "objector_packet" },
         "packet_id": { "$ref": "#/$defs/id" },
         "created_at": { "$ref": "#/$defs/timestamp" },
@@ -937,6 +973,7 @@
         "canonical_digest": { "$ref": "#/$defs/digest" },
         "start_pack_binding": { "$ref": "#/$defs/startPackBinding" },
         "intent_lock": { "$ref": "#/$defs/intentLock" },
+        "intent_challenge": { "$ref": "#/$defs/intentChallenge" },
         "project_boundary": { "$ref": "#/$defs/projectBoundary" },
         "role_run": { "$ref": "#/$defs/roleRun" },
         "independence_grade": { "enum": ["separate_context_same_model", "independent_model", "independent_human"] },
@@ -962,7 +999,7 @@
         "role_run", "independence_grade", "attempted_actions", "findings"
       ],
       "properties": {
-        "schema_version": { "const": "0.2.0" },
+        "schema_version": { "const": "0.3.0" },
         "packet_type": { "const": "objector_response" },
         "packet_id": { "$ref": "#/$defs/id" },
         "created_at": { "$ref": "#/$defs/timestamp" },
@@ -979,11 +1016,11 @@
       "type": "object",
       "required": [
         "schema_version", "packet_type", "packet_id", "created_at", "parent", "canonical_digest",
-        "start_pack_binding", "intent_lock", "project_boundary", "role_run", "sources", "evidence",
+        "start_pack_binding", "intent_lock", "intent_challenge", "project_boundary", "role_run", "sources", "evidence",
         "task", "worker_response_digest", "proofs", "objector_response_digest", "findings"
       ],
       "properties": {
-        "schema_version": { "const": "0.2.0" },
+        "schema_version": { "const": "0.3.0" },
         "packet_type": { "const": "alignment_packet" },
         "packet_id": { "$ref": "#/$defs/id" },
         "created_at": { "$ref": "#/$defs/timestamp" },
@@ -991,6 +1028,7 @@
         "canonical_digest": { "$ref": "#/$defs/digest" },
         "start_pack_binding": { "$ref": "#/$defs/startPackBinding" },
         "intent_lock": { "$ref": "#/$defs/intentLock" },
+        "intent_challenge": { "$ref": "#/$defs/intentChallenge" },
         "project_boundary": { "$ref": "#/$defs/projectBoundary" },
         "role_run": { "$ref": "#/$defs/roleRun" },
         "sources": { "type": "array", "items": { "$ref": "#/$defs/source" } },
@@ -1011,7 +1049,7 @@
         "workflow_gate", "open_finding_ids"
       ],
       "properties": {
-        "schema_version": { "const": "0.2.0" },
+        "schema_version": { "const": "0.3.0" },
         "packet_type": { "const": "alignment_record" },
         "packet_id": { "$ref": "#/$defs/id" },
         "created_at": { "$ref": "#/$defs/timestamp" },
@@ -1044,12 +1082,12 @@
       "type": "object",
       "required": [
         "schema_version", "packet_type", "packet_id", "created_at", "parent", "canonical_digest",
-        "start_pack_binding", "intent_lock", "project_boundary", "case_status", "role_runs", "task",
+        "start_pack_binding", "intent_lock", "intent_challenge", "project_boundary", "case_status", "role_runs", "task",
         "worker_response", "objector_response", "alignment_record", "proofs", "invalidated_proof_ids",
         "continuity", "next_required_role", "provenance_head"
       ],
       "properties": {
-        "schema_version": { "const": "0.2.0" },
+        "schema_version": { "const": "0.3.0" },
         "packet_type": { "const": "resume_packet" },
         "packet_id": { "$ref": "#/$defs/id" },
         "created_at": { "$ref": "#/$defs/timestamp" },
@@ -1057,6 +1095,7 @@
         "canonical_digest": { "$ref": "#/$defs/digest" },
         "start_pack_binding": { "$ref": "#/$defs/startPackBinding" },
         "intent_lock": { "$ref": "#/$defs/intentLock" },
+        "intent_challenge": { "$ref": "#/$defs/intentChallengeOrNull" },
         "project_boundary": { "$ref": "#/$defs/projectBoundary" },
         "case_status": {
           "enum": [
@@ -1072,7 +1111,7 @@
         "proofs": { "type": "array", "items": { "$ref": "#/$defs/proof" } },
         "invalidated_proof_ids": { "$ref": "#/$defs/uniqueStrings" },
         "continuity": { "$ref": "#/$defs/continuity" },
-        "next_required_role": { "enum": ["orchestrator", "worker", "objector", "aligner", "reserve", "human_authority", "none"] },
+        "next_required_role": { "enum": ["orchestrator", "intent_objector", "worker", "objector", "aligner", "reserve", "human_authority", "none"] },
         "provenance_head": { "$ref": "#/$defs/digest" }
       },
       "additionalProperties": false

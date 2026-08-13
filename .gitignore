@@ -11,3 +11,8 @@ dist/
 build/
 *.zip
 *.tar.gz
+
+# Interrupted evaluator and release fixtures
+selective-intelligence-eval-*/
+selective-intelligence-eval-host-*/
+selective-intelligence-release-*/

@@ -11,7 +11,7 @@ This reference converts recurring human corrections into system-level prevention
 - [Gates 15–19: UI, output medium, primary outcome, scope, and QA](#gate-15-ui-theater)
 - [Gates 20–25: Iteration, routes, production truth, assets, public shells, and model portability](#gate-20-iteration-regression)
 - [Gates 26–35: Authority attacks, executable locks, continuity, evidence, release truth, and learning](#gate-26-data-as-instruction)
-- [Gates 36–38: Council collusion, permission laundering, and post-action drift repair](#gate-36-role-theater-and-council-collusion)
+- [Gates 36–44: Council separation, permission, drift repair, intent reconstruction, design intelligence, completion, and adoption](#gate-36-role-theater-and-council-collusion)
 - [Final anti-failure pass](#final-anti-failure-pass)
 
 ## Correction amplification rule
@@ -347,3 +347,64 @@ Any “yes” requires another correction pass or a truthful named blocker.
 **Detection:** No pre-action “What I understand you want” gate; dislike/correction does not interrupt pending mutations; different runtimes change product result while prose looks fine; a strong one-off (e.g., TradeScout profile seeding) is treated as proof of cross-tool reliability.
 
 **Gate:** Catch and correct drift before action via live steering checkpoints and the canonical packet. Correct, retry, or block the runtime. Do not invent halt-all, restart-project, or new-branch policies from the correction. Treat quality-benchmark success as the bar to repeat—not as reliability already achieved.
+
+## Gate 39: Authority-interpretation conflation
+
+**Failure:** The person's instruction is authoritative, so the machine marks its own paraphrase, inferred user, reason, workflow, scope, or success criteria authoritative too.
+
+**Detection:** A machine-generated contract defaults to `locked`; a normalized summary is stored as confirmed user evidence; hashes or role agreement substitute for source bindings; the whole lock is stronger than one of its material fields.
+
+**Gate:** Apply intent-intelligence.md. Preserve the authoritative seed separately, default derived fields to Provisional, challenge competing meanings before material work, and require direct support or explicit acceptance before locking each material field.
+
+## Gate 40: Semantic-correction laundering
+
+**Failure:** A correction becomes additive scope, a new task, a halt/resume process, or a cosmetic wording fix instead of changing the active understanding.
+
+**Detection:** “Both, not either” still produces a choice; “keep working” creates a resume task; a rejected term survives on sibling surfaces; criticism of a landing page produces restyling rather than a different interaction model.
+
+**Gate:** Record the Semantic Delta: rejected, retained, added, narrowed, replaced, reframed, and invalidated. Update the canonical understanding and every dependent active surface before continuing the original objective.
+
+## Gate 41: Interaction-model default
+
+**Failure:** The interface form comes from familiar generation patterns instead of the human job: landing page, dashboard, card wall, sidebar, wizard, or long vertical scroll appears before product reasoning.
+
+**Detection:** Multiple drafts change color and spacing while preserving the same weak page model; the user still needs another tool or phone call; the layout mirrors the database or feature list rather than the decision journey.
+
+**Gate:** Apply product-design-intelligence.md. Build the Experience Model, generate meaningfully different interaction hypotheses, select against user effort and observable utility, and reject generic form defaults without a job-specific reason.
+
+## Gate 42: Interactive theater
+
+**Failure:** Buttons, designers, filters, calculators, handoffs, or save actions are visible but decorative, disconnected, based on fake data, or unable to complete the promised job.
+
+**Detection:** Primary controls have no state transition; pricing or inventory is invented; selections disappear between tools; confirmation ends without a next action; only screenshots or component previews prove the experience.
+
+**Gate:** Make the first delivery an end-to-end usable slice with real or clearly bounded planning data, working destinations, state integrity, recovery, and routed browser proof. Hide unfinished actions or finish them.
+
+## Gate 43: Completion absolutism
+
+**Failure:** A passing subset becomes `done`, `perfect`, `A1`, fully verified, or permanently complete; alternatively, the impossibility of perfection is used to prevent any useful release.
+
+**Detection:** Remaining material weaknesses and untested states disappear from handoff, or optional polish keeps a safe primary value loop blocked indefinitely.
+
+**Gate:** Use release checkpoints. Separate blocking defects, non-blocking weaknesses, untested conditions, and next improvements. Close bounded work when safe and useful while preserving the evidence-backed improvement frontier. Never claim perfection.
+
+## Gate 44: Publication mistaken for adoption
+
+**Failure:** A public repository, `llms.txt`, marketplace listing, stars, downloads, or bot visits are treated as proof that independent people and systems can discover, use, trust, and extend the skill.
+
+**Detection:** Install paths drift, machine entry points disagree, cross-client outcomes are untested, adapters fork behavior, or usage metrics rise without verified task outcomes.
+
+**Gate:** Apply vibe-developer-bridge.md and distribution-and-discoverability.md. Maintain one canonical open source, standard machine entry points, versioned evidence, portable conformance cases, independent mirrors, and privacy-safe outcome measures. Maximize adoption through usefulness and low friction, never coercion or lock-in.
+
+## Extended anti-failure pass
+
+Before the final checkpoint, also ask:
+
+- Did a machine interpretation authorize itself?
+- Did a correction change meaning everywhere it should, or merely add another note?
+- Was the interaction model chosen for the job, or inherited from a template?
+- Can every visible primary control complete a truthful state transition?
+- Are we calling a bounded checkpoint perfect, or blocking useful delivery because perfection is impossible?
+- Can an unfamiliar person or system find the canonical contract, reproduce its evidence, and leave without lock-in?
+
+Any “yes” blocks the corresponding claim and reopens the narrow causal layer.

@@ -22,6 +22,11 @@ SKILL_ROOT = HERE.parents[1]
 SCRIPTS = SKILL_ROOT / "scripts"
 ENGINE = SCRIPTS / "build_engine.py"
 
+# This vertical invokes several Python subprocesses against the canonical skill
+# tree. Verification must leave that tree byte-for-byte clean.
+sys.dont_write_bytecode = True
+os.environ.setdefault("PYTHONDONTWRITEBYTECODE", "1")
+
 
 def now() -> str:
     return datetime.now(UTC).isoformat()

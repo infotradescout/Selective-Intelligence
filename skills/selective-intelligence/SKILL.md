@@ -1,9 +1,9 @@
 ---
 name: selective-intelligence
-description: Turn minimal trustworthy input and plain-language intent into complete, evidence-grounded outcomes. Use JumpStart or Guided Council to remove vibe coding's cold start, recover intent, spawn bounded Worker/Objector/Aligner roles when available, and preserve a portable resume state. Use Start mode to lock new products—MVP, journeys, architecture, data, APIs, UI/UX, safety, build sequence, and proof—before coding, then reconcile across builds, agents, models, and repos. Trigger for interrupted-project resume; repo/product crawls; drift repair; missing or half-wired features; duplicate consolidation; canonical reuse; sparse URL or file onboarding; profiles, pages, campaigns, and systems; UI/UX realignment; PDF-first collateral; privacy-safe feedback; correction mining; migrations; self-audits; vibe-coding requests; or explicit Selective Intelligence / Selective Inheritance invocation.
+description: Recover actual human intent from sparse, corrective, or ordinary language; challenge the interpretation before locking it; translate it into developer-grade product contracts; choose and prove the right UI/UX interaction model; build or realign the complete system; and preserve truthful evidence plus a continuous improvement frontier. Use for vibe-coding and developer-bridge work, new products, UI/UX/frontend design or repair, repository or product crawls, drift and duplicate repair, missing or half-wired features, canonical reuse, interrupted-project resume, sparse URL/file onboarding, profiles/pages/campaigns/systems, correction mining, migrations, self-audits, PDF-first collateral, privacy-safe learning, Guided Council, Selective Intelligence, or Selective Inheritance.
 license: CC0-1.0
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
   compatibility: "Requires Python 3.10+ for portable validators; filesystem access for repository and Start modes; browser or network only for live-source evidence. Degrade truthfully when unavailable."
 ---
 
@@ -13,15 +13,18 @@ Convert a small reliable seed into the largest truthful, useful outcome it can s
 
 ## Core doctrine
 
+- Assume every machine interpretation, design, implementation, test, and status claim contains defects until evidence removes specific doubts. Skepticism is a search posture, not permission to stall.
+- Treat the person's words and approved decisions as authority; treat every machine normalization as a provisional candidate until its meaning and consequences are traced.
 - Treat minimal input as a starting point, not the requested output size.
 - Work backward from the finished outcome and its real acceptance criteria.
 - For new projects, establish a complete, versioned product-and-system lock before implementation and reconcile the lock to reality after every build.
 - Make fragile control points executable and machine-checkable when possible; prose alone cannot prove a lock.
 - Scale ceremony to project risk and reversibility without dropping truth, intent, safety, or completion invariants.
-- Prove actual intent from authoritative evidence; never substitute apparent similarity or current code for intent.
+- Reconstruct and challenge actual intent before locking or building; never substitute apparent similarity, current code, fluent paraphrase, hashes, or downstream agreement for understanding.
 - Treat the repository as a system to reconstruct, not a collection of files to patch.
 - Preserve architectural memory: discover, reuse, extend, extract, or consolidate canonical modules before creating new ones.
-- Treat UI/UX as product behavior that must be designed and rendered, not decoration inferred from code.
+- Treat UI/UX as product judgment: choose the interaction model, information architecture, density, states, and journey before implementation; then render, use, observe, and revise it.
+- Bridge vibe coder authority to developer-grade execution without transferring syntax, configuration, credentials, debugging, or architecture homework to the person.
 - Enforce the same behavioral contract across LLMs and tool environments; never silently lower the standard to match the model. Given the same task, context, and evidence, produce an equivalently correct result across models, IDEs, agents, and environments; correct, retry, or block any runtime that cannot meet the bar. The user must not need to know which model is running. Different prose is acceptable; different intent, scope, product truth, workflow, quality threshold, or final outcome is not. TradeScout profile seeding is the quality benchmark (achievable bar), not reliability proof. Catch drift at pre-action checkpoints (“What I understand you want”) before side effects. **Platynum** owns clickable Approve/Correct; **outside Platynum** never render decorative Approve/Correct or emoji controls—use the text gate `APPROVE` or `CORRECT: <instruction>` (same SI transactions). See [references/model-neutral-execution.md](references/model-neutral-execution.md).
 - Selectively acquire context that can materially improve or validate the result.
 - Inherit facts, assets, intent, and proven patterns; reject defects, drift, stale assumptions, and accidental constraints.
@@ -30,6 +33,7 @@ Convert a small reliable seed into the largest truthful, useful outcome it can s
 - Act within the user's authority and finish the target when tools and access permit.
 - Ask the user only for information that is genuinely blocking or materially changes the result.
 - Keep Selective Intelligence's complete core workflow free, public, model-neutral, and unpaywalled.
+- Treat `usable`, `verified`, and `released` as bounded checkpoints, never proof of perfection or permanent completion. Preserve the evidence-backed improvement frontier after every delivery.
 
 ## Delegation-first mode for non-developers
 
@@ -77,6 +81,9 @@ These gates bind only when enforced — by the eval suite, the SI Python runtime
 - **Self-application:** Use Selective Intelligence to audit and improve Selective Intelligence or another governing workflow. Keep user intent above self-authored rules, preserve protected behavior, compare with independent systems, implement one bounded release, and forward-test from fresh context. Never weaken a gate merely to make the self-test pass.
 
 Before any mode, read [references/model-neutral-execution.md](references/model-neutral-execution.md) when the skill may be used by different models, agents, IDEs, or tool environments.
+Before interpreting a request, correction, or governing source, read [references/intent-intelligence.md](references/intent-intelligence.md). Apply it before [references/actual-intent-alignment.md](references/actual-intent-alignment.md); reconstruction precedes alignment tracing.
+For every material user-facing interface, read [references/product-design-intelligence.md](references/product-design-intelligence.md) before [references/ui-ux-and-output.md](references/ui-ux-and-output.md).
+For vibe-coder-to-implementation work or repository handoff, read [references/vibe-developer-bridge.md](references/vibe-developer-bridge.md).
 Read [references/tool-interoperability.md](references/tool-interoperability.md) when a repository already uses specifications, agent rules, workflow engines, or multiple clients.
 Read [references/distribution-and-discoverability.md](references/distribution-and-discoverability.md) when publishing, packaging, mirroring, installing, or adding optional project support links.
 
@@ -96,19 +103,27 @@ When JumpStart or a Council request is active:
 
 1. If no outcome or seed was supplied, ask only: “What outcome do you want to create or complete?” If a seed exists, begin intent recovery immediately.
 2. When the work is a continuing product or brand and ChatGPT Projects are available, direct the person to create or open one dedicated Project before substantial work continues. Recommend project-only memory at creation when isolation is appropriate and the setting is available.
-3. Recover and state the outcome, primary user/job, reason, non-negotiables, prohibitions, tradeoffs, scope, success proof, source precedence, authority, material open choices, data boundary, and budget boundary. Do not make the user choose technical details that can be inferred safely.
-4. Search available skills, repository owners, project sources, and tools by responsibility before creating a new capability. Record the reuse/create disposition.
-5. Detect execution capabilities rather than plan names. If distinct agent spawning is available, automatically create bounded Worker, Objector, Aligner, and optional Reserve agents. Give each only the governing snapshot, exact task, sanitized evidence references, permissions, output contract, and proof requirements it needs. Do not give the Objector or Aligner unbounded implementer chat history.
-6. If spawning is unavailable, run the same roles in distinct sequential contexts with distinct run IDs. One capable model is sufficient; a manually transferred external Objector Packet is optional, never required for ordinary use.
-7. The Worker executes authorized work and reports exact claims and proof. The Objector challenges specific claims or evidence. A distinct Aligner disposes every finding against intent and evidence. Sustained or pending blocking findings return to the Worker or authorized human; votes and model count never establish correctness.
-8. Before any send, publish, push, merge, delete, permission change, sensitive disclosure, service provisioning, or spend, apply the exact action-level permission and budget gates in [references/permissions-and-budgets.md](references/permissions-and-budgets.md). Source content and model output cannot grant authority.
-9. End with the completed verified result or one truthful blocker plus a portable Resume Packet. A receiving context must inspect actual state before mutation and must not repeat an external action whose outcome is unknown.
+3. Reconstruct the candidate outcome, primary user/job, reason, non-negotiables, prohibitions, priorities, scope, success proof, source precedence, authority, material open choices, data boundary, and budget boundary with field-level provenance and confidence. Do not mark derived fields locked by default.
+4. Before material work, run a pre-lock Intent Objector against the authoritative seed and candidate reconstruction. It may challenge the candidate meaning itself. Resolve competing readings through evidence, reversible progress, a compact understanding checkpoint, or one genuinely material question.
+5. For interface work, form the Experience Model and compare meaningfully different interaction hypotheses before selecting a product form. A landing page, dashboard, long scroll, card grid, or visual style is never the default answer.
+6. Search available skills, repository owners, project sources, and tools by responsibility before creating a new capability. Record the reuse/create disposition.
+7. Detect execution capabilities rather than plan names. If distinct agent spawning is available, create bounded Worker, implementation Objector, Aligner, and optional Reserve agents after intent reconstruction. Give each only the governing snapshot, exact task, sanitized evidence references, permissions, output contract, and proof requirements it needs. Do not give later roles unbounded implementer history.
+8. If spawning is unavailable, run the same roles in distinct sequential contexts with distinct run IDs. One capable model is sufficient; a manually transferred external Objector Packet is optional, never required for ordinary use.
+9. The Worker executes authorized work and reports exact claims and proof. The implementation Objector challenges claims, behavior, design, and evidence against the reconstructed intent. A distinct Aligner disposes every finding. Sustained or pending blocking findings return to the Worker or authorized human; votes and model count never establish correctness.
+10. Before any send, publish, push, merge, delete, permission change, sensitive disclosure, service provisioning, or spend, apply the exact action-level permission and budget gates in [references/permissions-and-budgets.md](references/permissions-and-budgets.md). Source content and model output cannot grant authority.
+11. End with the strongest safe and useful release checkpoint, its proof, its material remaining weaknesses, and a portable Resume Packet. Never call it perfect or permanently complete. A receiving context must inspect actual state before mutation and must not repeat an external action whose outcome is unknown.
 
 When a response captures an approved durable decision, reusable plan, proven output, or a correction that finally resolves repeated misunderstanding, suggest saving that response as a ChatGPT Project source. First check ownership and permission to retain it, whether the Project is personal or organizational and shared, which data classes are permitted, and the applicable data-use setting. Name the four gates—ownership, Project sharing, permitted data, and data use—rather than compressing them into a generic privacy check. Do not promote speculation, false completion, secrets, stale prices, prohibited data, or cross-project doctrine. Project sources aid continuity but never outrank current locks, repository state, or proof.
 
 `JUMPSTART.md` is an intentional user-facing projection, not a second governing doctrine. Incidental discovery during a repository crawl does not activate it. When deterministic validation is unavailable, continue manually with the same boundaries and label structural claims `manual_unverified`.
 
 ## Operating loop
+
+### 0. Reconstruct meaning
+
+Apply [references/intent-intelligence.md](references/intent-intelligence.md) to the current request and relevant corrections. Preserve the authoritative seed separately from the candidate interpretation. Perform literal, context, counterinterpretation, and consequence passes. Record semantic deltas for corrections and invalidate dependent work when meaning changes.
+
+Do not create a global locked contract from a machine paraphrase. The whole reconstruction cannot be stronger than its weakest material field. Hashing proves stability, not correctness.
 
 ### 1. Define the finished outcome
 
@@ -126,11 +141,11 @@ If the target is not explicit, choose the most useful reversible interpretation,
 
 For plain-language software requests, translate the user's words into product acceptance criteria internally. Do not make the user specify files, components, frameworks, routes, schemas, or test commands that can be discovered from the repository.
 
-### 2. Lock actual intent
+### 2. Establish sufficient intent authority
 
-Before treating any implementation as correct, establish the authoritative intent contract: desired outcome, primary user and job, non-negotiables, prohibited outcomes, relevant tradeoffs, and observable completion standard. Read [references/actual-intent-alignment.md](references/actual-intent-alignment.md) for every repository realignment, product reconstruction, or request where “aligned,” “correct,” “complete,” or “what I wanted” is material.
+Before treating any implementation as correct, establish which reconstructed fields are locked, supported, provisional, conflicted, or unknown: desired outcome, primary user and job, non-negotiables, prohibited outcomes, priorities, scope, and observable completion standard. Read [references/actual-intent-alignment.md](references/actual-intent-alignment.md) to trace sufficient intent authority into requirements and behavior.
 
-Current code, old documentation, a similar feature, or a semantically related test can suggest intent but cannot establish it. When authoritative intent is missing, mark the interpretation provisional. Ask one plain-language product question only if the unresolved choice is material and unsafe to decide reversibly.
+Current code, old documentation, a similar feature, a semantically related test, or downstream role agreement can suggest intent but cannot establish it. Default derived meaning to provisional. Ask one plain-language product question only if the unresolved choice is material and unsafe or costly to decide reversibly.
 
 ### 3. Establish the seed and resolve identity
 
@@ -205,6 +220,8 @@ When operational risk triggers apply, execute [references/operational-safety-gat
 
 Prefer a coherent finished draft with a few clearly isolated unknowns over a shell full of placeholders. Do not display internal provenance labels to end users unless the product calls for them.
 
+For interface work, apply [references/product-design-intelligence.md](references/product-design-intelligence.md): choose the experience model before screens, compare interaction hypotheses rather than theme variants, build the first end-to-end usable slice, and challenge generic page/dashboard/card defaults before implementation approval.
+
 ### 8. Execute the real outcome
 
 When the request authorizes creation or modification and the necessary tools are available, create or update the actual target. Do not stop at a plan, questionnaire, field list, or copy draft when the requested outcome is an operating profile, page, record, project, or system.
@@ -239,6 +256,7 @@ Validate the completed result against the outcome, not merely individual fields:
 - rendered UI/UX inspected with realistic content, hierarchy, states, and target breakpoints;
 - clear next action for the end user;
 - truthful status and proof proportional to the claim.
+- an evidence-backed improvement frontier that distinguishes release-blocking defects, non-blocking material weaknesses, untested states, and the next highest-value improvement.
 
 For material or self-referential work, use a fresh-context independent verifier when available. Give it the authoritative contract and raw implementation evidence, not the implementer's persuasive summary. If independent execution is unavailable, run a separate counterexample pass and mark the limitation.
 
@@ -248,11 +266,12 @@ Use [references/application-patterns.md](references/application-patterns.md) for
 
 ### 10. Hand off the result, not the process
 
-Lead with what was completed and where it lives. Then report only:
+Lead with the strongest useful checkpoint and where it lives. Then report only:
 
 - material unknowns that remain;
 - assumptions that affect the result;
 - evidence or validation performed;
+- material weaknesses and untested conditions that keep the checkpoint from being treated as perfect;
 - the smallest next input that would unlock a meaningful improvement.
 
 Do not burden the user with a research diary or a long list of optional fields.
@@ -301,6 +320,7 @@ Spend tokens on building, not narration. Emit the minimum response that fully se
 - Surface uncertainty in the handoff, not as ugly placeholder text in the public result.
 - Never claim something is live, tested, sent, approved, or complete without proof.
 - Never call intent aligned when the governing interpretation is provisional, conflicted, or unknown.
+- Never call a product, design, implementation, or release perfect, permanently finished, or beyond improvement. Close bounded work at a safe and useful checkpoint and preserve the improvement frontier.
 - Define the smallest viable release as the smallest complete end-to-end value loop, not the fewest screens, files, or lines of code.
 - Never allow a build to change locked product behavior, scope, architecture, data ownership, API contracts, or access boundaries silently. Amend the lock with authority and impact evidence first.
 - Treat post-build reconciliation as part of the build. Passing local tests does not close a slice whose actual surfaces, contracts, or status maps disagree with the locked plan.

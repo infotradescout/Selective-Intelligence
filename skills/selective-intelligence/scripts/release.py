@@ -11,12 +11,20 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 import zipfile
 from pathlib import Path
 from urllib.parse import urlparse
+
+# Release validation must not mutate the artifact it is validating.
+sys.dont_write_bytecode = True
+os.environ.setdefault("PYTHONDONTWRITEBYTECODE", "1")
+import behavior_eval
 
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
@@ -30,7 +38,9 @@ ALLOWED_TOP_LEVEL_FILES = {
     "CHANGELOG.md",
     "README.md",
 }
-ALLOWED_TOP_LEVEL_DIRS = {"agents", "evals", "metadata", "references", "schemas", "scripts", "subskills"}
+ALLOWED_TOP_LEVEL_DIRS = {
+    "agents", "assets", "evals", "lanes", "metadata", "references", "schemas", "scripts", "subskills", "tests"
+}
 FORBIDDEN_PARTS = {".git", "__pycache__", ".pytest_cache", ".mypy_cache", "dist"}
 FORBIDDEN_NAMES = {"events.jsonl", "lock.json", ".env", ".env.local", ".env.production"}
 SECRET_PATTERNS = (
@@ -274,35 +284,49 @@ def executable_eval_outcome(root: Path) -> tuple[list[str], list[str] | None]:
     )
     errors: list[str] = []
     executed_controls: list[str] | None = None
-    for command, field, minimum in commands:
-        try:
-            result = subprocess.run(command, cwd=root, check=False, text=True, capture_output=True, timeout=60)
-        except (OSError, subprocess.TimeoutExpired) as exc:
-            errors.append(f"executable eval failed to run: {exc}")
-            continue
-        if result.returncode != 0:
-            errors.append(f"executable eval returned {result.returncode}: {Path(command[1]).name} {' '.join(command[2:])}")
-            continue
-        try:
-            payload = json.loads(result.stdout)
-        except json.JSONDecodeError:
-            errors.append("executable eval did not return machine-readable JSON")
-            continue
-        if field == "valid" and payload.get(field) is not minimum:
-            errors.append("eval fixture doctor did not report valid=true")
-        elif field == "count" and (not isinstance(payload.get(field), int) or payload[field] < minimum):
-            errors.append(f"control eval reported fewer than {minimum} passing controls")
-        elif field == "count":
-            passed = payload.get("passed")
-            if (
-                not isinstance(passed, list)
-                or any(not isinstance(item, str) or not item for item in passed)
-                or len(passed) != payload.get("count")
-                or len(set(passed)) != len(passed)
-            ):
-                errors.append("control eval returned an inconsistent passing-control list")
-            else:
-                executed_controls = passed
+    eval_temp_parent = tempfile.mkdtemp(prefix="selective-intelligence-eval-host-")
+    child_env = os.environ.copy()
+    child_env["SI_EVAL_TEMP_PARENT"] = eval_temp_parent
+    try:
+        for command, field, minimum in commands:
+            try:
+                result = subprocess.run(
+                    command,
+                    cwd=root,
+                    check=False,
+                    text=True,
+                    capture_output=True,
+                    timeout=60,
+                    env=child_env,
+                )
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                errors.append(f"executable eval failed to run: {exc}")
+                continue
+            if result.returncode != 0:
+                errors.append(f"executable eval returned {result.returncode}: {Path(command[1]).name} {' '.join(command[2:])}")
+                continue
+            try:
+                payload = json.loads(result.stdout)
+            except json.JSONDecodeError:
+                errors.append("executable eval did not return machine-readable JSON")
+                continue
+            if field == "valid" and payload.get(field) is not minimum:
+                errors.append("eval fixture doctor did not report valid=true")
+            elif field == "count" and (not isinstance(payload.get(field), int) or payload[field] < minimum):
+                errors.append(f"control eval reported fewer than {minimum} passing controls")
+            elif field == "count":
+                passed = payload.get("passed")
+                if (
+                    not isinstance(passed, list)
+                    or any(not isinstance(item, str) or not item for item in passed)
+                    or len(passed) != payload.get("count")
+                    or len(set(passed)) != len(passed)
+                ):
+                    errors.append("control eval returned an inconsistent passing-control list")
+                else:
+                    executed_controls = passed
+    finally:
+        shutil.rmtree(eval_temp_parent, ignore_errors=True)
     return errors, executed_controls
 
 
@@ -532,6 +556,45 @@ def model_run_artifact_errors(
     return errors
 
 
+def uses_evidence_bearing_behavior_schema(version: str | None) -> bool:
+    """Use the stronger behavior artifact contract for 0.3.0 and later."""
+    if not isinstance(version, str):
+        return False
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)(?:[-+].*)?", version)
+    if match is None:
+        return False
+    return tuple(int(part) for part in match.groups()) >= (0, 3, 0)
+
+
+def behavior_model_run_artifact_errors(
+    path: Path,
+    version: str | None,
+    model_client: str,
+    observed_at: object,
+) -> list[str]:
+    """Validate a 0.3.0+ artifact against the hidden-oracle behavior suite."""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return [f"behavior model run artifact is not valid JSON: {exc}"]
+    if not isinstance(payload, dict):
+        return ["behavior model run artifact must be an object"]
+    errors: list[str] = []
+    if payload.get("version") != version:
+        errors.append("behavior model run version does not match the release")
+    if payload.get("model_client") != model_client:
+        errors.append("behavior model run model_client does not match its evidence record")
+    if payload.get("observed_at") != observed_at:
+        errors.append("behavior model run observed_at does not match its evidence record")
+    if payload.get("result") != "pass":
+        errors.append("behavior model run artifact must report result=pass")
+    _, cases, case_errors = behavior_eval.load_cases()
+    errors.extend(f"behavior suite: {error}" for error in case_errors)
+    if not case_errors:
+        errors.extend(behavior_eval.validate_run(payload, cases))
+    return errors
+
+
 def result_record_errors(
     root: Path,
     version: str | None,
@@ -594,8 +657,11 @@ def result_record_errors(
     if not isinstance(model_behavior, dict) or model_behavior.get("result") not in {"pass", "not_run", "fail"}:
         errors.append("current eval result must explicitly classify model_behavior_evaluation")
     elif model_behavior.get("result") == "pass":
-        expected_case_ids, case_id_errors = current_eval_case_ids(root)
-        errors.extend(case_id_errors)
+        evidence_bearing_behavior = uses_evidence_bearing_behavior_schema(version)
+        expected_case_ids: set[str] | None = None
+        if not evidence_bearing_behavior:
+            expected_case_ids, case_id_errors = current_eval_case_ids(root)
+            errors.extend(case_id_errors)
         evidence = model_behavior.get("evidence")
         if not isinstance(evidence, list) or not evidence:
             errors.append("passing model behavior evaluation requires reproducible evidence records")
@@ -650,6 +716,14 @@ def result_record_errors(
                     errors.append(f"model behavior evidence {index} artifact is absent from the release manifest")
                 elif sha256(artifact_path) != item["sha256"]:
                     errors.append(f"model behavior evidence {index} artifact digest does not match")
+                elif evidence_bearing_behavior:
+                    for artifact_error in behavior_model_run_artifact_errors(
+                        artifact_path,
+                        version,
+                        item["model_client"],
+                        item.get("observed_at"),
+                    ):
+                        errors.append(f"model behavior evidence {index}: {artifact_error}")
                 elif expected_case_ids is not None:
                     for artifact_error in model_run_artifact_errors(
                         artifact_path,

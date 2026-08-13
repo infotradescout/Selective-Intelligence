@@ -1,8 +1,8 @@
 # Selective Intelligence
 
-Selective Intelligence—formerly Selective Inheritance—is a free, portable Agent Skill that turns plain-language intent and minimal trustworthy input into complete, evidence-grounded outcomes. It helps vibe coders plan new products, audit codebases, repair drift, find missing or unrouted features, reuse canonical architecture, verify UI/UX, and stop AI from calling partial work complete.
+Selective Intelligence—formerly Selective Inheritance—is a free, portable Agent Skill that bridges plain-language product ownership and developer-grade execution. It reconstructs and challenges human intent before locking it, chooses and proves job-specific UI/UX interaction models, audits and realigns repositories, builds complete human value loops, and treats every release as an evidence-backed checkpoint with a visible improvement frontier—not a fictional state of perfection.
 
-Published by [Platynum Standard](https://github.com/Platynum-Standard). The canonical source is [Platynum-Standard/Selective-Intelligence](https://github.com/Platynum-Standard/Selective-Intelligence).
+Published by [Platynum Standard](https://github.com/Platynum-Standard). The canonical source is [mrplatypus4777/Selective-Intelligence](https://github.com/mrplatypus4777/Selective-Intelligence).
 
 > **📱 Mobile IDE on the way** — a self-hosted, mobile-first code editor is in build: clone it, deploy it, open the link on your phone, and edit from anywhere.
 
@@ -25,6 +25,8 @@ Project sources are continuity aids, not proof: current locks, repository state,
 
 Use it when you want an agent to:
 
+- understand terse, corrective, or evolving intent without turning criticism into a new task or invented halt;
+- bridge a non-developer's product direction into exact journeys, design, architecture, implementation, operations, and proof without technical homework;
 - match effort to the stakes: build a throwaway, local prototype immediately with no ceremony, then graduate to full locking, review, and proof once the work gains persistence, real users, money, or a deployment;
 - define a new product, smallest complete MVP, architecture, data, APIs, UI/UX, build order, and proof before coding;
 - resume a project across models, agents, branches, or interrupted sessions without losing the governing truth;
@@ -32,7 +34,15 @@ Use it when you want an agent to:
 - consolidate duplicate modules and place new work under clear canonical ownership;
 - turn a URL or sparse brief into a complete profile, campaign, artifact, or system without inventing facts;
 - generate precision flyers and text-bearing collateral as render-verified PDFs;
-- learn from corrections and outcome signals without uploading prompts or personal data.
+- replace generic landing pages, long scrolls, card walls, and dashboard defaults with a tested interaction model that fits the real job;
+- learn from corrections and outcome signals without uploading prompts or personal data;
+- preserve what remains weak or untested after a useful release instead of calling the job perfect or permanently finished.
+
+## Open forever
+
+The complete core remains public-domain-equivalent under CC0: skill instructions, behavior cases, validators, schemas, references, release archives, and updates. It requires no vendor, paid account, telemetry, license key, or private compatibility layer. Adapters may expose the canonical source in different clients but may not create a gated behavioral edition.
+
+Human and machine entry points are kept at the repository root: this README, [`llms.txt`](llms.txt), [`CITATION.cff`](CITATION.cff), [`CONTRIBUTING.md`](CONTRIBUTING.md), and the canonical [`SKILL.md`](skills/selective-intelligence/SKILL.md). These make the project easier to navigate and mirror; they are not a promise of indexing, ranking, or forced adoption.
 
 ## Use in ChatGPT
 
@@ -75,13 +85,13 @@ This keeps context from drifting when users are spamming requests.
 
 ## Portable installation
 
-The canonical portable source is the complete [`skills/selective-intelligence/`](https://github.com/Platynum-Standard/Selective-Intelligence/tree/main/skills/selective-intelligence) directory. Keep that directory intact: `SKILL.md`, `agents/`, `references/`, `schemas/`, `scripts/`, `metadata/`, `evals/`, and `subskills/` form one skill.
+The canonical portable source is the complete [`skills/selective-intelligence/`](https://github.com/mrplatypus4777/Selective-Intelligence/tree/main/skills/selective-intelligence) directory. Keep that directory intact: `SKILL.md`, `agents/`, `references/`, `schemas/`, `scripts/`, `metadata/`, `evals/`, `lanes/`, `subskills/`, and `tests/` form one skill.
 
 With GitHub CLI 2.90.0 or newer, preview and install it with:
 
 ```bash
-gh skill preview Platynum-Standard/Selective-Intelligence selective-intelligence
-gh skill install Platynum-Standard/Selective-Intelligence selective-intelligence
+gh skill preview mrplatypus4777/Selective-Intelligence selective-intelligence
+gh skill install mrplatypus4777/Selective-Intelligence selective-intelligence
 ```
 
 For a manual project-level installation, copy the canonical directory intact to `.agents/skills/selective-intelligence/`. A versioned release archive, once published, will extract as one complete `selective-intelligence/` directory.
@@ -100,13 +110,13 @@ Use the canonical repository or versioned release archive as the source for ever
 
 Filesystem access is required for repository and Start modes. Python 3.10 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
 
-The current deterministic release-candidate evidence is recorded in [evals/results-0.2.0.json](skills/selective-intelligence/evals/results-0.2.0.json). The prompt cases in `evals/evals.json` are declarations until a reproducible model/client runner records evidence. Public release remains blocked until that behavioral evaluation exists. The contract is model-neutral; equivalence across untested models is not claimed as proof.
+The current deterministic release-candidate evidence is recorded in [evals/results-0.3.0.json](skills/selective-intelligence/evals/results-0.3.0.json). The eight hidden-oracle behavior cases require captured outputs, repeated fresh contexts, and independent per-invariant grading; six bounded smoke observations across three cases are recorded but do not constitute a full pass. The broader prompt cases in `evals/evals.json` also remain declarations until a reproducible model/client runner records evidence. Cross-client equivalence is not claimed without execution proof.
 
 ### Update and uninstall
 
 To update after publication, run `gh skill update selective-intelligence`, or obtain a newer versioned archive or canonical repository revision, verify its release checksum, and replace only the existing `selective-intelligence` skill directory at the destination you chose. Preserve any project-created `.selective-intelligence/` Start Packs and feedback stores; they are project data, not installed skill files.
 
-Version 0.2.0 adds Council protocol 0.2.0 while preserving the Start Pack schema and validator at component version 0.1.1; existing 0.1.1 packs do not need a semantic migration merely to use the new skill. Version 0.1.1 deliberately does not reinterpret a Start Pack sealed by validator 0.1.0. Keep the 0.1.0 validator with an existing pack until its prior authority, amendment approvals, independent-review record, and seal-history snapshots have been explicitly migrated and resealed under 0.1.1. Do not change only `validator_version` and treat the result as migrated.
+Version 0.3.0 adds Intent Intelligence, Product Design Intelligence, the vibe-coder–developer bridge, provisional-by-default Council intake, pre-lock intent challenge, evidence-bearing behavior evaluation, and continuous-improvement release checkpoints. It preserves the Start Pack schema and validator at component version 0.1.1 and advances the Council packet protocol to 0.3.0. Existing packs do not gain semantic proof merely by changing a version field; reconstruct and challenge material intent before the next build lock.
 
 To uninstall, remove only the installed `selective-intelligence` skill directory from that documented destination. Do not delete a parent skills directory or any project `.selective-intelligence/` directory.
 

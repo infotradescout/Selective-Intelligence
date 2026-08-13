@@ -12,6 +12,8 @@ TEST_DIR = Path(__file__).resolve().parent
 SKILL_ROOT = TEST_DIR.parent
 SCRIPTS = SKILL_ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
+sys.dont_write_bytecode = True
+os.environ.setdefault("PYTHONDONTWRITEBYTECODE", "1")
 
 import capabilities as CAP
 import checkpoint as CP

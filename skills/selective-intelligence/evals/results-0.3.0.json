@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "skill": "selective-intelligence",
+  "version": "0.3.0",
+  "observed_at": "2026-08-13T04:09:09Z",
+  "status": "local_release_candidate_pass",
+  "deterministic_controls": {
+    "result": "pass",
+    "passed": 79,
+    "failed": 0,
+    "executed_controls_sha256": "f4fc03f1f733f7c0651feaf78161b94e2831528a90f7d4aa2dad802e0bc75d8c",
+    "scope": "Release-doctor-safe structural, state, authority, evidence, Council, intent-intake, and behavior-artifact controls executed with --skip-release to avoid recursive doctor invocation.",
+    "coverage": [
+      "All preserved Start Pack structure, transition, authority, review, evidence, amendment, invalidation, and release controls",
+      "All preserved privacy-safe feedback, identifier, symlink, and parent-permission controls",
+      "All preserved Council packet, permission, budget, binding, alignment, correction, resume, and provenance controls",
+      "Candidate intent defaults to provisional draft, cannot authorize a locked interpretation, and remains blocked from Worker export until a distinct challenge record binds a competing interpretation, consequence difference, evidence, resolution, and exact candidate digest",
+      "Eight synthetic intent, product-design, bridge, and completion behavior cases validate with hidden oracle separation",
+      "Behavior evidence requires captured outputs, output digests, repeated contexts, distinct graders, per-invariant evidence, and a retained improvement frontier"
+    ]
+  },
+  "behavior_suite": {
+    "artifact": "evals/behavior-cases.json",
+    "case_count": 8,
+    "minimum_total_fresh_runs": 16,
+    "sha256": "50ecb22688be279da11c3660e25f7092cde58111529cb5f4f1881ccb620ef3ec",
+    "canonical_suite_digest_sha256": "6e8032ad84ad807c557cb81c1bd4fcb453b91c598e3d0f2c023814be6ce4f4c7",
+    "status": "declared_not_fully_executed"
+  },
+  "model_behavior_evaluation": {
+    "result": "not_run",
+    "reason": "The complete eight-case suite requires at least two fresh Worker runs per case plus distinct per-invariant grading. Structural controls and any bounded smoke observations do not satisfy that release claim.",
+    "evidence": []
+  },
+  "partial_smoke_observations": {
+    "status": "three_cases_two_fresh_repetitions_independently_graded",
+    "observed": [
+      {
+        "case_id": "intent-domain-term-replacement",
+        "repetitions": 2,
+        "grader_verdicts": ["pass", "pass"],
+        "improvement_frontier": "One response implied later implementation authority even though the owner had already authorized fixing the whole experience; future repository trials must proceed through repair without manufacturing a second approval."
+      },
+      {
+        "case_id": "design-integrated-supply-workspace",
+        "repetitions": 2,
+        "grader_verdicts": ["pass", "pass"],
+        "improvement_frontier": "Both responses over-inferred a seller role; one combined two data dependencies into an early question instead of continuing reversible design with representative fixtures."
+      },
+      {
+        "case_id": "bridge-no-technical-homework",
+        "repetitions": 2,
+        "grader_verdicts": ["pass", "pass"],
+        "improvement_frontier": "The trial workspace had no application repository, so direct developer-grade implementation and routed browser proof remain unobserved."
+      }
+    ],
+    "limitations": "These six bounded observations cover only three of eight cases, do not retain the complete captured-output artifact required by scripts/behavior_eval.py, and cannot be promoted into a full model behavior pass."
+  },
+  "deterministic_environment": {
+    "runtime": "Python 3.12",
+    "minimum_supported_runtime": "Python 3.10",
+    "network_required": false,
+    "scope": "dependency-free local validators, behavior evidence structure, Council lifecycle, and reproducible packaging"
+  },
+  "publication_inputs_remaining": [
+    "two or more fresh Worker runs for every behavior case",
+    "distinct evidence-bearing grading for every invariant",
+    "complete model/client behavior artifact accepted by scripts/behavior_eval.py",
+    "cross-client evidence before claiming equivalent behavior outside the tested client"
+  ],
+  "optional_input_remaining": "owner-supplied verified support URL"
+}

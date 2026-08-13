@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import atexit
 import argparse
 import hashlib
 import json
@@ -16,9 +17,24 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+# Evaluation must not mutate the skill tree it is inspecting, including through
+# child Python processes that would otherwise create ``__pycache__`` entries.
+sys.dont_write_bytecode = True
+os.environ.setdefault("PYTHONDONTWRITEBYTECODE", "1")
+
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 EVALS_PATH = SKILL_ROOT / "evals" / "evals.json"
+BEHAVIOR_SCRIPT = SKILL_ROOT / "scripts" / "behavior_eval.py"
+
+# Keep deterministic fixture work outside the installed skill even when the
+# host sets its process working directory as the system temporary root.
+TEMP_PARENT = Path(os.environ.get("SI_EVAL_TEMP_PARENT", str(SKILL_ROOT.parent))).resolve()
+
+
+def cleanup_temp_tree(path: str) -> None:
+    """Remove only a temporary tree created by this evaluator."""
+    shutil.rmtree(path, ignore_errors=True)
 
 
 def read_cases() -> tuple[list[dict[str, Any]], list[str]]:
@@ -150,7 +166,8 @@ def control_tests(include_release: bool = True) -> list[str]:
     passed: list[str] = []
     start_pack = str(SKILL_ROOT / "scripts" / "start_pack.py")
     feedback = str(SKILL_ROOT / "scripts" / "feedback.py")
-    with tempfile.TemporaryDirectory(prefix="selective-intelligence-eval-") as temporary:
+    with tempfile.TemporaryDirectory(prefix="selective-intelligence-eval-", dir=TEMP_PARENT) as temporary:
+        atexit.register(cleanup_temp_tree, temporary)
         root = Path(temporary)
         run(
             [
@@ -738,7 +755,9 @@ def control_tests(include_release: bool = True) -> list[str]:
         if not json.loads(release.stdout).get("ready"):
             raise AssertionError("local release doctor did not pass")
         passed.append("local portable release gates pass")
-        with tempfile.TemporaryDirectory(prefix="selective-intelligence-release-a-") as first_dir, tempfile.TemporaryDirectory(prefix="selective-intelligence-release-b-") as second_dir:
+        with tempfile.TemporaryDirectory(prefix="selective-intelligence-release-a-", dir=TEMP_PARENT) as first_dir, tempfile.TemporaryDirectory(prefix="selective-intelligence-release-b-", dir=TEMP_PARENT) as second_dir:
+            atexit.register(cleanup_temp_tree, first_dir)
+            atexit.register(cleanup_temp_tree, second_dir)
             release_script = str(SKILL_ROOT / "scripts" / "release.py")
             for output in (first_dir, second_dir):
                 run([sys.executable, release_script, "package", "--output-dir", output], {0})
@@ -757,8 +776,11 @@ def control_tests(include_release: bool = True) -> list[str]:
             if any("__pycache__" in name or name.endswith("events.jsonl") or name.endswith("/lock.json") for name in names):
                 raise AssertionError("release archive leaked generated, feedback, or project lock data")
             passed.append("release archive is reproducible, complete, and privacy-safe")
+        cleanup_temp_tree(first_dir)
+        cleanup_temp_tree(second_dir)
 
-        with tempfile.TemporaryDirectory(prefix="selective-intelligence-release-redteam-") as redteam_dir:
+        with tempfile.TemporaryDirectory(prefix="selective-intelligence-release-redteam-", dir=TEMP_PARENT) as redteam_dir:
+            atexit.register(cleanup_temp_tree, redteam_dir)
             copied = Path(redteam_dir) / "skill"
             shutil.copytree(SKILL_ROOT, copied, symlinks=True)
             release_script = str(copied / "scripts" / "release.py")
@@ -881,9 +903,15 @@ def control_tests(include_release: bool = True) -> list[str]:
             stale_count_check = run([sys.executable, release_script, "doctor", "--json"], {1})
             stale_count_errors = json.loads(stale_count_check.stdout).get("errors", [])
             if not any("pass count does not match" in error for error in stale_count_errors):
-                raise AssertionError("release doctor trusted a stale deterministic control count")
+                raise AssertionError(
+                    "release doctor trusted a stale deterministic control count; "
+                    f"observed errors: {stale_count_errors}"
+                )
             if not any("control identity does not match" in error for error in stale_count_errors):
-                raise AssertionError("release doctor trusted stale deterministic control identities")
+                raise AssertionError(
+                    "release doctor trusted stale deterministic control identities; "
+                    f"observed errors: {stale_count_errors}"
+                )
             result_path.write_text(result_baseline, encoding="utf-8")
 
             historical_path = copied / "evals" / "results-0.1.0.json"
@@ -949,14 +977,24 @@ def control_tests(include_release: bool = True) -> list[str]:
             model_runs = copied / "evals" / "model-runs"
             model_runs.mkdir()
             forged_artifact = model_runs / "forged.json"
+            behavior_suite = json.loads((copied / "evals" / "behavior-cases.json").read_text(encoding="utf-8"))
+            behavior_suite_digest = hashlib.sha256(
+                json.dumps(
+                    behavior_suite,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    ensure_ascii=False,
+                ).encode("utf-8")
+            ).hexdigest()
             forged_artifact.write_text(
                 json.dumps(
                     {
-                        "schema_version": 1,
+                        "schema_version": 2,
                         "skill": "selective-intelligence",
                         "version": "9.9.9",
                         "model_client": "Unverified fixture client",
                         "observed_at": "2026-07-22T19:45:00Z",
+                        "suite_digest": behavior_suite_digest,
                         "result": "pass",
                         "cases": [],
                     },
@@ -987,19 +1025,41 @@ def control_tests(include_release: bool = True) -> list[str]:
             result_path.write_text(json.dumps(forged_internal, indent=2) + "\n", encoding="utf-8")
             internal_public = run([sys.executable, release_script, "doctor", "--public", "--json"], {1})
             internal_errors = json.loads(internal_public.stdout).get("errors", [])
-            if not any("inconsistent skill/version identity" in error for error in internal_errors):
+            if not any("behavior model run version does not match" in error for error in internal_errors):
                 raise AssertionError("public release trusted model evidence with the wrong internal identity")
-            if not any("missing declared cases" in error for error in internal_errors):
+            if not any("missing declared behavior cases" in error for error in internal_errors):
                 raise AssertionError("public release trusted model evidence without per-case passes")
             result_path.write_text(result_baseline, encoding="utf-8")
             metadata_path.write_text(metadata_baseline, encoding="utf-8")
             readme_path.write_text(readme_baseline, encoding="utf-8")
             passed.append("public release parses model evidence identity and per-case results")
+        cleanup_temp_tree(redteam_dir)
+    behavior_doctor = run([sys.executable, str(BEHAVIOR_SCRIPT), "doctor"], {0})
+    behavior_payload = json.loads(behavior_doctor.stdout)
+    if behavior_payload.get("execution_status") != "behavior_cases_declared_not_executed":
+        raise AssertionError("behavior doctor blurred declarations with executed behavior")
+    passed.append("intent and product-design behavior cases validate without claiming execution")
+    behavior_self_test = run([sys.executable, str(BEHAVIOR_SCRIPT), "self-test"], {0})
+    behavior_test_payload = json.loads(behavior_self_test.stdout)
+    if not behavior_test_payload.get("passed") or behavior_test_payload.get("hidden_oracle_exposed"):
+        raise AssertionError("behavior evidence self-test failed or exposed the hidden oracle")
+    passed.append("behavior evidence requires captured outputs, digests, independent grading, and improvement frontiers")
+    # Some managed runtimes defer TemporaryDirectory finalization even after its
+    # context exits. Never leave evaluation fixtures beside the installed skill.
+    if root.exists():
+        shutil.rmtree(root)
     return passed
 
 
 def command_doctor(args: argparse.Namespace) -> int:
     cases, errors = read_cases()
+    behavior_result = run([sys.executable, str(BEHAVIOR_SCRIPT), "doctor"], {0, 1})
+    try:
+        behavior = json.loads(behavior_result.stdout)
+    except json.JSONDecodeError:
+        behavior = {"valid": False, "errors": ["behavior doctor returned invalid JSON"]}
+    if not behavior.get("valid"):
+        errors.extend(f"behavior: {item}" for item in behavior.get("errors", ["invalid behavior suite"]))
     counts: dict[str, int] = {}
     for case in cases:
         counts[case["kind"]] = counts.get(case["kind"], 0) + 1
@@ -1008,6 +1068,7 @@ def command_doctor(args: argparse.Namespace) -> int:
         "case_count": len(cases),
         "counts": counts,
         "execution_status": "declarations_only_not_model_run",
+        "behavior": behavior,
         "errors": errors,
     }
     if args.json:
