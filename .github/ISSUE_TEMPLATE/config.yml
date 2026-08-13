@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and open-ended ideas
+    url: https://github.com/infotradescout/Selective-Intelligence/discussions
+    about: Ask for help, compare approaches, or start a broader conversation.
+  - name: Private security report
+    url: https://github.com/infotradescout/Selective-Intelligence/security/advisories/new
+    about: Report a vulnerability without publishing the details.

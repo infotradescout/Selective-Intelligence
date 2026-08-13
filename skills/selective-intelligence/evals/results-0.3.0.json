@@ -2,13 +2,13 @@
   "schema_version": 1,
   "skill": "selective-intelligence",
   "version": "0.3.0",
-  "observed_at": "2026-08-13T04:09:09Z",
+  "observed_at": "2026-08-13T17:47:09Z",
   "status": "local_release_candidate_pass",
   "deterministic_controls": {
     "result": "pass",
     "passed": 79,
     "failed": 0,
-    "executed_controls_sha256": "f4fc03f1f733f7c0651feaf78161b94e2831528a90f7d4aa2dad802e0bc75d8c",
+    "executed_controls_sha256": "d96b691ba5c38b975dc613fe2dda70008e3d703ad8c55c92fd80e182f843ae79",
     "scope": "Release-doctor-safe structural, state, authority, evidence, Council, intent-intake, and behavior-artifact controls executed with --skip-release to avoid recursive doctor invocation.",
     "coverage": [
       "All preserved Start Pack structure, transition, authority, review, evidence, amendment, invalidation, and release controls",

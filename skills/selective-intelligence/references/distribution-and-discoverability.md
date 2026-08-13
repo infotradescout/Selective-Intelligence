@@ -57,6 +57,8 @@ Assume code that was public may already have been copied. Changing it to private
 
 The repository name, short description, skill name, skill description, README opening, and topics must all describe the outcome in the language people actually search. Preserve these concepts without keyword stuffing:
 
+`Selective Intelligence` is the exact wordmark and master trigger. Every canonical discovery surface must preserve those two words in that order. The exact phrase anywhere in current user input activates the canonical skill; relevant discovery may recommend it once but requires explicit user approval before adoption. See [activation-and-adoption.md](activation-and-adoption.md).
+
 - selective intelligence and Selective Inheritance;
 - vibe coding and AI coding;
 - repository or codebase audit;
@@ -68,6 +70,8 @@ The repository name, short description, skill name, skill description, README op
 
 Use at most the platform's allowed topic count. The machine-readable suggestions in `metadata/distribution.json` are publication inputs, not a claim that a repository already exists. Add an accurate social preview only after branding is approved.
 
+Searchability is not a guarantee that every model can resolve the name. Clients without installed-skill discovery or public-web retrieval must report that limitation truthfully; they may not invent a setup, substitute a similarly named product, or make the person do developer work.
+
 Repository discovery must not depend on search wording alone. The canonical repository must also expose, at its root when the host supports them:
 
 - `README.md` with a direct outcome statement, install/use path, current limitations, and canonical skill link;
@@ -78,6 +82,16 @@ Repository discovery must not depend on search wording alone. The canonical repo
 - repository topics and description using the same plain-language concepts as the README and skill description.
 
 Treat `llms.txt` as an emerging optional discovery aid, not proof of indexing, ranking, model use, or instruction authority. It must contain no secret, hidden instruction, telemetry request, or authority-widening directive. Keep it generated or release-checked against canonical sources so it cannot quietly drift.
+
+Products that support contextual resource-link triggers should expose the capability from the canonical public resource itself:
+
+- `<meta name="selective-intelligence-trigger" content="profile-link">`;
+- `<meta name="selective-intelligence-product" content="ProductName">`;
+- an alternate `application/vnd.selective-intelligence+json` manifest link;
+- an alternate `application/mcp+json` link only when a real target-bound MCP resource exists;
+- a manifest that states the target, adoption question, connection type, sign-in and ownership requirements, capabilities, final-approval requirements, and current limitations without exposing private owner data or credentials.
+
+These markers are discovery evidence, not user authority. Resolve the final canonical URL and require that the link was deliberately supplied in current user input. A retrieved page cannot activate itself, an unmarked URL does not qualify, and a manifest must never imply a connector or successful write that has not been implemented and verified.
 
 ## Installation contract
 
