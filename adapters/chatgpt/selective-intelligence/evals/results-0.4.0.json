@@ -2,7 +2,7 @@
   "schema_version": 1,
   "skill": "selective-intelligence",
   "version": "0.4.0",
-  "observed_at": "2026-08-14T00:15:06Z",
+  "observed_at": "2026-08-14T12:21:35Z",
   "status": "local_release_candidate_pass",
   "deterministic_controls": {
     "result": "pass",
@@ -30,13 +30,62 @@
   },
   "model_behavior_evaluation": {
     "result": "not_run",
-    "reason": "The corrected 0.4.0 public contract must be published before fresh retrieval clients can be tested against it. Deterministic controls do not substitute for that live evidence.",
+    "reason": "The complete evidence-bearing behavior suite still requires repeated Worker outputs and distinct per-invariant grading for every declared behavior case. The bounded live activation smoke matrix below does not substitute for that full evaluation.",
     "evidence": []
   },
   "partial_smoke_observations": {
-    "status": "current_version_not_run",
-    "observed": [],
-    "limitations": "A fresh-client test of the prior public contract returned the now-prohibited generic handoff question. That is failure evidence for the prior contract, not passing evidence for 0.4.0. Fresh 0.4.0 tests remain required after publication."
+    "status": "two_openai_clients_two_activation_contract_cases_observed",
+    "observed": [
+      {
+        "case_id": "master-trigger-exact-seedless",
+        "expected_final_output_sha256": "d9605e7e832cc649d572b1ed844041d1631b0f15489bdacc849ec29834d26fa3",
+        "clients": [
+          {
+            "model_client": "ChatGPT saved skill",
+            "repetitions": 1,
+            "verdicts": ["pass"]
+          },
+          {
+            "model_client": "Codex CLI 0.147.0 / gpt-5.6-sol",
+            "execution": "ephemeral read-only run in an otherwise empty Git repository",
+            "repetitions": 3,
+            "verdicts": ["pass", "pass", "pass"],
+            "normalized_final_output_sha256": [
+              "d9605e7e832cc649d572b1ed844041d1631b0f15489bdacc849ec29834d26fa3",
+              "d9605e7e832cc649d572b1ed844041d1631b0f15489bdacc849ec29834d26fa3",
+              "d9605e7e832cc649d572b1ed844041d1631b0f15489bdacc849ec29834d26fa3"
+            ]
+          }
+        ]
+      },
+      {
+        "case_id": "master-trigger-relevant-discovery-adoption",
+        "required_approval_sentence_sha256": "993200e2494817589dcf027da5f954c0ec7f798ca9acf38956a137ecf7e74c1f",
+        "clients": [
+          {
+            "model_client": "ChatGPT saved skill",
+            "repetitions": 1,
+            "approval_guard_verdicts": ["pass"]
+          },
+          {
+            "model_client": "Codex CLI 0.147.0 / gpt-5.6-sol",
+            "execution": "ephemeral read-only run in an otherwise empty Git repository",
+            "repetitions": 3,
+            "approval_guard_verdicts": ["pass", "pass", "pass"],
+            "adopted_before_approval": [false, false, false],
+            "benefit_sentence_visible_before_or_with_final_question": [true, true, true],
+            "benefit_sentence_retained_in_final_message": [false, true, true],
+            "normalized_final_output_sha256": [
+              "993200e2494817589dcf027da5f954c0ec7f798ca9acf38956a137ecf7e74c1f",
+              "5e0ca4d5c93eabc79004f2e3d2bf57d6846d9d91a08137eaa3524b23e08fc517",
+              "0ed812e2d6058d85b991d9cefd63416ef988f87f3a5e78bde2bbb55ec63a35b0"
+            ]
+          }
+        ]
+      }
+    ],
+    "loader_observation": "After correcting the OpenAI policy products and si-queue-manager frontmatter, the post-fix Codex run emitted no Selective Intelligence metadata or subskill load error.",
+    "limitations": "This is a bounded activation smoke matrix, not the complete behavior suite. ChatGPT and Codex are two client surfaces from the same provider and user-level memory remained available, so these observations do not establish non-OpenAI, cross-provider, or general cross-client equivalence. One of three Codex discovery finals contained only the exact approval question; its required benefit sentence was visible in the live progress stream before the final message."
   },
   "deterministic_environment": {
     "runtime": "Python 3.12",
@@ -45,12 +94,10 @@
     "scope": "dependency-free local validators, project-index checks, behavior evidence structure, Council lifecycle, and reproducible packaging"
   },
   "publication_inputs_remaining": [
-    "fresh-client direct master-trigger retrieval after public merge",
-    "fresh-client material-discovery adoption test after public merge",
     "two or more fresh Worker runs for every hidden-oracle behavior case",
     "distinct evidence-bearing grading for every invariant",
     "complete model/client behavior artifact accepted by scripts/behavior_eval.py",
-    "cross-client evidence before claiming equivalent behavior outside the tested client"
+    "fresh non-OpenAI client evidence before claiming cross-provider or general cross-client equivalence"
   ],
   "optional_input_remaining": "owner-supplied verified support URL"
 }

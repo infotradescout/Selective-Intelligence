@@ -2,6 +2,11 @@
 
 All notable behavior changes to Selective Intelligence are recorded here.
 
+## Unreleased
+
+- Corrected portable OpenAI metadata after a real Codex CLI load: removed the unsupported `api` policy product and restored the missing YAML frontmatter delimiter on `si-queue-manager`. The release doctor now rejects either loader failure before packaging.
+- Forward-tested the published 0.4.0 activation contract in fresh ChatGPT and Codex contexts. The exact empty-context master-trigger response passed, and relevant React UI-variant discovery preserved the exact approval sentence without adopting before approval. These bounded smoke results do not claim the full behavior suite or general cross-client equivalence.
+
 ## 0.4.0 - 2026-08-13
 
 - Corrected the exact `Selective Intelligence` master trigger: it now inspects the available conversation, workspace, repository, connected sources, and tools; reconstructs the active outcome; and begins useful, authorized work. It must not hand the work back with a generic outcome question. A bounded status is defined for the genuinely context-free case.

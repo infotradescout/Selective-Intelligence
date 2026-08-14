@@ -1,3 +1,4 @@
+---
 name: si-queue-manager
 description: Watch queue snapshots and only stop current work when there is a real mismatch.
 license: CC0-1.0

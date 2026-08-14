@@ -874,6 +874,28 @@ def control_tests(include_release: bool = True) -> list[str]:
             readme_path.write_text(readme_baseline, encoding="utf-8")
             passed.append("release doctor rejects product-specific connector documentation")
 
+            queue_skill_path = copied / "subskills" / "si-queue-manager" / "SKILL.md"
+            queue_skill_baseline = queue_skill_path.read_text(encoding="utf-8")
+            queue_skill_path.write_text(queue_skill_baseline.removeprefix("---\n"), encoding="utf-8")
+            frontmatter_result = run([sys.executable, release_script, "doctor", "--json"], {1})
+            frontmatter_errors = json.loads(frontmatter_result.stdout).get("errors", [])
+            if not any("must start with YAML frontmatter" in error for error in frontmatter_errors):
+                raise AssertionError("release doctor accepted a subskill without loader frontmatter")
+            queue_skill_path.write_text(queue_skill_baseline, encoding="utf-8")
+
+            agent_config_path = copied / "agents" / "openai.yaml"
+            agent_config_baseline = agent_config_path.read_text(encoding="utf-8")
+            agent_config_path.write_text(
+                agent_config_baseline.replace('  - "atlas"', '  - "api"\n  - "atlas"', 1),
+                encoding="utf-8",
+            )
+            product_result = run([sys.executable, release_script, "doctor", "--json"], {1})
+            product_errors = json.loads(product_result.stdout).get("errors", [])
+            if not any("unsupported policy products: api" in error for error in product_errors):
+                raise AssertionError("release doctor accepted an unsupported OpenAI policy product")
+            agent_config_path.write_text(agent_config_baseline, encoding="utf-8")
+            passed.append("release doctor rejects skill metadata that clients cannot load")
+
             external_release = Path(redteam_dir) / "external-release"
             external_release.mkdir()
             (external_release / "outside.md").write_text("outside the skill root\n", encoding="utf-8")
