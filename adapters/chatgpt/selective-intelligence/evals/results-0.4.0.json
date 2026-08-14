@@ -2,7 +2,7 @@
   "schema_version": 1,
   "skill": "selective-intelligence",
   "version": "0.4.0",
-  "observed_at": "2026-08-14T19:44:10Z",
+  "observed_at": "2026-08-14T21:20:00Z",
   "status": "local_release_candidate_controls_pass_live_client_smokes_fail",
   "deterministic_controls": {
     "result": "pass",
@@ -44,7 +44,7 @@
         "paid_subscription": false,
         "activation_result": "fail",
         "discovery_result": "fail",
-        "reason": "The genuine free-tier client neither resolved the exact wordmark nor discovered Selective Intelligence from the relevant unnamed problem. A fresh rerun after the public discovery bridge was built from main commit 26720ddf9ba849cf8830a9e9ec47952b887874de failed both cases again. This is a compatibility defect, not a reason to upgrade."
+        "reason": "The genuine free-tier client still failed both seedless cases after the public discovery bridge and accepted IndexNow notifications. With the canonical repository explicitly attached, exact-name resolution became possible but the empty-context terminal response remained nonconformant; three repository-context unnamed-discovery runs produced zero approval-guard passes. This is a compatibility defect, not a reason to upgrade."
       }
     ],
     "not_cleanly_tested": [
@@ -95,7 +95,7 @@
     "classification": "Official product pages confirm no-cost tiers exist. Paid access is therefore not the product requirement. Current live evidence still fails the no-paid compatibility gate because the only clean free-tier run, Copilot Free, failed both cases."
   },
   "partial_smoke_observations": {
-    "status": "two_openai_clients_passed_two_non_openai_clients_failed_two_activation_contract_cases",
+    "status": "seedless_non_openai_cases_fail_copilot_repository_context_is_partial",
     "observed": [
       {
         "case_id": "master-trigger-exact-seedless",
@@ -217,6 +217,33 @@
         ]
       }
     ],
+    "native_repository_context_observations": [
+      {
+        "model_client": "GitHub Copilot Chat web / Copilot Free / attached infotradescout/Selective-Intelligence repository",
+        "case_id": "master-trigger-exact-repository-context",
+        "result": "partial",
+        "canonical_repository_resolved": true,
+        "redundant_skill_approval_requested": false,
+        "full_operational_authority_claim_in_final_run": false,
+        "exact_terminal_activation_response": false,
+        "resolution_repository_misclassified_as_active_project": true,
+        "external_write_performed": false,
+        "normalized_visible_projection": "Activated Selective Intelligence for the attached repository. Next sensible step is to create or refresh the canonical index. Tell me which option you want (A, B, or C).",
+        "observation": "The final fresh run loaded the canonical skill and did not repeat the earlier false full-operational-authority claim, but it treated the repository attached solely for skill resolution as the active project, audited it, and handed back A/B/C options instead of the exact terminal activation response."
+      },
+      {
+        "model_client": "GitHub Copilot Chat web / Copilot Free / attached infotradescout/Selective-Intelligence repository",
+        "case_id": "master-trigger-relevant-discovery-adoption-repository-context",
+        "result": "fail",
+        "repetitions": 3,
+        "approval_guard_verdicts": ["fail", "fail", "fail"],
+        "required_approval_sentence_as_complete_terminal_gate": [false, false, false],
+        "canonical_skill_retrieved": [true, true, false],
+        "adopted_before_approval": [false, true, false],
+        "normalized_final_visible_projection": "Start with a small design-system approach. Do you want me to adopt any named tools or methodologies, or an external skill like Selective Intelligence?",
+        "observation": "Repository attachment improved the chance of retrieval but did not create dependable proactive discovery. One run found the skill but surrounded the exact question with substantive work, one used the doctrine before consent, and the final run did not retrieve the skill and offered it only as one generic external option."
+      }
+    ],
     "blocked_client_observations": [
       {
         "model_client": "Claude web / Opus 4.8 Medium",
@@ -254,17 +281,29 @@
         "surface": "GitHub Pages discovery bridge",
         "query": "direct public fetch",
         "result": "pass",
-        "observation": "The HTML page, canonical JSON, well-known JSON, llms.txt, robots.txt, and sitemap.xml each returned HTTP 200. Every response was byte-for-byte identical to the corresponding file in main commit 26720ddf9ba849cf8830a9e9ec47952b887874de, and the Pages build record names that exact commit."
+        "observation": "The HTML page, canonical JSON, well-known JSON, llms.txt, robots.txt, sitemap.xml, and path-scoped IndexNow key each returned HTTP 200. Every response was byte-for-byte identical to the corresponding file in main commit 7b960e2073788493f74ed69c2d19a73c99aac08e, and the Pages build record names that exact commit."
       },
       {
         "surface": "Google Search after bridge publication",
         "query": "\"Selective Intelligence\" infotradescout",
         "result": "fail",
         "observation": "The focused exact-name-and-publisher query returned no matching documents immediately after the public bridge was built. Search indexing remains unproven and is monitored rather than claimed."
+      },
+      {
+        "surface": "IndexNow",
+        "query": "six public discovery URLs",
+        "result": "accepted_receipt_not_indexing_proof",
+        "observation": "After exact Pages verification, the path-scoped key and six-URL payload were accepted first with HTTP 202 and later with HTTP 200 after public contract changes. The publisher records indexing_claimed=false; these receipts prove submission only."
+      },
+      {
+        "surface": "Bing Search after IndexNow notification",
+        "query": "\"Selective Intelligence\" infotradescout",
+        "result": "fail",
+        "observation": "The canonical repository and GitHub Pages site were absent from the focused visible results immediately after the accepted notification. Search visibility remains pending rather than claimed."
       }
     ],
     "loader_observation": "After correcting the OpenAI policy products and si-queue-manager frontmatter, the post-fix Codex run emitted no Selective Intelligence metadata or subskill load error.",
-    "limitations": "This is a bounded activation smoke matrix, not the complete behavior suite. ChatGPT and Codex are two client surfaces from the same provider and user-level memory remained available. Fresh non-OpenAI evidence now exists, but Gemini and GitHub Copilot failed both cases, including a Copilot Free rerun after the public discovery bridge was live. Claude, Cursor, and Kiro were blocked before a valid seedless run. The evidence therefore disproves current general cross-client and cross-provider equivalence and shows that publication cannot force a general web-chat surface to search or adopt an external skill. One of three Codex discovery finals contained only the exact approval question; its required benefit sentence was visible in the live progress stream before the final message."
+    "limitations": "This is a bounded activation smoke matrix, not the complete behavior suite. ChatGPT and Codex are two client surfaces from the same provider and user-level memory remained available. Fresh non-OpenAI evidence now exists, but Gemini and GitHub Copilot still fail both seedless cases. Copilot Free repository context can resolve the exact wordmark, but it does not reliably apply the empty-context terminal rule and produced zero of three valid unnamed approval gates. Claude, Cursor, and Kiro were blocked before a valid seedless run. Publication and accepted search notifications cannot force a general web-chat surface to retrieve or adopt an external skill. One of three Codex discovery finals contained only the exact approval question; its required benefit sentence was visible in the live progress stream before the final message."
   },
   "deterministic_environment": {
     "runtime": "Python 3.12",
