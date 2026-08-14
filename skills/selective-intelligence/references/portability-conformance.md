@@ -178,7 +178,7 @@ Use these scenarios to evaluate Selective Intelligence across different LLMs and
 
 **Fixture:** Identical task seed, Intent Lock (or recovered intent packet), constraints, evidence set, and acceptance tests. Run A and Run B use different models, IDEs, agents, or environments. At least one run attempts a drifted interpretation of scope or product truth before acting.
 
-**Quality benchmark (not reliability proof):** TradeScout profile seeding is the explicit quality benchmark for this class of sparse-to-complete work. Passing it once proves the bar is achievable. It does **not** prove SI is already reliable across tools.
+**Quality benchmark (not reliability proof):** Passing one complete sparse-to-complete benchmark proves the bar is achievable. It does **not** prove SI is already reliable across tools.
 
 **Pass requirements:**
 
@@ -195,7 +195,7 @@ Use these scenarios to evaluate Selective Intelligence across different LLMs and
 
 - different interpretation, scope, or product result across runtimes given the same inputs;
 - drift becomes an executed action before checkpoint correction;
-- treating a one-off quality-benchmark success (including TradeScout profile seeding) as proof of cross-tool reliability;
+- treating a one-off quality-benchmark success as proof of cross-tool reliability;
 - making the user spend most of the session repairing model-specific drift after the fact.
 
 ## Scoring

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "skill": "selective-intelligence",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "component_versions": {
-    "skill": "0.3.0",
+    "skill": "0.4.0",
     "start_pack_validator": "0.1.1",
     "start_pack_schema": "0.1.1",
     "council_protocol": "0.3.0"
@@ -17,18 +17,9 @@
   "support_is_optional": true,
   "master_trigger": "Selective Intelligence",
   "direct_activation": "exact_phrase_in_current_user_input",
+  "seedless_behavior": "automatic_context_discovery_and_begin",
+  "project_index": "auto_refresh_before_new_code",
   "discovered_adoption": "explicit_user_approval_required",
-  "contextual_triggers": {
-    "profile_links": {
-      "products": [
-        "MealScout",
-        "TradeScout"
-      ],
-      "current_user_input_only": true,
-      "canonical_manifest_required": true,
-      "product_auth_and_final_approval_required": true
-    }
-  },
   "repository_description": "Selective Intelligence turns plain-language intent into product design, verified UI/UX, repository audits, codebase realignment, and developer-grade execution for vibe coding—then continuously checks and improves the result across Codex, Claude Code, Cursor, Copilot, Gemini CLI, and Kiro.",
   "topics": [
     "selective-intelligence",
@@ -54,7 +45,7 @@
   ],
   "portable_source_path": "skills/selective-intelligence",
   "recommended_vendored_path": ".agents/skills/selective-intelligence",
-  "archive_name": "selective-intelligence-0.3.0.zip",
+  "archive_name": "selective-intelligence-0.4.0.zip",
   "owner_supplied_before_publication": [],
   "owner_supplied_before_donations": [
     "support_url"
@@ -85,6 +76,7 @@
     "evals/results-0.1.1.json",
     "evals/results-0.2.0.json",
     "evals/results-0.3.0.json",
+    "evals/results-0.4.0.json",
     "metadata/distribution.json",
     "references/actual-intent-alignment.md",
     "references/activation-and-adoption.md",
@@ -105,6 +97,7 @@
     "references/operational-safety-gates.md",
     "references/platynum-interrupt-wiring.md",
     "references/portability-conformance.md",
+    "references/project-index-and-reuse-gate.md",
     "references/permissions-and-budgets.md",
     "references/product-design-intelligence.md",
     "references/repository-intelligence.md",
@@ -134,6 +127,7 @@
     "scripts/text_gate.py",
     "scripts/intent_contract.py",
     "scripts/policy_guard.py",
+    "scripts/project_index.py",
     "tests/run_instruction_fidelity_vertical.py",
     "tests/test_policy_guard_command_resolution.py",
     "tests/test_production_path.py"

@@ -6,7 +6,7 @@ Governing diagnosis (authoritative): SI doctrine was ahead of runtime. “Docume
 
 **Required sequence:** reject-before-wrong-work (not post-hoc feedback metrics).
 
-**TradeScout profile seeding** worked because a golden pre-specified packet already did Step-1. Ordinary live conversation did not get equivalent enforcement. PolicyGuard pass ≠ Step-1 fidelity.
+A prior golden-packet benchmark worked because a pre-specified packet already did Step-1. Ordinary live conversation did not get equivalent enforcement. PolicyGuard pass ≠ Step-1 fidelity.
 
 ## Platynum surface vs SI authority
 

@@ -192,6 +192,17 @@ def control_tests(include_release: bool = True) -> list[str]:
             raise AssertionError("a fresh blocked micro pack should be structurally valid")
         passed.append("fresh blocked micro pack validates structurally")
 
+        project_index_path = root / ".selective-intelligence" / "project-index.json"
+        try:
+            project_index_payload = json.loads(project_index_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise AssertionError(f"Start Pack did not create a valid project index: {exc}") from exc
+        if project_index_payload.get("schema_version") != 1:
+            raise AssertionError("Start Pack project index has the wrong schema version")
+        if project_index_payload.get("summary", {}).get("source_files") != 0:
+            raise AssertionError("fresh empty Start Pack project index invented source files")
+        passed.append("Start Pack initializes one truthful project index")
+
         lock_path = root / ".selective-intelligence" / "lock.json"
         fresh_baseline = lock_path.read_text(encoding="utf-8")
         invalid_definition = json.loads(fresh_baseline)
@@ -852,6 +863,17 @@ def control_tests(include_release: bool = True) -> list[str]:
             private_file.unlink()
             passed.append("release manifest rejects undeclared private files")
 
+            readme_path.write_text(
+                readme_baseline + f"\nProduct-specific connector details for {'Meal' + 'Scout'}.\n",
+                encoding="utf-8",
+            )
+            neutral_result = run([sys.executable, release_script, "doctor", "--json"], {1})
+            neutral_errors = json.loads(neutral_result.stdout).get("errors", [])
+            if not any("product-specific brand" in error for error in neutral_errors):
+                raise AssertionError("public release accepted product-specific connector documentation")
+            readme_path.write_text(readme_baseline, encoding="utf-8")
+            passed.append("release doctor rejects product-specific connector documentation")
+
             external_release = Path(redteam_dir) / "external-release"
             external_release.mkdir()
             (external_release / "outside.md").write_text("outside the skill root\n", encoding="utf-8")
@@ -1072,6 +1094,14 @@ def control_tests(include_release: bool = True) -> list[str]:
     if behavior_payload.get("execution_status") != "behavior_cases_declared_not_executed":
         raise AssertionError("behavior doctor blurred declarations with executed behavior")
     passed.append("intent and product-design behavior cases validate without claiming execution")
+    project_index_self_test = run(
+        [sys.executable, str(SKILL_ROOT / "scripts" / "project_index.py"), "self-test"],
+        {0},
+    )
+    project_index_test_payload = json.loads(project_index_self_test.stdout)
+    if not project_index_test_payload.get("passed"):
+        raise AssertionError("project index self-test did not pass")
+    passed.append("project index inventories code, flags UI proliferation, and detects staleness")
     behavior_self_test = run([sys.executable, str(BEHAVIOR_SCRIPT), "self-test"], {0})
     behavior_test_payload = json.loads(behavior_self_test.stdout)
     if not behavior_test_payload.get("passed") or behavior_test_payload.get("hidden_oracle_exposed"):

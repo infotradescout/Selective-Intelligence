@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 import tempfile
 from dataclasses import dataclass, asdict
@@ -20,6 +21,8 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
 from urllib.parse import urlparse
+
+import project_index
 
 
 PACK_DIR = ".selective-intelligence"
@@ -1278,6 +1281,11 @@ def template_text(name: str, project_name: str, release_id: str, build_id: str) 
 def command_init(args: argparse.Namespace) -> int:
     root = Path(args.root).resolve()
     root.mkdir(parents=True, exist_ok=True)
+    try:
+        project_index_payload = project_index.build_index(root)
+    except (OSError, ValueError, subprocess.SubprocessError) as exc:
+        print(f"Unable to build the project index: {exc}", file=sys.stderr)
+        return 2
     pack = root / PACK_DIR
     if pack.is_symlink():
         print(f"Refusing symlinked Start Pack path: {pack}", file=sys.stderr)
@@ -1370,6 +1378,7 @@ def command_init(args: argparse.Namespace) -> int:
         "seal_history": [],
     }
     write_json(pack / "lock.json", manifest)
+    write_json(pack / "project-index.json", project_index_payload)
     print(f"Initialized blocked Start Pack at {pack}")
     return 0
 
