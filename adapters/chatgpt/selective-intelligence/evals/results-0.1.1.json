@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "skill": "selective-intelligence",
+  "version": "0.1.1",
+  "observed_at": "2026-07-22T20:21:08Z",
+  "status": "local_release_candidate_pass",
+  "deterministic_controls": {
+    "result": "pass",
+    "passed": 27,
+    "failed": 0,
+    "executed_controls_sha256": "a73ea2f464ab70977b3d03f7efa8ef7f15becabcd8cd096304fc1cf97e044c06",
+    "scope": "Release-doctor-safe controls executed with --skip-release to avoid recursive doctor invocation.",
+    "coverage": [
+      "Start Pack structure, schema parity, dependency cycles, and ordered closure",
+      "atomic seal rejection and repeated-phase or forged-history rejection",
+      "authority-bound amendments with registered approval evidence",
+      "independent-review identity, scope, revision, timestamp, and evidence controls",
+      "semantic amendment and operational checkpoint separation",
+      "artifact, invalidation, blocker, and release integrity",
+      "feedback privacy, identifier, symlink, and parent-permission controls"
+    ]
+  },
+  "model_behavior_evaluation": {
+    "result": "not_run",
+    "reason": "The 15 prompt cases are structurally validated declarations. No reproducible model/client runner evidence was produced for version 0.1.1.",
+    "evidence": []
+  },
+  "deterministic_environment": {
+    "runtime": "Python 3.12.13",
+    "minimum_supported_runtime": "Python 3.10",
+    "network_required": false,
+    "scope": "dependency-free local validators, controls, and reproducible packaging"
+  },
+  "publication_inputs_remaining": [
+    "passing reproducible model/client behavior evaluation"
+  ],
+  "optional_input_remaining": "owner-supplied verified support URL"
+}

@@ -1,0 +1,302 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Selective Intelligence Start Pack Control Graph",
+  "description": "Portable structural schema. scripts/start_pack.py is authoritative for cross-artifact and verdict-transition checks.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "validator_version",
+    "project",
+    "release",
+    "active_build",
+    "authority",
+    "verdicts",
+    "material_blockers",
+    "artifacts",
+    "requirements",
+    "builds",
+    "external_facts",
+    "decisions",
+    "amendments",
+    "invalidated_requirements",
+    "risk_triggers",
+    "independent_review",
+    "sealed_at",
+    "semantic_digest",
+    "control_digest",
+    "seal_history"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "validator_version": { "const": "0.1.1" },
+    "project": {
+      "type": "object",
+      "required": ["id", "name", "profile"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1 },
+        "profile": { "enum": ["micro", "standard", "high_assurance"] }
+      },
+      "additionalProperties": true
+    },
+    "release": {
+      "type": "object",
+      "required": ["id", "version", "smallest_complete_loop"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "version": { "type": "string", "minLength": 1 },
+        "smallest_complete_loop": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    },
+    "active_build": {
+      "type": "object",
+      "required": ["id", "contract", "evidence"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "contract": { "$ref": "#/$defs/relativePath" },
+        "evidence": { "$ref": "#/$defs/relativePath" }
+      },
+      "additionalProperties": true
+    },
+    "authority": {
+      "type": "object",
+      "required": ["governing_sources", "decision_owners"],
+      "properties": {
+        "governing_sources": { "type": "array", "items": { "type": "string" } },
+        "decision_owners": {
+          "type": "object",
+          "required": ["product", "technical", "legal_or_regulated"],
+          "properties": {
+            "product": { "type": "string", "minLength": 1 },
+            "technical": { "type": "string", "minLength": 1 },
+            "legal_or_regulated": { "type": "string", "minLength": 1 }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "verdicts": {
+      "type": "object",
+      "required": ["intent", "definition", "build", "as_built", "release"],
+      "properties": {
+        "intent": { "enum": ["locked", "supported", "provisional", "conflicted", "unknown"] },
+        "definition": { "enum": ["locked", "blocked", "unverified"] },
+        "build": { "enum": ["aligned", "amendment_required", "blocked", "not_started"] },
+        "as_built": { "enum": ["reconciled", "partial", "not_aligned", "unverifiable", "not_started"] },
+        "release": { "enum": ["closed", "partial", "blocked", "unverifiable", "not_started"] }
+      },
+      "additionalProperties": false
+    },
+    "material_blockers": { "type": "array", "items": { "type": "object" } },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "version", "sha256"],
+        "properties": {
+          "path": { "$ref": "#/$defs/relativePath" },
+          "version": { "type": "string", "minLength": 1 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "scope", "state"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "scope": { "enum": ["mvp", "mandatory", "later", "out"] },
+          "state": { "enum": ["intended", "specified", "modeled", "implemented", "wired", "reachable", "usable", "verified", "live"] },
+          "depends_on": { "$ref": "#/$defs/idArray" },
+          "owners": { "type": "array", "items": { "type": "string" } },
+          "actor": { "type": "string" },
+          "trigger": { "type": "string" },
+          "behavior": { "type": "string" },
+          "constraints": { "type": "string" },
+          "negative": { "type": "string" },
+          "unchanged": { "type": "string" },
+          "acceptance": { "type": "string" },
+          "owner": { "type": "string" },
+          "proof": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "builds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status", "base_revision", "lock_version", "requirements", "claimed_owners", "depends_on", "overlap_approved_with", "contract", "evidence"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "status": { "enum": ["planned", "locked", "in_progress", "interrupted", "reconciled", "superseded", "abandoned"] },
+          "base_revision": { "type": "string" },
+          "lock_version": { "type": "string", "minLength": 1 },
+          "requirements": { "$ref": "#/$defs/idArray" },
+          "claimed_owners": { "type": "array", "items": { "type": "string" } },
+          "depends_on": { "$ref": "#/$defs/idArray" },
+          "overlap_approved_with": { "$ref": "#/$defs/idArray" },
+          "contract": { "$ref": "#/$defs/relativePath" },
+          "evidence": { "$ref": "#/$defs/relativePath" },
+          "evidence_context": { "$ref": "#/$defs/evidenceContext" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "external_facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "claim", "source", "source_version", "applicability", "observed_at"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "claim": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 },
+          "source_version": { "type": "string", "minLength": 1 },
+          "applicability": { "type": "string", "minLength": 1 },
+          "observed_at": {
+            "type": "string",
+            "anyOf": [{ "format": "date" }, { "format": "date-time" }]
+          },
+          "expires_at": { "type": "string", "format": "date" },
+          "revalidate_on": { "type": "string", "minLength": 1 }
+        },
+        "anyOf": [
+          { "required": ["expires_at"], "properties": { "expires_at": {} } },
+          { "required": ["revalidate_on"], "properties": { "revalidate_on": {} } }
+        ],
+        "additionalProperties": true
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "class", "status", "statement", "authority"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "class": { "enum": ["product_invariant", "release_commitment", "hypothesis", "reversible_choice", "deferred"] },
+          "status": { "enum": ["accepted", "provisional", "testing", "rejected", "deferred"] },
+          "statement": { "type": "string", "minLength": 1 },
+          "authority": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": true
+      }
+    },
+    "amendments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "authority", "reason", "created_at", "impacted_requirements", "changes", "approval_evidence"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "authority": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "created_at": { "type": "string", "format": "date-time" },
+          "impacted_requirements": { "$ref": "#/$defs/idArray" },
+          "approval_evidence": { "$ref": "#/$defs/relativePath" },
+          "changes": {
+            "type": "object",
+            "required": ["added", "modified", "removed", "renamed", "unchanged"],
+            "properties": {
+              "added": { "type": "array", "items": { "type": "string" } },
+              "modified": { "type": "array", "items": { "type": "string" } },
+              "removed": { "type": "array", "items": { "type": "string" } },
+              "renamed": { "type": "array", "items": { "type": "string" } },
+              "unchanged": { "type": "array", "items": { "type": "string" } }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "invalidated_requirements": { "$ref": "#/$defs/idArray" },
+    "risk_triggers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": ["sensitive_data", "multi_tenant", "public_mutation", "payments_or_entitlements", "external_integrations", "ai_autonomy", "destructive_migration", "regulated_domain", "production_deployment"]
+      }
+    },
+    "independent_review": {
+      "type": "object",
+      "required": ["required", "status", "evidence", "reviewer", "reviewed_at", "scope", "revision"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "status": { "enum": ["unverified", "verified", "failed"] },
+        "evidence": { "type": ["string", "null"] },
+        "reviewer": { "type": ["string", "null"] },
+        "reviewed_at": { "type": ["string", "null"], "format": "date-time" },
+        "scope": { "type": ["string", "null"] },
+        "revision": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    },
+    "sealed_at": { "type": ["string", "null"], "format": "date-time" },
+    "semantic_digest": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "control_digest": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "seal_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sealed_at", "amendment", "transition", "checkpoint", "active_build", "lock_version", "build_status", "as_built_verdict", "invalidated_requirements", "semantic_digest", "artifact_digests", "decision_authorities"],
+        "properties": {
+          "sealed_at": { "type": "string", "format": "date-time" },
+          "amendment": { "anyOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+          "transition": { "enum": ["definition", "build", "as-built", "release", null] },
+          "checkpoint": { "type": "boolean" },
+          "active_build": { "anyOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+          "lock_version": { "type": ["string", "null"] },
+          "build_status": { "enum": ["planned", "locked", "in_progress", "interrupted", "reconciled", "superseded", "abandoned", null] },
+          "as_built_verdict": { "enum": ["reconciled", "partial", "not_aligned", "unverifiable", "not_started"] },
+          "invalidated_requirements": { "$ref": "#/$defs/idArray" },
+          "semantic_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "artifact_digests": {
+            "type": "object",
+            "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          },
+          "decision_authorities": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": { "type": "string", "minLength": 2 }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$" },
+    "idArray": { "type": "array", "items": { "$ref": "#/$defs/id" }, "uniqueItems": true },
+    "relativePath": { "type": "string", "minLength": 1, "not": { "pattern": "(^/|(^|/)\\.\\.(/|$))" } },
+    "evidenceContext": {
+      "type": "object",
+      "required": ["revision", "environment", "configuration", "role", "fixture", "observed_at", "expected", "actual", "flaky"],
+      "properties": {
+        "revision": { "type": "string", "minLength": 1 },
+        "environment": { "type": "string", "minLength": 1 },
+        "configuration": { "type": "string", "minLength": 1 },
+        "role": { "type": "string", "minLength": 1 },
+        "fixture": { "type": "string", "minLength": 1 },
+        "observed_at": { "type": "string", "format": "date-time" },
+        "expected": { "type": "string", "minLength": 1 },
+        "actual": { "type": "string", "minLength": 1 },
+        "flaky": { "const": false }
+      },
+      "additionalProperties": true
+    }
+  }
+}

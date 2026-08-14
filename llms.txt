@@ -11,6 +11,7 @@ Canonical repository: https://github.com/infotradescout/Selective-Intelligence
 Canonical skill: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md
 Zero-install entry point: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/JUMPSTART.md
 Portable skill directory: https://github.com/infotradescout/Selective-Intelligence/tree/main/skills/selective-intelligence
+ChatGPT one-SKILL adapter: https://github.com/infotradescout/Selective-Intelligence/tree/main/adapters/chatgpt/selective-intelligence
 Behavior cases: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/behavior-cases.json
 Current evidence: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-0.4.0.json
 Contribution guide: https://github.com/infotradescout/Selective-Intelligence/blob/main/CONTRIBUTING.md

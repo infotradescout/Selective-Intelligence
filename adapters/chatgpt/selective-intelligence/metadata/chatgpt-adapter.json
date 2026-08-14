@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "adapter": "chatgpt_personal_skills",
+  "skill": "selective-intelligence",
+  "version": "0.4.0",
+  "portable_source_path": "skills/selective-intelligence",
+  "adapter_path": "adapters/chatgpt/selective-intelligence",
+  "transformation": "nested_role_skill_entrypoints_to_role_references",
+  "single_skill_entrypoint": "SKILL.md",
+  "role_path_map": {
+    "subskills/si-aligner/SKILL.md": "subskills/si-aligner/ROLE.md",
+    "subskills/si-intake/SKILL.md": "subskills/si-intake/ROLE.md",
+    "subskills/si-objector/SKILL.md": "subskills/si-objector/ROLE.md",
+    "subskills/si-planner/SKILL.md": "subskills/si-planner/ROLE.md",
+    "subskills/si-queue-manager/SKILL.md": "subskills/si-queue-manager/ROLE.md",
+    "subskills/si-verifier/SKILL.md": "subskills/si-verifier/ROLE.md",
+    "subskills/si-worker/SKILL.md": "subskills/si-worker/ROLE.md"
+  },
+  "behavioral_contract": "preserved"
+}

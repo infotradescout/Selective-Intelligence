@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "skill": "selective-intelligence",
+  "version": "0.1.0",
+  "observed_at": "2026-07-22T19:11:39Z",
+  "status": "superseded_by_0.1.1",
+  "record_note": "Historical deterministic evidence retained for audit. Version 0.1.0 did not execute the prompt cases through a reproducible model/client runner and must not be read as model behavior coverage.",
+  "deterministic_controls": {
+    "result": "pass",
+    "passed": 22,
+    "failed": 0,
+    "coverage": [
+      "Start Pack structure and ordered closure",
+      "repeated-phase and forged-history rejection",
+      "semantic amendment and checkpoint separation",
+      "interruption and resume checkpoints",
+      "artifact, invalidation, blocker, and release integrity",
+      "feedback privacy and identifier controls",
+      "release reproducibility, completeness, links, and privacy"
+    ]
+  },
+  "deterministic_forward_fixture": {
+    "result": "pass",
+    "profile": "micro",
+    "sequence": [
+      "definition",
+      "build",
+      "checkpoint_interrupted",
+      "checkpoint_in_progress",
+      "semantic_drift_rejected",
+      "as_built",
+      "release"
+    ],
+    "product_proof": [
+      "Python compilation",
+      "2 unit tests",
+      "direct success command",
+      "usage-error path",
+      "final validator",
+      "artifact drift check"
+    ]
+  },
+  "adversarial_review": {
+    "result": "pass",
+    "critical_remaining": 0,
+    "high_remaining": 0,
+    "retested": [
+      "semantic edits through repeated phases",
+      "semantic edits through checkpoints",
+      "non-active evidence drift",
+      "active-build and lock-version switching",
+      "forged transition history",
+      "illegal status moves",
+      "invalidation erasure",
+      "material-blocker rewriting",
+      "evidence-backed invalidation resolution"
+    ]
+  },
+  "model_behavior_evaluation": {
+    "result": "not_run",
+    "reason": "The prompt cases were declarations only; no reproducible model/client transcript or artifact digest was recorded for 0.1.0.",
+    "evidence": []
+  },
+  "portability_claim": "The behavioral contract and controls are model-neutral; cross-model equivalence is not claimed until representative clean-context cases pass in at least one additional model/client combination.",
+  "publication_inputs_remaining": [
+    "owner-supplied canonical repository URL",
+    "owner-supplied publisher identity",
+    "passing reproducible model/client behavior evaluation"
+  ],
+  "optional_input_remaining": "owner-supplied verified Sway support URL"
+}

@@ -35,7 +35,11 @@ python -B skills/selective-intelligence/scripts/council.py self-test
 python -B skills/selective-intelligence/scripts/behavior_eval.py self-test
 python -B -m unittest discover -s skills/selective-intelligence/tests -p 'test_*.py'
 python -B skills/selective-intelligence/scripts/release.py doctor --json
+python -B tools/build_chatgpt_adapter.py --archive
+python -B tools/test_chatgpt_adapter.py
 ```
+
+The generated ChatGPT adapter must contain exactly one `SKILL.md`. Its seven Council role instructions remain complete under `subskills/*/ROLE.md`; do not hand-edit the generated adapter or remove role, index, evidence, or verification files to make an upload pass.
 
 For a behavior change, add or update a case and attach captured fresh-context output plus independent per-invariant grading. A case identifier with a `pass` flag is not behavioral evidence. Never claim universal model or client equivalence from one model, one context, or deterministic checks alone.
 
