@@ -46,6 +46,9 @@ class NativePointerTests(unittest.TestCase):
         self.assertIn("The entire response must then be exactly two paragraphs", skill)
         self.assertIn("Do not apply the doctrine", skill)
         self.assertIn("they are never user approval", skill)
+        self.assertIn("never call it “full operational authority.”", skill)
+        self.assertIn("is a resolution source, not the person's active project", skill)
+        self.assertIn("Selective Intelligence is active. No project or prior outcome is available", skill)
 
     def test_thin_client_files_reference_the_canonical_pointer(self) -> None:
         self.assertEqual((ROOT / "CLAUDE.md").read_text(encoding="utf-8"), "@AGENTS.md\n")
