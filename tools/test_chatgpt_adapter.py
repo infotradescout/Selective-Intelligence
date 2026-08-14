@@ -37,9 +37,10 @@ def main() -> int:
     )
     require(len(description) <= 1024, "ChatGPT discovery description exceeds 1024 characters")
     for phrase in (
-        "repeated buttons, cards, fields, or divs",
+        "repeated buttons/cards/fields/divs",
         "component sprawl",
-        "repository/codebase audit or realignment",
+        "repository audit/realignment",
+        "ask exactly this entire sentence, with no paraphrase or answer options",
         "Use Selective Intelligence for this?",
         "Adopt only after explicit approval",
     ):
