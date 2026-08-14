@@ -70,6 +70,19 @@ def main() -> int:
             f"obsolete trigger handoff leaked into active adapter contract: {relative}",
         )
 
+    activation_contract = (ADAPTER_ROOT / "references" / "activation-and-adoption.md").read_text(encoding="utf-8")
+    for prohibited_empty_context_action in (
+        "inspect or validate Selective Intelligence itself",
+        "run its tests",
+        "create a test harness",
+        "search public sources",
+        "manufacture work",
+    ):
+        require(
+            prohibited_empty_context_action in activation_contract,
+            f"empty-context terminal rule is missing: {prohibited_empty_context_action}",
+        )
+
     commands = [
         [sys.executable, str(ADAPTER_ROOT / "scripts" / "project_index.py"), "self-test"],
         [sys.executable, str(ADAPTER_ROOT / "scripts" / "behavior_eval.py"), "self-test"],
