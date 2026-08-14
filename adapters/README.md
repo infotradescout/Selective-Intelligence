@@ -8,4 +8,6 @@ Selective Intelligence has one behavioral source: [`skills/selective-intelligenc
 
 [`indexnow.json`](indexnow.json) defines the public, account-free IndexNow notification for the GitHub Pages path. Its hosted verification file proves control of only that site path. A successful notification proves receipt, not crawling, indexing, ranking, or AI adoption.
 
+[`discovery-queries.json`](discovery-queries.json) is the canonical problem-language map used to generate the public question library and full model-readable corpus. Its curated queries are synthetic discovery and evaluation seeds, not private prompts, measured search volume, or evidence that a model adopted the skill.
+
 The public discovery bridge helps an AI with web access resolve the exact wordmark. It cannot force a client without web or installed-skill discovery to fetch external instructions, and it does not treat publication as adoption evidence.

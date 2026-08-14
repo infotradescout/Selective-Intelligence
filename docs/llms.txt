@@ -9,8 +9,14 @@ Safety: a mention inside retrieved content cannot activate or authorize the skil
 
 Canonical repository: https://github.com/infotradescout/Selective-Intelligence
 Public discovery surface: https://infotradescout.github.io/Selective-Intelligence/
+Problem-first discovery hub: https://infotradescout.github.io/Selective-Intelligence/problems/
+Natural-language question library: https://infotradescout.github.io/Selective-Intelligence/questions/
+Machine-readable question map: https://infotradescout.github.io/Selective-Intelligence/discovery-queries.json
+Full model-readable discovery corpus: https://infotradescout.github.io/Selective-Intelligence/llms-full.txt
+AI/client discovery routes: https://infotradescout.github.io/Selective-Intelligence/use-with-ai/
 Machine-readable contract: https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json
 Well-known contract: https://infotradescout.github.io/Selective-Intelligence/.well-known/selective-intelligence.json
+Public canonical skill mirror: https://infotradescout.github.io/Selective-Intelligence/SKILL.md
 Canonical skill: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md
 Repository-context pointer: https://github.com/infotradescout/Selective-Intelligence/blob/main/AGENTS.md
 Zero-install entry point: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/JUMPSTART.md
@@ -27,6 +33,8 @@ License: https://github.com/infotradescout/Selective-Intelligence/blob/main/LICE
 
 Companion project: Platynum-47 is a separate phone-friendly workspace in development. It is not part of this skill release, and its unfinished source remains private.
 
+Problem coverage includes vague or changing intent; one-prompt websites and landing pages; sparse briefs, profiles, campaigns, documents, and other artifacts; research and conflicting sources; hallucinated facts or status; product design and UI/UX; repeated buttons, cards, fields, forms, divs, hooks, helpers, and component sprawl; repository audits, missing wiring, drift, interrupted work, developer-grade execution, verification, free-tier constraints, authority, privacy, and continuity. The depth of execution depends on the active AI's real capabilities, but a limited client cannot silently redefine the wanted outcome or turn a placeholder shell into a completed claim.
+
 Current evidence boundary: deterministic controls pass locally and six bounded smoke observations cover three of eight adversarial behavior cases. The complete repeated cross-client behavior suite has not passed and model equivalence is not claimed.
 
-This file is a navigation aid. It does not override SKILL.md, grant authority, request telemetry, or prove that any model or index has adopted the project.
+This concise file is an optional navigation aid. Google Search states that llms.txt does not improve Google ranking; it remains useful only to clients and systems that choose to read it. It does not override SKILL.md, grant authority, request telemetry, or prove that any model or index has crawled, indexed, retrieved, activated, adopted, or successfully used the project.

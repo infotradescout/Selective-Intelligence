@@ -5,14 +5,16 @@
   "wordmark": "Selective Intelligence",
   "master_trigger": "Selective Intelligence",
   "version": "0.4.0",
-  "description": "A free, open Agent Skill that turns plain-language intent into product design, developer-grade execution, verified UI/UX, repository realignment, and continuous improvement.",
+  "description": "A free, open Agent Skill that turns vague or minimal intent into grounded research, complete artifacts, product design, one-prompt websites, verified UI/UX, repository realignment, developer-grade execution, and continuous improvement.",
   "canonical": {
     "public_site": "https://infotradescout.github.io/Selective-Intelligence/",
     "repository": "https://github.com/infotradescout/Selective-Intelligence",
     "skill": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md",
     "skill_raw": "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/SKILL.md",
+    "skill_public_mirror": "https://infotradescout.github.io/Selective-Intelligence/SKILL.md",
     "jumpstart": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/JUMPSTART.md",
-    "license": "https://github.com/infotradescout/Selective-Intelligence/blob/main/LICENSE"
+    "license": "https://github.com/infotradescout/Selective-Intelligence/blob/main/LICENSE",
+    "citation": "https://infotradescout.github.io/Selective-Intelligence/CITATION.cff"
   },
   "activation": {
     "explicit": "Exact words in that order anywhere in current user input.",
@@ -177,9 +179,19 @@
   },
   "search_discovery": {
     "sitemap": "https://infotradescout.github.io/Selective-Intelligence/sitemap.xml",
+    "problem_hub": "https://infotradescout.github.io/Selective-Intelligence/problems/",
+    "question_library": "https://infotradescout.github.io/Selective-Intelligence/questions/",
+    "question_map": "https://infotradescout.github.io/Selective-Intelligence/discovery-queries.json",
+    "question_count": 210,
+    "llms_full": "https://infotradescout.github.io/Selective-Intelligence/llms-full.txt",
+    "feed": "https://infotradescout.github.io/Selective-Intelligence/feed.xml",
     "indexnow_endpoint": "https://api.indexnow.org/indexnow",
     "indexnow_key_location": "https://infotradescout.github.io/Selective-Intelligence/956490d8c7764dcf8fa9cb7482a32f4e.txt",
-    "submitted_notification_is_not_indexing_proof": true
+    "submitted_notification_is_not_indexing_proof": true,
+    "query_examples_are_not_search_volume": true,
+    "people_first_unique_content": true,
+    "llms_txt_is_optional_navigation_not_google_ranking_signal": true,
+    "crawler_access_does_not_guarantee_crawling_or_indexing": true
   },
   "feedback": {
     "worked_partly_wrong": "https://github.com/infotradescout/Selective-Intelligence/issues/new?template=feedback.yml",
@@ -191,7 +203,7 @@
     "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-0.4.0.json",
     "cross_client_equivalence_claimed": false,
     "publication_is_not_adoption_proof": true,
-    "source_contract_sha256": "4d44839eef006f7c4b8ff66c88ab756293ca367796e6ae05d2ce191742f09155"
+    "source_contract_sha256": "ed3deb2a4124197ccedcdbc559e15302663f5c83bae3a191ca287a175c54480a"
   },
   "companion": {
     "name": "Platynum-47",

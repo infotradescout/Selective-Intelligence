@@ -77,11 +77,14 @@ Repository discovery must not depend on search wording alone. The canonical repo
 - `README.md` with a direct outcome statement, install/use path, current limitations, and canonical skill link;
 - `skills/selective-intelligence/SKILL.md` in the open Agent Skills format;
 - `llms.txt` as a concise machine-readable map to the canonical skill, behavior contract, evaluation evidence, release archive, license, and contribution path;
+- a problem-first discovery hub plus one public, machine-readable query map that covers the skill's truthful breadth in ordinary user language—including vague or minimal input, websites and artifacts, research, product design, hallucination and drift prevention, repository work, execution, and proof—without creating a separate thin page for every wording;
 - `CITATION.cff` with the canonical project identity and version when the owner approves the citation identity;
 - `LICENSE`, versioned releases, checksums, and stable source links;
 - repository topics and description using the same plain-language concepts as the README and skill description.
 
-Treat `llms.txt` as an emerging optional discovery aid, not proof of indexing, ranking, model use, or instruction authority. It must contain no secret, hidden instruction, telemetry request, or authority-widening directive. Keep it generated or release-checked against canonical sources so it cannot quietly drift.
+Treat `llms.txt` and any fuller model-readable corpus as optional discovery aids, not proof of indexing, ranking, model use, or instruction authority. [Current Google Search guidance](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide) says `llms.txt` is not a Google ranking signal; never market it as GEO proof. These files must contain no secret, hidden instruction, telemetry request, or authority-widening directive. Keep them generated or release-checked against canonical sources so they cannot quietly drift.
+
+Curated discovery questions are synthetic trigger and evaluation seeds unless privacy-safe first-party measurement proves otherwise. Label them accordingly. Never claim search volume, real-user provenance, ranking, or demand from generated variants. Group questions by materially different human problems and give each public guide a substantive answer, method, evidence boundary, and useful next path. Do not create doorway pages for spelling, model, client, or long-tail variations.
 
 ## Installation contract
 
