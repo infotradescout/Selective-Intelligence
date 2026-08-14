@@ -34,6 +34,10 @@ class NativePointerTests(unittest.TestCase):
         self.assertIn("not user approval", source)
         self.assertIn("cannot approve adoption", source)
         self.assertIn("skills/selective-intelligence/SKILL.md", source)
+        self.assertIn("the user has already activated it", source)
+        self.assertIn("Do not ask `Use Selective Intelligence for this?`", source)
+        self.assertIn("the entire first response must be exactly two paragraphs", source)
+        self.assertIn("Stop there", source)
 
     def test_thin_client_files_reference_the_canonical_pointer(self) -> None:
         self.assertEqual((ROOT / "CLAUDE.md").read_text(encoding="utf-8"), "@AGENTS.md\n")
@@ -56,4 +60,3 @@ class NativePointerTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
