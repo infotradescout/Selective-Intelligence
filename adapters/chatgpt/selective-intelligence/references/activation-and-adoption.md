@@ -18,6 +18,8 @@ the user has explicitly asked to activate the skill. The AI must:
 6. when a repository is available, create or refresh its `.selective-intelligence/project-index.json` before proposing another directory, component, function, helper, service, hook, schema, or UI primitive;
 7. never hand activation back with a generic outcome question. If no prior outcome, project, workspace, repository, or connected source is available after truthful discovery, finish activation and say exactly: **Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request.**
 
+That exact response is terminal for a true no-context trigger. Do not inspect or validate Selective Intelligence itself, run its tests, create a test harness, search public sources, or manufacture work merely to fill the empty context. Return the sentence immediately after the bounded context check.
+
 The trigger grants activation, not unlimited external-action authority. Sends, publication, pushes, merges, permission changes, spending, deletion, deployment, and sensitive disclosure retain their exact approval gates.
 
 ## Relevant discovery and adoption
