@@ -61,6 +61,10 @@ class DiscoveryBridgeTests(unittest.TestCase):
     def test_machine_entry_points_agree(self) -> None:
         self.assertEqual(self.well_known, self.manifest)
         self.assertIn('<link rel="canonical" href="https://infotradescout.github.io/Selective-Intelligence/">', self.html)
+        self.assertIn(
+            '<meta name="google-site-verification" content="2HGXzalgV59ABuEMkGPZ9BiRYJGGR15458Wo8-10_zU">',
+            self.html,
+        )
         self.assertIn('type="application/ld+json"', self.html)
         structured_blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', self.html, re.DOTALL)
         self.assertEqual(len(structured_blocks), 1)
