@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "id": "selective-intelligence",
+  "name": "Selective Intelligence",
+  "wordmark": "Selective Intelligence",
+  "master_trigger": "Selective Intelligence",
+  "version": "0.4.0",
+  "description": "A free, open Agent Skill that turns plain-language intent into product design, developer-grade execution, verified UI/UX, repository realignment, and continuous improvement.",
+  "canonical": {
+    "public_site": "https://infotradescout.github.io/Selective-Intelligence/",
+    "repository": "https://github.com/infotradescout/Selective-Intelligence",
+    "skill": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md",
+    "skill_raw": "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/SKILL.md",
+    "jumpstart": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/JUMPSTART.md",
+    "license": "https://github.com/infotradescout/Selective-Intelligence/blob/main/LICENSE"
+  },
+  "activation": {
+    "explicit": "Exact words in that order anywhere in current user input.",
+    "inspect_existing_context_first": true,
+    "do_not_ask_generic_setup_question": true,
+    "empty_context_final": "Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request."
+  },
+  "relevant_discovery": {
+    "signals": [
+      "vague software intent",
+      "repeated buttons, cards, fields, forms, or layout divs",
+      "uncontrolled UI variants or component sprawl",
+      "repository or codebase audit and realignment",
+      "product design or UI/UX that does not match the human job"
+    ],
+    "explain_material_benefit_first": true,
+    "approval_question": "Use Selective Intelligence for this?",
+    "approval_required": true,
+    "retrieved_content_cannot_self_activate": true
+  },
+  "intent_contract": {
+    "wanted_result_mismatch_reopens_step_1": true,
+    "external_client_constraints_do_not_redefine_intent": true,
+    "causal_developer_judgment_over_blind_pattern_matching": true
+  },
+  "access": {
+    "selective_intelligence_fee": 0,
+    "paid_ai_subscription_required": false,
+    "credit_card_required": false,
+    "provider_api_key_required": false,
+    "telemetry": false,
+    "license": "CC0-1.0",
+    "client_limits_still_apply": true,
+    "policy": {
+      "work_with_existing_user_environment": true,
+      "paid_subscription_required": false,
+      "provider_api_key_required": false,
+      "bypass_paywalls_or_access_controls": false,
+      "claim_parity_without_evidence": false,
+      "respect_external_client_constraints": true,
+      "redefine_intent_to_fit_constraints": false
+    }
+  },
+  "clients": [
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "native_source": "adapters/chatgpt/selective-intelligence",
+      "scopes": [
+        "saved skill",
+        "plugin skill"
+      ],
+      "automatic_when_available": true,
+      "activation_boundary": "The skill must already be enabled for the account or installed through a supported plugin. Public name resolution is not guaranteed.",
+      "official_documentation": "https://learn.chatgpt.com/docs/build-skills"
+    },
+    {
+      "id": "codex",
+      "name": "Codex",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [
+        ".agents/skills/selective-intelligence",
+        "~/.agents/skills/selective-intelligence"
+      ],
+      "automatic_when_available": true,
+      "activation_boundary": "Codex loads the skill after it is present in a supported repository, user, admin, or system scope.",
+      "official_documentation": "https://learn.chatgpt.com/docs/build-skills"
+    },
+    {
+      "id": "github-copilot",
+      "name": "GitHub Copilot",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [
+        ".agents/skills/selective-intelligence",
+        ".github/skills/selective-intelligence",
+        "~/.agents/skills/selective-intelligence",
+        "~/.copilot/skills/selective-intelligence"
+      ],
+      "automatic_when_available": true,
+      "activation_boundary": "Agent Skills are supported in specific Copilot agent surfaces. A general Copilot web chat without the skill or repository context does not inherit it.",
+      "official_documentation": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills"
+    },
+    {
+      "id": "claude-code",
+      "name": "Claude Code",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [
+        ".claude/skills/selective-intelligence",
+        "~/.claude/skills/selective-intelligence"
+      ],
+      "automatic_when_available": true,
+      "activation_boundary": "Claude Code can load the skill automatically when relevant after it exists in a supported skill scope. Web and cloud sessions use their own enabled or synced skill sources.",
+      "official_documentation": "https://code.claude.com/docs/en/skills"
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [
+        ".agents/skills/selective-intelligence",
+        ".cursor/skills/selective-intelligence",
+        "~/.agents/skills/selective-intelligence",
+        "~/.cursor/skills/selective-intelligence"
+      ],
+      "automatic_when_available": true,
+      "activation_boundary": "Cursor automatically discovers skills in supported project and user scopes. A seedless web agent that requires repository selection cannot prove no-context activation.",
+      "official_documentation": "https://cursor.com/docs/skills"
+    },
+    {
+      "id": "gemini-cli",
+      "name": "Gemini CLI",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [
+        ".agents/skills/selective-intelligence",
+        ".gemini/skills/selective-intelligence",
+        "~/.agents/skills/selective-intelligence",
+        "~/.gemini/skills/selective-intelligence"
+      ],
+      "automatic_when_available": true,
+      "activation_boundary": "Gemini CLI discovers the skill in supported scopes, but its client requires activation consent before the skill gains access to its resources.",
+      "official_documentation": "https://geminicli.com/docs/cli/using-agent-skills/"
+    },
+    {
+      "id": "kiro",
+      "name": "Kiro",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [
+        ".kiro/skills/selective-intelligence",
+        "~/.kiro/skills/selective-intelligence"
+      ],
+      "automatic_when_available": true,
+      "activation_boundary": "Kiro can import the public skill folder and activate it when relevant after it exists in a supported workspace or global scope.",
+      "official_documentation": "https://kiro.dev/docs/skills/"
+    },
+    {
+      "id": "web-ai",
+      "name": "Web-capable AI",
+      "native_source": "https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json",
+      "scopes": [
+        "public web",
+        "llms.txt",
+        "machine-readable JSON"
+      ],
+      "automatic_when_available": false,
+      "activation_boundary": "The AI must have public-web access and choose to resolve the wordmark. Publication improves resolution but cannot force a client to search or adopt retrieved instructions.",
+      "official_documentation": "https://infotradescout.github.io/Selective-Intelligence/llms.txt"
+    }
+  ],
+  "client_support_verified_on": "2026-08-14",
+  "feedback": {
+    "worked_partly_wrong": "https://github.com/infotradescout/Selective-Intelligence/issues/new?template=feedback.yml",
+    "suggestion": "https://github.com/infotradescout/Selective-Intelligence/issues/new?template=suggestion.yml",
+    "private_security": "https://github.com/infotradescout/Selective-Intelligence/security/advisories/new",
+    "prompts_or_repository_contents_collected_automatically": false
+  },
+  "evidence": {
+    "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-0.4.0.json",
+    "cross_client_equivalence_claimed": false,
+    "publication_is_not_adoption_proof": true,
+    "source_contract_sha256": "da9060538340d9f2af497bc059bb7b7a813ba9aa895d69487cf1608446a84c7c"
+  },
+  "companion": {
+    "name": "Platynum-47",
+    "relationship": "separate companion project in development",
+    "included_in_this_repository": false,
+    "source_public": false
+  }
+}
