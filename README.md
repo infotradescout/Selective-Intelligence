@@ -64,6 +64,8 @@ The complete core remains public-domain-equivalent under CC0: skill instructions
 
 Human and machine entry points are kept at the repository root: this README, [`llms.txt`](llms.txt), [`CITATION.cff`](CITATION.cff), [`CONTRIBUTING.md`](CONTRIBUTING.md), and the canonical [`SKILL.md`](skills/selective-intelligence/SKILL.md). These make the project easier to navigate and mirror; they are not a promise of indexing, ranking, or forced adoption.
 
+The telemetry-free public discovery surface is [infotradescout.github.io/Selective-Intelligence](https://infotradescout.github.io/Selective-Intelligence/). Its [machine-readable contract](https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json), [well-known endpoint](https://infotradescout.github.io/Selective-Intelligence/.well-known/selective-intelligence.json), crawler-visible HTML, `llms.txt`, robots policy, sitemap, and client-support registry are generated from this canonical repository and checked for drift. They improve name resolution for web-capable AIs; they do not claim that a client without web or installed-skill discovery can fetch the skill.
+
 ## Use in ChatGPT
 
 [Open Selective Intelligence in ChatGPT](https://chatgpt.com/skills?skill_id=6a60f7ecb940819186be4dffa3094f85) when the skill is enabled for your account. Until a public listing is active, this route may return to the ChatGPT home page for other users.

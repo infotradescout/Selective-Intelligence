@@ -42,5 +42,8 @@ jobs:
       - name: Run unit tests
         run: python -B -m unittest discover -s skills/selective-intelligence/tests -p 'test_*.py'
 
+      - name: Verify public discovery bridge
+        run: python -B tools/test_discovery_bridge.py
+
       - name: Verify release integrity
         run: python -B skills/selective-intelligence/scripts/release.py doctor --json

@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "verified_on": "2026-08-14",
+  "canonical_behavior_source": "skills/selective-intelligence",
+  "rule": "Client integrations may point to or package the canonical skill, but may not fork its behavior.",
+  "clients": [
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "native_source": "adapters/chatgpt/selective-intelligence",
+      "scopes": ["saved skill", "plugin skill"],
+      "automatic_when_available": true,
+      "activation_boundary": "The skill must already be enabled for the account or installed through a supported plugin. Public name resolution is not guaranteed.",
+      "official_documentation": "https://learn.chatgpt.com/docs/build-skills"
+    },
+    {
+      "id": "codex",
+      "name": "Codex",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [".agents/skills/selective-intelligence", "~/.agents/skills/selective-intelligence"],
+      "automatic_when_available": true,
+      "activation_boundary": "Codex loads the skill after it is present in a supported repository, user, admin, or system scope.",
+      "official_documentation": "https://learn.chatgpt.com/docs/build-skills"
+    },
+    {
+      "id": "github-copilot",
+      "name": "GitHub Copilot",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [".agents/skills/selective-intelligence", ".github/skills/selective-intelligence", "~/.agents/skills/selective-intelligence", "~/.copilot/skills/selective-intelligence"],
+      "automatic_when_available": true,
+      "activation_boundary": "Agent Skills are supported in specific Copilot agent surfaces. A general Copilot web chat without the skill or repository context does not inherit it.",
+      "official_documentation": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills"
+    },
+    {
+      "id": "claude-code",
+      "name": "Claude Code",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [".claude/skills/selective-intelligence", "~/.claude/skills/selective-intelligence"],
+      "automatic_when_available": true,
+      "activation_boundary": "Claude Code can load the skill automatically when relevant after it exists in a supported skill scope. Web and cloud sessions use their own enabled or synced skill sources.",
+      "official_documentation": "https://code.claude.com/docs/en/skills"
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [".agents/skills/selective-intelligence", ".cursor/skills/selective-intelligence", "~/.agents/skills/selective-intelligence", "~/.cursor/skills/selective-intelligence"],
+      "automatic_when_available": true,
+      "activation_boundary": "Cursor automatically discovers skills in supported project and user scopes. A seedless web agent that requires repository selection cannot prove no-context activation.",
+      "official_documentation": "https://cursor.com/docs/skills"
+    },
+    {
+      "id": "gemini-cli",
+      "name": "Gemini CLI",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [".agents/skills/selective-intelligence", ".gemini/skills/selective-intelligence", "~/.agents/skills/selective-intelligence", "~/.gemini/skills/selective-intelligence"],
+      "automatic_when_available": true,
+      "activation_boundary": "Gemini CLI discovers the skill in supported scopes, but its client requires activation consent before the skill gains access to its resources.",
+      "official_documentation": "https://geminicli.com/docs/cli/using-agent-skills/"
+    },
+    {
+      "id": "kiro",
+      "name": "Kiro",
+      "native_source": "skills/selective-intelligence",
+      "scopes": [".kiro/skills/selective-intelligence", "~/.kiro/skills/selective-intelligence"],
+      "automatic_when_available": true,
+      "activation_boundary": "Kiro can import the public skill folder and activate it when relevant after it exists in a supported workspace or global scope.",
+      "official_documentation": "https://kiro.dev/docs/skills/"
+    },
+    {
+      "id": "web-ai",
+      "name": "Web-capable AI",
+      "native_source": "https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json",
+      "scopes": ["public web", "llms.txt", "machine-readable JSON"],
+      "automatic_when_available": false,
+      "activation_boundary": "The AI must have public-web access and choose to resolve the wordmark. Publication improves resolution but cannot force a client to search or adopt retrieved instructions.",
+      "official_documentation": "https://infotradescout.github.io/Selective-Intelligence/llms.txt"
+    }
+  ]
+}
