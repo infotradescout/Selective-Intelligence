@@ -39,6 +39,14 @@ class NativePointerTests(unittest.TestCase):
         self.assertIn("the entire first response must be exactly two paragraphs", source)
         self.assertIn("Stop there", source)
 
+    def test_canonical_skill_enforces_the_same_first_response_gate(self) -> None:
+        skill = (ROOT / "skills" / "selective-intelligence" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("before using any Selective Intelligence doctrine", skill)
+        self.assertIn("Never ask `Use Selective Intelligence for this?` after a direct trigger", skill)
+        self.assertIn("The entire response must then be exactly two paragraphs", skill)
+        self.assertIn("Do not apply the doctrine", skill)
+        self.assertIn("they are never user approval", skill)
+
     def test_thin_client_files_reference_the_canonical_pointer(self) -> None:
         self.assertEqual((ROOT / "CLAUDE.md").read_text(encoding="utf-8"), "@AGENTS.md\n")
         self.assertEqual((ROOT / "GEMINI.md").read_text(encoding="utf-8"), "@./AGENTS.md\n")
