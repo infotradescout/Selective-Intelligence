@@ -754,6 +754,32 @@ def result_record_errors(
             for item in publication_inputs
         ):
             errors.append("failing live client smokes must remain an explicit publication input")
+    free_tier = result.get("free_tier_conformance")
+    if not isinstance(free_tier, dict) or free_tier.get("result") not in {"pass", "fail"}:
+        errors.append("current eval result must explicitly classify free_tier_conformance")
+    else:
+        if free_tier.get("paid_ai_subscription_required") is not False:
+            errors.append("free-tier conformance must declare that a paid AI subscription is not required")
+        tested_clients = free_tier.get("tested_clients")
+        if not isinstance(tested_clients, list) or not tested_clients:
+            errors.append("free-tier conformance must retain at least one genuine no-paid client observation")
+        elif free_tier.get("result") == "pass" and not any(
+            isinstance(client, dict)
+            and client.get("paid_subscription") is False
+            and client.get("activation_result") == "pass"
+            and client.get("discovery_result") == "pass"
+            for client in tested_clients
+        ):
+            errors.append("passing free-tier conformance requires a no-paid client that passed activation and discovery")
+        if free_tier.get("result") == "fail":
+            publication_inputs = result.get("publication_inputs_remaining")
+            if not isinstance(publication_inputs, list) or not any(
+                isinstance(item, str) and "passing no-paid" in item
+                for item in publication_inputs
+            ):
+                errors.append("failing free-tier conformance must remain an explicit publication input")
+        if require_model_behavior and free_tier.get("result") != "pass":
+            errors.append("public release requires passing free-tier conformance")
     observed_at = result.get("observed_at")
     try:
         observed_timestamp = dt.datetime.fromisoformat(str(observed_at).replace("Z", "+00:00"))
@@ -960,6 +986,67 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
         errors.append("distribution metadata must bind direct activation to the exact phrase in current user input")
     if metadata.get("discovered_adoption") != "explicit_user_approval_required":
         errors.append("distribution metadata must require explicit user approval for discovered adoption")
+    if metadata.get("paid_ai_subscription_required") is not False:
+        errors.append("distribution metadata must forbid a paid AI subscription requirement")
+    if metadata.get("free_tier_baseline") != "required_for_portability_claims":
+        errors.append("distribution metadata must require a free-tier baseline for portability claims")
+    if metadata.get("account_requirement") != "client_dependent_no_paid_subscription":
+        errors.append("distribution metadata must separate client sign-in from paid subscription requirements")
+    if metadata.get("external_client_constraints") != "respect_and_report_without_redefining_intent":
+        errors.append("distribution metadata must respect client constraints without redefining intent")
+    if metadata.get("result_mismatch_reopens_step1") is not True:
+        errors.append("distribution metadata must reopen Step 1 when the result does not match wanted intent")
+    if metadata.get("developer_judgment_over_pattern_matching") is not True:
+        errors.append("distribution metadata must require causal developer judgment over blind pattern matching")
+    catalog_relative = metadata.get("no_paid_capability_catalog")
+    if catalog_relative != "metadata/no-paid-capabilities.json":
+        errors.append("distribution metadata must declare the canonical no-paid capability catalog")
+    else:
+        catalog_path, catalog_path_error = safe_release_file(root, Path(catalog_relative))
+        if catalog_path_error or catalog_path is None:
+            errors.append(f"no-paid capability catalog is missing or unsafe: {catalog_path_error}")
+        else:
+            try:
+                catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError) as exc:
+                errors.append(f"invalid no-paid capability catalog: {exc}")
+            else:
+                policy = catalog.get("policy") if isinstance(catalog, dict) else None
+                capabilities = catalog.get("capabilities") if isinstance(catalog, dict) else None
+                if (
+                    not isinstance(catalog, dict)
+                    or catalog.get("schema_version") != 1
+                    or catalog.get("skill") != "selective-intelligence"
+                    or not isinstance(policy, dict)
+                    or policy.get("work_with_existing_user_environment") is not True
+                    or policy.get("paid_subscription_required") is not False
+                    or policy.get("provider_api_key_required") is not False
+                    or policy.get("bypass_paywalls_or_access_controls") is not False
+                    or policy.get("claim_parity_without_evidence") is not False
+                    or policy.get("respect_external_client_constraints") is not True
+                    or policy.get("redefine_intent_to_fit_constraints") is not False
+                ):
+                    errors.append("no-paid capability catalog must preserve the existing-environment and no-bypass policy")
+                if not isinstance(capabilities, list) or not capabilities:
+                    errors.append("no-paid capability catalog must declare at least one bundled capability")
+                else:
+                    declared_release_files = set(metadata.get("release_files", []))
+                    for index, capability in enumerate(capabilities):
+                        paths = capability.get("paths") if isinstance(capability, dict) else None
+                        if (
+                            not isinstance(capability, dict)
+                            or not isinstance(capability.get("job"), str)
+                            or not capability.get("job", "").strip()
+                            or not isinstance(capability.get("evidence"), str)
+                            or not capability.get("evidence", "").strip()
+                            or not isinstance(paths, list)
+                            or not paths
+                        ):
+                            errors.append(f"no-paid capability {index} is incomplete")
+                            continue
+                        for capability_path in paths:
+                            if not isinstance(capability_path, str) or capability_path not in declared_release_files:
+                                errors.append(f"no-paid capability {index} references an unshipped path: {capability_path!r}")
     agent_config = root / "agents" / "openai.yaml"
     agent_config_text = (
         agent_config.read_text(encoding="utf-8") if agent_config.is_file() else ""

@@ -131,7 +131,9 @@ Do not attempt to coerce adoption. Make the open route so complete, portable, we
 
 ## Free-use guarantee
 
-The complete skill, schemas, validators, templates, references, evals, release archives, and updates remain available under the declared free license. Do not create a reduced free edition, license-key path, model-specific premium gate, delayed security fix, required account, required telemetry, or paid compatibility adapter around the core.
+The complete skill, schemas, validators, templates, references, evals, release archives, and updates remain available under the declared free license. Do not create a reduced free edition, license-key path, model-specific premium gate, delayed security fix, paid AI subscription requirement, credit-card requirement, provider-key requirement, required telemetry, or paid compatibility adapter around the core. A client may require its ordinary free account, but that client dependency is not a Selective Intelligence subscription.
+
+Every claimed supported client family must expose a no-paid path or be labeled optional and unsupported for the free baseline. A portability claim requires a passing run in a genuine free-tier or local/no-cost client; a matrix made only of paid plans cannot establish portability. Quotas may narrow throughput or available tools, but they cannot narrow correctness, permission, verification, or the exact activation and adoption contracts. Never convert a client limitation into upgrade homework for the person.
 
 Paid implementation, consulting, hosting, or support may exist only as optional services. They cannot be required to obtain the complete skill or understand how it works.
 
@@ -161,6 +163,7 @@ Before calling distribution ready, verify:
 - archives contain no secrets, local feedback, caches, fixtures with personal data, or project-specific locks;
 - checksums and release notes match the tested archive;
 - positive, near-miss, negative-trigger, output, safety, and portability evals pass at the declared level;
+- the no-paid baseline has passing evidence from a genuine free-tier or local/no-cost client, and account-specific billing blocks are not misclassified as product requirements;
 - optional support URL is either verified or omitted;
 - all listings point to the canonical version.
 

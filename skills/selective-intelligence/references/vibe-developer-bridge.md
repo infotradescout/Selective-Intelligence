@@ -17,6 +17,14 @@ The bridge is complete only when:
 - the person never becomes the courier for tokens, configuration, syntax, terminal commands, or inter-agent packets;
 - a developer can inspect, extend, and operate the result without reverse-engineering undocumented decisions.
 
+## Developer judgment over pattern matching
+
+Common patterns accelerate discovery; they do not decide the product. Treat a familiar dashboard, card layout, CRUD flow, auth pattern, framework convention, error signature, or neighboring implementation as a hypothesis. Before inheriting it, ask what job must actually work, why the current behavior exists, what state and dependency changes it causes, what it could break, how failure recovers, and what observation would prove the person received the wanted result.
+
+Reason causally across the complete path. Inspect registrations, callers, consumers, runtime exposure, data ownership, permissions, failure states, and operations instead of matching filenames or code shapes. Use counterexamples and counterfactuals: could the usual pattern pass tests while failing this product; could the symptom disappear while the user's problem remains; could a local fix create a second source of truth? Prefer the smallest coherent change that a strong human developer could explain from product evidence and maintain without hidden chat context.
+
+“Common sense” means consequence-aware engineering judgment grounded in the current system. It does not mean inventing unstated facts, ignoring safety or authority, or replacing evidence with intuition.
+
 ## Two-way translation
 
 Translate ordinary-language intent into:

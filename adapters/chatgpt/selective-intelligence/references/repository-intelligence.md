@@ -84,6 +84,8 @@ Map from product promise to runtime behavior:
 
 Search by feature language, route segments, component names, API paths, database entities, events, permissions, tests, and user-facing copy. Trace both directions: user entry to data effect, and backend capability to reachable user surface.
 
+Search matches and structural similarity are discovery leads, not conclusions. Confirm causal ownership through imports, registrations, callers, consumers, state transitions, runtime exposure, and observed behavior. Do not choose a fix because it resembles the usual solution or the closest file; choose it because the complete system trace and counterfactual checks show it produces the wanted outcome without creating another truth.
+
 Build the canonical ownership map for overlapping features, modules, components, schemas, services, utilities, and shared primitives. Classify planned work as reuse, extension, extraction, consolidation, creation, or removal before editing.
 
 ## Scale and repository topology

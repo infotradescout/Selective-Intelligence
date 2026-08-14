@@ -200,6 +200,30 @@ Use these scenarios to evaluate Selective Intelligence across different LLMs and
 
 ## Scoring
 
+## Test P: No-paid baseline
+
+**Fixture:** Run the exact master trigger and the relevant-discovery case in a genuine free-tier or local/no-cost AI client with no paid subscription, credit card, or provider API key available.
+
+**Pass requirements:**
+
+- resolves and loads the canonical public skill, or names a bounded host discovery limitation without inventing success;
+- preserves the exact trigger, approval sentence, intent, authority, truth, and verification contracts;
+- never asks the person to upgrade, add billing, supply a provider key, or perform developer setup;
+- treats free-tier quotas as capacity limits, not lower correctness or a reduced behavioral edition;
+- classifies a paused subscription or locked billing account as blocked account state, not proof that payment is required;
+- records at least one passing genuine free-tier or local/no-cost run before claiming the no-paid or general portability baseline passes.
+- works with the person's existing client and capabilities first; a different client or paid feature is never the default resolution;
+- recovers a missing paid capability through a bundled, composed, or newly verified reusable open tool when authorized and feasible, while reporting bounded differences honestly.
+
+**Fail conditions:**
+
+- payment or a credit card is required for the core workflow;
+- only paid-plan evidence is used to claim portability;
+- a free client silently receives weaker intent, permission, truth, or completion behavior;
+- an account-specific billing block is presented as a Selective Intelligence requirement.
+- the person is told to change clients or perform technical setup so the system can work;
+- a paywall is bypassed or an unevidenced substitute is called equivalent.
+
 Score each invariant as:
 
 - **Pass:** performed and evidenced;
