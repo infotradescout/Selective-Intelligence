@@ -8,6 +8,7 @@ import re
 import subprocess
 import sys
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 
@@ -28,6 +29,7 @@ class DiscoveryBridgeTests(unittest.TestCase):
         cls.well_known = json.loads((DOCS / ".well-known" / "selective-intelligence.json").read_text(encoding="utf-8"))
         cls.html = (DOCS / "index.html").read_text(encoding="utf-8")
         cls.indexnow = json.loads((ROOT / "adapters" / "indexnow.json").read_text(encoding="utf-8"))
+        cls.queries = json.loads((ROOT / "adapters" / "discovery-queries.json").read_text(encoding="utf-8"))
 
     def test_generated_files_are_current(self) -> None:
         result = subprocess.run(
@@ -69,6 +71,93 @@ class DiscoveryBridgeTests(unittest.TestCase):
         self.assertEqual(structured["about"]["@type"], "DefinedTerm")
         self.assertIn("https://infotradescout.github.io/Selective-Intelligence/sitemap.xml", (DOCS / "robots.txt").read_text(encoding="utf-8"))
         self.assertIn("Selective Intelligence", (DOCS / "llms.txt").read_text(encoding="utf-8"))
+        self.assertEqual(
+            (DOCS / "SKILL.md").read_text(encoding="utf-8"),
+            (ROOT / "skills" / "selective-intelligence" / "SKILL.md").read_text(encoding="utf-8"),
+        )
+        citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
+        self.assertRegex(citation, rf"(?m)^version: {re.escape(self.manifest['version'])}$")
+        self.assertEqual(citation, (DOCS / "CITATION.cff").read_text(encoding="utf-8"))
+
+    def test_problem_first_pages_are_distinct_and_crawlable(self) -> None:
+        expected_guides = {
+            "ai-built-the-wrong-thing",
+            "ui-component-sprawl",
+            "repository-drift",
+            "free-ai-coding-workflow",
+            "vague-idea-to-complete-outcome",
+            "research-without-hallucinations",
+            "one-prompt-website-first-deliverable",
+        }
+        pages = [DOCS / "problems" / "index.html", DOCS / "questions" / "index.html", DOCS / "use-with-ai" / "index.html"]
+        pages.extend(DOCS / "problems" / slug / "index.html" for slug in sorted(expected_guides))
+        bodies = []
+        for page in pages:
+            self.assertTrue(page.exists(), page)
+            body = page.read_text(encoding="utf-8")
+            bodies.append(body)
+            self.assertIn('<meta name="robots" content="index,follow', body)
+            self.assertEqual(body.count('<link rel="canonical"'), 1)
+            structured_blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', body, re.DOTALL)
+            self.assertEqual(len(structured_blocks), 1, page)
+            json.loads(structured_blocks[0])
+            self.assertNotIn("MealScout", body)
+            self.assertNotIn("TradeScout profiles", body)
+        self.assertEqual(len(bodies), len(set(bodies)))
+        discovered = {path.parent.name for path in (DOCS / "problems").glob("*/index.html")}
+        self.assertEqual(discovered, expected_guides)
+
+    def test_query_map_is_broad_unique_and_truthfully_labeled(self) -> None:
+        clusters = self.queries["clusters"]
+        questions = [question for cluster in clusters for question in cluster["queries"]]
+        self.assertGreaterEqual(len(clusters), 20)
+        self.assertEqual(len(questions), 210)
+        self.assertEqual(len({question.casefold() for question in questions}), len(questions))
+        self.assertIn("no search-volume claim", self.queries["evidence_boundary"])
+        self.assertTrue(self.queries["behavior"]["approval_required_before_adoption"])
+        corpus = "\n".join(questions).casefold()
+        for phrase in [
+            "one prompt",
+            "hallucinating",
+            "scope drift",
+            "five different versions of the same button",
+            "without paying",
+            "conflicting",
+            "campaign",
+            "private data",
+            "resume",
+        ]:
+            self.assertIn(phrase, corpus)
+        for cluster in clusters:
+            self.assertEqual(len(cluster["queries"]), 10)
+            self.assertTrue((DOCS / cluster["guide"] / "index.html").exists(), cluster["guide"])
+        self.assertEqual(self.manifest["search_discovery"]["question_count"], len(questions))
+        self.assertTrue(self.manifest["search_discovery"]["query_examples_are_not_search_volume"])
+        public_queries = json.loads((DOCS / "discovery-queries.json").read_text(encoding="utf-8"))
+        self.assertEqual(public_queries, self.queries)
+        full_corpus = (DOCS / "llms-full.txt").read_text(encoding="utf-8")
+        self.assertTrue(all(question in full_corpus for question in questions))
+
+    def test_crawler_policy_sitemap_and_feed_cover_new_surfaces(self) -> None:
+        robots = (DOCS / "robots.txt").read_text(encoding="utf-8")
+        for agent in ["OAI-SearchBot", "ChatGPT-User", "Claude-SearchBot", "Claude-User", "PerplexityBot", "Perplexity-User"]:
+            self.assertIn(f"User-agent: {agent}\nAllow: /", robots)
+        self.assertIn("User-agent: *\nAllow: /", robots)
+        sitemap = ET.parse(DOCS / "sitemap.xml")
+        namespace = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        sitemap_urls = {node.text for node in sitemap.findall("s:url/s:loc", namespace)}
+        for url in [
+            "https://infotradescout.github.io/Selective-Intelligence/problems/",
+            "https://infotradescout.github.io/Selective-Intelligence/questions/",
+            "https://infotradescout.github.io/Selective-Intelligence/use-with-ai/",
+            "https://infotradescout.github.io/Selective-Intelligence/problems/one-prompt-website-first-deliverable/",
+            "https://infotradescout.github.io/Selective-Intelligence/discovery-queries.json",
+            "https://infotradescout.github.io/Selective-Intelligence/llms-full.txt",
+            "https://infotradescout.github.io/Selective-Intelligence/SKILL.md",
+        ]:
+            self.assertIn(url, sitemap_urls)
+        feed = ET.parse(DOCS / "feed.xml")
+        self.assertGreaterEqual(len(feed.findall("{http://www.w3.org/2005/Atom}entry")), 10)
 
     def test_client_registry_is_bounded_and_source_backed(self) -> None:
         clients = self.manifest["clients"]
@@ -98,6 +187,13 @@ class DiscoveryBridgeTests(unittest.TestCase):
         self.assertEqual(payload["host"], "infotradescout.github.io")
         self.assertEqual(payload["keyLocation"], self.indexnow["key_location"])
         self.assertEqual(payload["urlList"], self.indexnow["url_list"])
+        prefix = "https://infotradescout.github.io/Selective-Intelligence/"
+        for url in self.indexnow["url_list"]:
+            relative = url.removeprefix(prefix)
+            local = DOCS / relative
+            if not relative or relative.endswith("/"):
+                local = local / "index.html"
+            self.assertTrue(local.exists(), f"IndexNow URL has no generated public file: {url}")
         self.assertTrue(self.manifest["search_discovery"]["submitted_notification_is_not_indexing_proof"])
 
     def test_public_copy_preserves_product_and_security_boundaries(self) -> None:

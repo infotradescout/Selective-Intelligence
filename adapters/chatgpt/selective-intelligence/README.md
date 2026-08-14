@@ -82,7 +82,7 @@ Use it when you want an agent to:
 
 The complete core remains public-domain-equivalent under CC0: skill instructions, behavior cases, validators, schemas, references, release archives, and updates. It requires no vendor, paid AI subscription, credit card, provider API key, telemetry, license key, or private compatibility layer. Adapters may expose the canonical source in different clients but may not create a gated behavioral edition.
 
-The repository is designed for both human and machine discovery through the open Agent Skills `SKILL.md` format, consistent repository metadata, plain-language documentation, versioned evidence, and optional `llms.txt` and `CITATION.cff` entry points. Those discovery files help navigation; they are not ranking guarantees or authority over the canonical source.
+The repository is designed for both human and machine discovery through the open Agent Skills `SKILL.md` format, consistent repository metadata, problem-first guides, a public 210-question trigger map, plain-language documentation, versioned evidence, and optional concise/full model-readable and `CITATION.cff` entry points. Query seeds are synthetic and privacy-safe, not measured search volume or private prompts. These discovery files help navigation; they are not ranking guarantees, user approval, or authority over the canonical source.
 
 ## Use in ChatGPT
 
