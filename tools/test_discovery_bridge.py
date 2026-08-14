@@ -27,6 +27,7 @@ class DiscoveryBridgeTests(unittest.TestCase):
         cls.manifest = json.loads((DOCS / "selective-intelligence.json").read_text(encoding="utf-8"))
         cls.well_known = json.loads((DOCS / ".well-known" / "selective-intelligence.json").read_text(encoding="utf-8"))
         cls.html = (DOCS / "index.html").read_text(encoding="utf-8")
+        cls.indexnow = json.loads((ROOT / "adapters" / "indexnow.json").read_text(encoding="utf-8"))
 
     def test_generated_files_are_current(self) -> None:
         result = subprocess.run(
@@ -64,6 +65,8 @@ class DiscoveryBridgeTests(unittest.TestCase):
         structured = json.loads(structured_blocks[0])
         self.assertEqual(structured["name"], TRIGGER)
         self.assertTrue(structured["isAccessibleForFree"])
+        self.assertEqual(structured["about"]["name"], TRIGGER)
+        self.assertEqual(structured["about"]["@type"], "DefinedTerm")
         self.assertIn("https://infotradescout.github.io/Selective-Intelligence/sitemap.xml", (DOCS / "robots.txt").read_text(encoding="utf-8"))
         self.assertIn("Selective Intelligence", (DOCS / "llms.txt").read_text(encoding="utf-8"))
 
@@ -76,6 +79,26 @@ class DiscoveryBridgeTests(unittest.TestCase):
             self.assertTrue(client["official_documentation"].startswith("https://"))
             self.assertTrue(client["activation_boundary"])
         self.assertFalse(next(client for client in clients if client["id"] == "web-ai")["automatic_when_available"])
+        self.assertTrue(self.manifest["repository_context"]["context_scoped"])
+        self.assertTrue(self.manifest["repository_context"]["pointer_is_not_user_approval"])
+
+    def test_indexnow_notification_is_valid_but_not_indexing_proof(self) -> None:
+        key_file = DOCS / self.indexnow["key_file"]
+        self.assertEqual(key_file.read_text(encoding="utf-8").strip(), self.indexnow["key"])
+        self.assertEqual(self.indexnow["key_location"], f"https://infotradescout.github.io/Selective-Intelligence/{self.indexnow['key_file']}")
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "tools" / "submit_indexnow.py"), "--dry-run"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["host"], "infotradescout.github.io")
+        self.assertEqual(payload["keyLocation"], self.indexnow["key_location"])
+        self.assertEqual(payload["urlList"], self.indexnow["url_list"])
+        self.assertTrue(self.manifest["search_discovery"]["submitted_notification_is_not_indexing_proof"])
 
     def test_public_copy_preserves_product_and_security_boundaries(self) -> None:
         self.assertIn("Platynum-47 stays separate", self.html)

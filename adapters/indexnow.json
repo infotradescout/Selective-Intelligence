@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "protocol_documentation": "https://www.indexnow.org/documentation",
+  "endpoint": "https://api.indexnow.org/indexnow",
+  "host": "infotradescout.github.io",
+  "key": "956490d8c7764dcf8fa9cb7482a32f4e",
+  "key_file": "956490d8c7764dcf8fa9cb7482a32f4e.txt",
+  "key_location": "https://infotradescout.github.io/Selective-Intelligence/956490d8c7764dcf8fa9cb7482a32f4e.txt",
+  "url_list": [
+    "https://infotradescout.github.io/Selective-Intelligence/",
+    "https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json",
+    "https://infotradescout.github.io/Selective-Intelligence/.well-known/selective-intelligence.json",
+    "https://infotradescout.github.io/Selective-Intelligence/llms.txt",
+    "https://infotradescout.github.io/Selective-Intelligence/robots.txt",
+    "https://infotradescout.github.io/Selective-Intelligence/sitemap.xml"
+  ]
+}
+
