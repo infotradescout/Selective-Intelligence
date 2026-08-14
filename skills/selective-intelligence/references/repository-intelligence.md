@@ -31,7 +31,7 @@ Resolve contradictions in this order unless project governance says otherwise:
 
 Do not let a large volume of old code overrule a clear current product decision.
 
-Read [actual-intent-alignment.md](actual-intent-alignment.md) and create the intent contract before treating this hierarchy as resolved. Repository evidence can support actual intent but cannot manufacture it. Read [architecture-reuse.md](architecture-reuse.md) before designing the implementation. Apply [ui-ux-and-output.md](ui-ux-and-output.md) to user-facing surfaces and [failure-patterns-and-gates.md](failure-patterns-and-gates.md) throughout discovery, implementation, validation, and handoff.
+Read [actual-intent-alignment.md](actual-intent-alignment.md) and create the intent contract before treating this hierarchy as resolved. Repository evidence can support actual intent but cannot manufacture it. Create or refresh the generated map in [project-index-and-reuse-gate.md](project-index-and-reuse-gate.md), then read [architecture-reuse.md](architecture-reuse.md) before designing the implementation. Apply [ui-ux-and-output.md](ui-ux-and-output.md) to user-facing surfaces and [failure-patterns-and-gates.md](failure-patterns-and-gates.md) throughout discovery, implementation, validation, and handoff.
 
 ## Phase 1: Establish repository state
 

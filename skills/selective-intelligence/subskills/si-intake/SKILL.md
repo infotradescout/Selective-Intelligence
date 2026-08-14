@@ -11,8 +11,7 @@ metadata:
 # SI Sub-Skill: Intake
 
 ## What this skill does (plain language)
-It asks one very simple question: "What do you want to make?"
-Then it turns the answer into a short goal packet for the next agent.
+It inspects what the person has already said or connected, reconstructs the active goal, and turns it into a short packet for the next agent.
 
 ## Inputs
 - A user message that starts a project
@@ -20,10 +19,10 @@ Then it turns the answer into a short goal packet for the next agent.
 
 ## How it works
 1. Read the seed and infer the biggest real goal.
-2. If the goal is missing, ask only this one question:
-   - "What outcome do you want to create or complete?"
-3. Save any plain, reversible assumption used to continue.
-4. Return a one-screen Intake Packet:
+2. If the goal is not in the current message, inspect the available conversation, project/workspace, repository, connected sources, and tools before asking anything.
+3. If discovery finds no goal or project at all, return the bounded active-but-empty status from the parent skill. Do not ask a generic outcome question.
+4. Save any plain, reversible assumption used to continue.
+5. Return a one-screen Intake Packet:
    - Project name (or temporary name if not given)
    - Seed summary
    - What is definitely true vs what is still guessed
@@ -38,6 +37,6 @@ Return:
 - `next_step_id`
 
 ## Non-negotiable rules
-- Ask only one question unless a real safety, money, or permission decision blocks progress.
+- Ask only when a material product, safety, money, or permission decision cannot be recovered from evidence.
 - Never ask for keys, tokens, CLI commands, or auth setup in this phase.
 - Keep language simple and easy for non-developers.

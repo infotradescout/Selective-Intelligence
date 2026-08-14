@@ -48,7 +48,7 @@ When a model drifts from that packet, SI must catch and correct **before drift b
 
 ### Quality benchmark versus reliability
 
-**TradeScout profile seeding** is the explicit **quality benchmark** for this requirement: it proves the quality bar is achievable on a real sparse-to-complete product path. It is **not** a one-off success story and **not** reliability proof. Reliability means that same standard repeats across tools and runtimes without the user spending most of the session correcting the agent.
+A successful, evidence-bearing sparse-to-complete product run may prove that the quality bar is achievable. It is **not** reliability proof. Reliability means that same standard repeats across tools and runtimes without the user spending most of the session correcting the agent.
 
 ### Pre-action drift catch (live steering checkpoints)
 
@@ -273,7 +273,7 @@ After a meaningful outcome, correction, block, retry, or reopened requirement, r
 
 ## Portability conformance
 
-Use [portability-conformance.md](portability-conformance.md) to forward-test major revisions. A model passes only if it preserves the invariants and verdict meanings, even when its specific implementation differs. Cross-runtime equivalence (Test O) and the TradeScout profile-seeding quality benchmark are graded separately from reliability: one strong run proves the bar; repeated equivalent runs across clients prove reliability.
+Use [portability-conformance.md](portability-conformance.md) to forward-test major revisions. A model passes only if it preserves the invariants and verdict meanings, even when its specific implementation differs. Cross-runtime equivalence (Test O) and one-run benchmark quality are graded separately from reliability: one strong run proves the bar; repeated equivalent runs across clients prove reliability.
 
 ## Guided Council routing
 

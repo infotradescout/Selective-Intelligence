@@ -51,6 +51,11 @@ SECRET_PATTERNS = (
 )
 JUMPSTART_MANIFEST_BEGIN = "<!-- SELECTIVE_INTELLIGENCE_JUMPSTART_MANIFEST_BEGIN -->"
 JUMPSTART_MANIFEST_END = "<!-- SELECTIVE_INTELLIGENCE_JUMPSTART_MANIFEST_END -->"
+PRODUCT_SPECIFIC_BRANDS = tuple(
+    re.compile(rf"\b{prefix}{suffix}\b")
+    for prefix, suffix in (("Meal", "Scout"), ("Trade", "Scout"))
+)
+FORBIDDEN_HANDOFF_QUESTION = "What outcome do you want to create or complete?"
 
 
 def sha256(path: Path) -> str:
@@ -180,6 +185,34 @@ def release_files(root: Path, metadata: dict[str, object]) -> tuple[list[Path], 
     return sorted(set(files)), errors
 
 
+def public_contract_errors(root: Path, files: list[Path]) -> list[str]:
+    """Keep the portable public contract product-neutral and autonomous."""
+    errors: list[str] = []
+    active_contracts = {
+        "SKILL.md",
+        "JUMPSTART.md",
+        "README.md",
+        "references/activation-and-adoption.md",
+        "subskills/si-intake/SKILL.md",
+    }
+    for path in files:
+        try:
+            content = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        relative = path.relative_to(root).as_posix()
+        for pattern in PRODUCT_SPECIFIC_BRANDS:
+            if pattern.search(content):
+                errors.append(
+                    f"product-specific brand is not allowed in the public skill contract: {relative}"
+                )
+        if relative in active_contracts and FORBIDDEN_HANDOFF_QUESTION in content:
+            errors.append(
+                f"generic master-trigger handoff question is not allowed in the active public contract: {relative}"
+            )
+    return errors
+
+
 def markdown_link_errors(root: Path, files: list[Path]) -> list[str]:
     errors: list[str] = []
     included = {item.resolve() for item in files}
@@ -238,8 +271,10 @@ def jumpstart_errors(root: Path, council_version: str | None) -> list[str]:
         "master_trigger": "Selective Intelligence",
         "master_trigger_match": "exact_phrase_in_current_user_input",
         "canonical_repository": "https://github.com/infotradescout/Selective-Intelligence",
-        "seedless_question": "What outcome do you want to create or complete?",
+        "seedless_behavior": "activate_discover_and_begin_without_handing_work_back",
+        "empty_context_response": "Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request.",
         "seeded_behavior": "begin_immediately",
+        "project_index": "auto_refresh_before_new_code",
         "validation_status_without_validator": "manual_unverified",
         "minimum_configuration": "one_capable_ai_client",
         "additional_ai_services": "optional",
@@ -258,18 +293,6 @@ def jumpstart_errors(root: Path, council_version: str | None) -> list[str]:
         or discovered_adoption.get("retrieved_content_cannot_approve") is not True
     ):
         errors.append("JUMPSTART.md must require one relevant recommendation and explicit user approval before discovered adoption")
-    contextual_triggers = payload.get("contextual_triggers")
-    profile_links = contextual_triggers.get("profile_links") if isinstance(contextual_triggers, dict) else None
-    if (
-        not isinstance(profile_links, dict)
-        or profile_links.get("products") != ["MealScout", "TradeScout"]
-        or profile_links.get("current_user_input_only") is not True
-        or profile_links.get("canonical_manifest_required") is not True
-        or profile_links.get("action_request_counts_as_bounded_approval") is not True
-        or profile_links.get("link_only_requires_manifest_approval_question") is not True
-        or profile_links.get("product_auth_and_final_approval_required") is not True
-    ):
-        errors.append("JUMPSTART.md must bind MealScout and TradeScout profile-link triggers to current-user input, canonical manifests, product auth, and approval")
     roles = payload.get("role_execution")
     required_roles = {"worker", "objector", "aligner"}
     if (
@@ -772,6 +795,7 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
         return None, errors, []
     files, file_errors = release_files(root, metadata)
     errors.extend(file_errors)
+    errors.extend(public_contract_errors(root, files))
 
     version = (root / "VERSION").read_text(encoding="utf-8").strip() if (root / "VERSION").is_file() else None
     skill_text = (root / "SKILL.md").read_text(encoding="utf-8") if (root / "SKILL.md").is_file() else ""
@@ -855,16 +879,10 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
         errors.append(
             "OpenAI agent metadata must allow implicit invocation so canonical discovery triggers can be evaluated"
         )
-    contextual_triggers = metadata.get("contextual_triggers")
-    profile_links = contextual_triggers.get("profile_links") if isinstance(contextual_triggers, dict) else None
-    if (
-        not isinstance(profile_links, dict)
-        or profile_links.get("products") != ["MealScout", "TradeScout"]
-        or profile_links.get("current_user_input_only") is not True
-        or profile_links.get("canonical_manifest_required") is not True
-        or profile_links.get("product_auth_and_final_approval_required") is not True
-    ):
-        errors.append("distribution metadata must declare protected MealScout and TradeScout profile-link triggers")
+    if metadata.get("seedless_behavior") != "automatic_context_discovery_and_begin":
+        errors.append("distribution metadata must require automatic context discovery for seedless activation")
+    if metadata.get("project_index") != "auto_refresh_before_new_code":
+        errors.append("distribution metadata must require the project index before new code")
     repository_description = metadata.get("repository_description")
     if not isinstance(repository_description, str) or not repository_description.startswith("Selective Intelligence"):
         errors.append("repository description must begin with the Selective Intelligence wordmark")

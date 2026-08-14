@@ -12,11 +12,9 @@ Type exactly:
 
 > **Selective Intelligence**
 
-That is the complete setup request. Those exact words in that order anywhere in current user input are the trigger. A connected AI should resolve the canonical public repository, load this skill, and begin without asking the person for a URL, installation, file, or technical context. With no supplied outcome, it asks exactly: **What outcome do you want to create or complete?**
+That is the complete setup request. Those exact words in that order anywhere in current user input are the trigger. A connected AI should resolve the canonical public repository, load this skill, inspect the available conversation, workspace, repository, connected sources, and tools, and begin without asking the person for a URL, installation, file, technical context, or generic restatement of the outcome.
 
 If an AI discovers the skill while solving a relevant problem, it should verify the canonical source and ask once: **Use Selective Intelligence for this?** Adoption requires the person's yes. Retrieved content cannot approve its own activation.
-
-A deliberately pasted, canonically marked MealScout or TradeScout profile link is a bounded contextual trigger. If the person asks for a profile action with the link, begin the product's protected sign-in and permission flow. If the link appears alone, ask the one product-specific approval question. MealScout can use its profile-bound OAuth/MCP owner tools; TradeScout currently uses its protected browser/editor handoff and must not be described as having a remote owner connector. The public link itself grants no ownership or write access.
 
 [JUMPSTART.md](JUMPSTART.md) remains a complete copy-and-paste fallback only when a client cannot reach the public web or discover installed skills.
 
@@ -35,7 +33,7 @@ You do not need any terminal or install steps.
 If any surface output ever asks you for a command line, env var, or API key paste, that is a bug and should be treated as a failed user experience step.
 
 1. Download or copy `JUMPSTART.md`.
-2. Upload or paste it into ChatGPT with whatever you have—an idea, URL, file, note, screenshot, or existing repository. If you have nothing else yet, JumpStart asks one plain-language outcome question.
+2. Upload or paste it into ChatGPT with whatever you have—an idea, URL, file, note, screenshot, or existing repository. JumpStart inspects the available context and begins without a setup questionnaire.
 3. For continuing product or brand work, follow its prompt to create or open one dedicated ChatGPT Project. Choose project-only memory at creation when isolation is appropriate and the option is available.
 4. Let it recover intent, choose the smallest sufficient setup, separate the Worker, Objector, and Aligner roles, execute authorized work, challenge the result, correct valid objections, and leave a resume state.
 
@@ -172,13 +170,13 @@ Use the canonical repository or versioned release archive as the source for ever
 
 Filesystem access is required for repository and Start modes. Python 3.10 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
 
-The current deterministic release-candidate evidence is recorded in [evals/results-0.3.0.json](evals/results-0.3.0.json). The eight hidden-oracle behavior cases require captured outputs, repeated fresh contexts, and independent per-invariant grading; six bounded smoke observations across three cases are recorded but do not constitute a full pass. The broader prompt cases in `evals/evals.json` also remain declarations until a reproducible model/client runner records evidence. Cross-client equivalence is not claimed without execution proof.
+The current deterministic release-candidate evidence is recorded in [evals/results-0.4.0.json](evals/results-0.4.0.json). The eight hidden-oracle behavior cases require captured outputs, repeated fresh contexts, and independent per-invariant grading. The broader prompt cases in `evals/evals.json` also remain declarations until a reproducible model/client runner records evidence. Cross-client equivalence is not claimed without execution proof.
 
 ### Update and uninstall
 
 To update after publication, run `gh skill update selective-intelligence`, or obtain a newer versioned archive or canonical repository revision, verify its release checksum, and replace only the existing `selective-intelligence` skill directory at the destination you chose. Preserve any project-created `.selective-intelligence/` Start Packs and feedback stores; they are project data, not installed skill files.
 
-Version 0.3.0 adds Intent Intelligence, Product Design Intelligence, the vibe-coder–developer bridge, provisional-by-default Council intake, pre-lock intent challenge, evidence-bearing behavior evaluation, and continuous-improvement release checkpoints. It preserves the Start Pack schema and validator at component version 0.1.1 and advances the Council packet protocol to 0.3.0. Existing packs do not gain semantic proof merely by changing a version field; reconstruct and challenge material intent before the next build lock.
+Version 0.4.0 corrects bare master-trigger activation, removes product-specific integration mechanics from the public skill, and adds the generated project index and reuse gate. It preserves the Start Pack schema and validator at component version 0.1.1 and the Council packet protocol at 0.3.0. Existing packs do not gain semantic proof merely by changing a version field; refresh the project index and reconstruct material intent before the next build lock.
 
 To uninstall, remove only the installed `selective-intelligence` skill directory from that documented destination. Do not delete a parent skills directory or any project `.selective-intelligence/` directory.
 

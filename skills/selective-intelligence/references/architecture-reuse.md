@@ -2,6 +2,8 @@
 
 Use this reference before creating or reorganizing software. The repository must remember what it already knows. A feature that works but is scattered, duplicated, undiscoverable, or outside canonical boundaries remains a drift risk.
 
+First create or refresh the generated project map in [project-index-and-reuse-gate.md](project-index-and-reuse-gate.md). A stale or missing index blocks new-code claims in a software project.
+
 ## Contents
 
 - [Architecture discovery pass](#architecture-discovery-pass)

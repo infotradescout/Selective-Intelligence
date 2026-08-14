@@ -226,7 +226,7 @@ Do not make the user repeat the same correction file by file or month after mont
 
 **Detection:** Another model skips major gates, invents missing context, changes verdict definitions, creates new code before searching, silently reduces scope when a tool is absent, or forces the user to spend most of the session correcting drift after actions already ran.
 
-**Gate:** Apply model-neutral-execution.md, including the governing interchangeability requirement. Externalize intent, system map, decisions, evidence, and verdict; supply the same canonical packet (intent, constraints, context, checkpoints, acceptance tests) to every runtime; use capability-based tool routing; preserve invariant decision orders; emit the pre-action “What I understand you want” checkpoint before side effects; treat Correct / `CORRECT:` as a hard interrupt that blocks drifted actions (Platynum clickable; elsewhere text gate only—never decorative Approve/Correct); and correct, retry, or block any runtime that cannot meet the quality bar rather than lowering the standard. TradeScout profile seeding is the quality benchmark for achievability—not proof that reliability already holds across tools.
+**Gate:** Apply model-neutral-execution.md, including the governing interchangeability requirement. Externalize intent, system map, decisions, evidence, and verdict; supply the same canonical packet (intent, constraints, context, checkpoints, acceptance tests) to every runtime; use capability-based tool routing; preserve invariant decision orders; emit the pre-action “What I understand you want” checkpoint before side effects; treat Correct / `CORRECT:` as a hard interrupt that blocks drifted actions (Platynum clickable; elsewhere text gate only—never decorative Approve/Correct); and correct, retry, or block any runtime that cannot meet the quality bar rather than lowering the standard. One successful benchmark proves achievability—not reliability across tools.
 
 ## Gate 26: Data as instruction
 
@@ -344,7 +344,7 @@ Any “yes” requires another correction pass or a truthful named blocker.
 
 **Failure:** SI lets a model act on a drifted interpretation of intent or scope, then relies on the user to notice and correct after side effects (or after most of the session is spent repairing the agent).
 
-**Detection:** No pre-action “What I understand you want” gate; dislike/correction does not interrupt pending mutations; different runtimes change product result while prose looks fine; a strong one-off (e.g., TradeScout profile seeding) is treated as proof of cross-tool reliability.
+**Detection:** No pre-action “What I understand you want” gate; dislike/correction does not interrupt pending mutations; different runtimes change product result while prose looks fine; a strong one-off is treated as proof of cross-tool reliability.
 
 **Gate:** Catch and correct drift before action via live steering checkpoints and the canonical packet. Correct, retry, or block the runtime. Do not invent halt-all, restart-project, or new-branch policies from the correction. Treat quality-benchmark success as the bar to repeat—not as reliability already achieved.
 
