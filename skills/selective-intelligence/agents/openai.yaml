@@ -8,6 +8,5 @@ policy:
   products:
   - "chatgpt"
   - "codex"
-  - "api"
   - "atlas"
   allow_implicit_invocation: true

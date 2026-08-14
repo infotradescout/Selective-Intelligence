@@ -213,6 +213,57 @@ def public_contract_errors(root: Path, files: list[Path]) -> list[str]:
     return errors
 
 
+def skill_loader_metadata_errors(root: Path, files: list[Path]) -> list[str]:
+    """Reject portable metadata that supported clients will ignore at load time."""
+    errors: list[str] = []
+    skill_files = [
+        path
+        for path in files
+        if path.name == "SKILL.md"
+        and (
+            path == root / "SKILL.md"
+            or path.relative_to(root).parts[:1] == ("subskills",)
+        )
+    ]
+    for path in skill_files:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        relative = path.relative_to(root).as_posix()
+        if not text.startswith("---\n") and not text.startswith("---\r\n"):
+            errors.append(f"skill loader metadata must start with YAML frontmatter: {relative}")
+            continue
+        parts = text.split("---", 2)
+        if len(parts) < 3:
+            errors.append(f"skill loader metadata has no closing YAML delimiter: {relative}")
+            continue
+        frontmatter = parts[1]
+        for key in ("name", "description"):
+            if not re.search(rf"(?m)^{key}:\s*\S", frontmatter):
+                errors.append(f"skill loader metadata is missing {key}: {relative}")
+
+    agent_config = root / "agents" / "openai.yaml"
+    if agent_config in files:
+        lines = agent_config.read_text(encoding="utf-8", errors="replace").splitlines()
+        products: list[str] = []
+        collecting = False
+        for line in lines:
+            if line.strip() == "products:":
+                collecting = True
+                continue
+            if collecting and line.lstrip().startswith("-"):
+                products.append(line.lstrip()[1:].strip().strip("'\""))
+                continue
+            if collecting and line.strip():
+                break
+        supported_products = {"chatgpt", "codex", "atlas"}
+        unsupported = sorted(set(products) - supported_products)
+        if unsupported:
+            errors.append(
+                "OpenAI agent metadata contains unsupported policy products: "
+                + ", ".join(unsupported)
+            )
+    return errors
+
+
 def markdown_link_errors(root: Path, files: list[Path]) -> list[str]:
     errors: list[str] = []
     included = {item.resolve() for item in files}
@@ -796,6 +847,7 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
     files, file_errors = release_files(root, metadata)
     errors.extend(file_errors)
     errors.extend(public_contract_errors(root, files))
+    errors.extend(skill_loader_metadata_errors(root, files))
 
     version = (root / "VERSION").read_text(encoding="utf-8").strip() if (root / "VERSION").is_file() else None
     skill_text = (root / "SKILL.md").read_text(encoding="utf-8") if (root / "SKILL.md").is_file() else ""
