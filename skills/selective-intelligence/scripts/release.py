@@ -712,11 +712,48 @@ def result_record_errors(
         errors.append("current eval result record has the wrong schema_version or skill")
     if result.get("version") != version:
         errors.append(f"current eval result version must be {version!r}")
-    allowed_statuses = {"local_release_candidate_pass", "public_release_candidate_pass"}
+    allowed_statuses = {
+        "local_release_candidate_pass",
+        "local_release_candidate_controls_pass_live_client_smokes_fail",
+        "public_release_candidate_pass",
+    }
     if result.get("status") not in allowed_statuses:
-        errors.append("current eval result must use a passing release-candidate status")
+        errors.append("current eval result must use a recognized release-candidate status")
     if require_model_behavior and result.get("status") != "public_release_candidate_pass":
         errors.append("public release requires public_release_candidate_pass result status")
+
+    partial_smokes = result.get("partial_smoke_observations")
+    smoke_failures: list[str] = []
+    if isinstance(partial_smokes, dict):
+        observations = partial_smokes.get("observed")
+        if isinstance(observations, list):
+            for observation in observations:
+                if not isinstance(observation, dict):
+                    continue
+                case_id = str(observation.get("case_id", "unknown"))
+                clients = observation.get("clients")
+                if not isinstance(clients, list):
+                    continue
+                for client in clients:
+                    if not isinstance(client, dict):
+                        continue
+                    model_client = str(client.get("model_client", "unknown"))
+                    for verdict_key in ("verdicts", "approval_guard_verdicts"):
+                        verdicts = client.get(verdict_key)
+                        if isinstance(verdicts, list) and "fail" in verdicts:
+                            smoke_failures.append(f"{case_id}:{model_client}:{verdict_key}")
+    failure_status = "local_release_candidate_controls_pass_live_client_smokes_fail"
+    if smoke_failures and result.get("status") != failure_status:
+        errors.append("current eval result must expose failing live client smokes in its status")
+    if result.get("status") == failure_status and not smoke_failures:
+        errors.append("live-client-smoke-failure status requires an observed failing verdict")
+    if smoke_failures:
+        publication_inputs = result.get("publication_inputs_remaining")
+        if not isinstance(publication_inputs, list) or not any(
+            isinstance(item, str) and "passing non-OpenAI" in item
+            for item in publication_inputs
+        ):
+            errors.append("failing live client smokes must remain an explicit publication input")
     observed_at = result.get("observed_at")
     try:
         observed_timestamp = dt.datetime.fromisoformat(str(observed_at).replace("Z", "+00:00"))

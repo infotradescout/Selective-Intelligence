@@ -6,6 +6,7 @@ All notable behavior changes to Selective Intelligence are recorded here.
 
 - Corrected portable OpenAI metadata after a real Codex CLI load: removed the unsupported `api` policy product and restored the missing YAML frontmatter delimiter on `si-queue-manager`. The release doctor now rejects either loader failure before packaging.
 - Forward-tested the published 0.4.0 activation contract in fresh ChatGPT and Codex contexts. The exact empty-context master-trigger response passed, and relevant React UI-variant discovery preserved the exact approval sentence without adopting before approval. These bounded smoke results do not claim the full behavior suite or general cross-client equivalence.
+- Measured the same name-only activation and unnamed React discovery cases in fresh Gemini and GitHub Copilot web chats. Both clients failed to resolve or recommend Selective Intelligence; Claude, seedless Cursor Agent, and Kiro were narrowly blocked by their current client state. GitHub exact-name repository search ranked the canonical repository first, while Google exact-name search did not yet surface it. The public evidence now records these failures instead of implying unverified universal adoption.
 
 ## 0.4.0 - 2026-08-13
 
