@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "skill": "selective-intelligence",
+  "version": "0.4.0",
+  "observed_at": "2026-08-14T00:15:06Z",
+  "status": "local_release_candidate_pass",
+  "deterministic_controls": {
+    "result": "pass",
+    "passed": 81,
+    "failed": 0,
+    "executed_controls_sha256": "60a8b2013fac63ac11b835dc412047514e50325045d5dd51340c282d96ccfcdb",
+    "scope": "Release-doctor-safe structural, state, authority, evidence, Council, intent-intake, project-index, and behavior-artifact controls executed with --skip-release to avoid recursive doctor invocation.",
+    "coverage": [
+      "All preserved Start Pack structure, transition, authority, review, evidence, amendment, invalidation, and release controls",
+      "All preserved privacy-safe feedback, identifier, symlink, and parent-permission controls",
+      "All preserved Council packet, permission, budget, binding, alignment, correction, resume, and provenance controls",
+      "Start Pack creates one project index, and the index self-test inventories code, identifies repeated raw UI, and detects source drift",
+      "The release contract rejects product-specific brands and the obsolete generic master-trigger handoff question from active public instructions",
+      "Eight synthetic intent, product-design, bridge, and completion behavior cases validate with hidden oracle separation",
+      "Behavior evidence requires captured outputs, output digests, repeated contexts, distinct graders, per-invariant evidence, and a retained improvement frontier"
+    ]
+  },
+  "behavior_suite": {
+    "artifact": "evals/behavior-cases.json",
+    "case_count": 8,
+    "minimum_total_fresh_runs": 16,
+    "sha256": "a5b08fe15220db01d79090e7de96aeb2801f5f324dbe07589875ce512cb93bad",
+    "canonical_suite_digest_sha256": "6e8032ad84ad807c557cb81c1bd4fcb453b91c598e3d0f2c023814be6ce4f4c7",
+    "status": "declared_not_fully_executed"
+  },
+  "model_behavior_evaluation": {
+    "result": "not_run",
+    "reason": "The corrected 0.4.0 public contract must be published before fresh retrieval clients can be tested against it. Deterministic controls do not substitute for that live evidence.",
+    "evidence": []
+  },
+  "partial_smoke_observations": {
+    "status": "current_version_not_run",
+    "observed": [],
+    "limitations": "A fresh-client test of the prior public contract returned the now-prohibited generic handoff question. That is failure evidence for the prior contract, not passing evidence for 0.4.0. Fresh 0.4.0 tests remain required after publication."
+  },
+  "deterministic_environment": {
+    "runtime": "Python 3.12",
+    "minimum_supported_runtime": "Python 3.10",
+    "network_required": false,
+    "scope": "dependency-free local validators, project-index checks, behavior evidence structure, Council lifecycle, and reproducible packaging"
+  },
+  "publication_inputs_remaining": [
+    "fresh-client direct master-trigger retrieval after public merge",
+    "fresh-client material-discovery adoption test after public merge",
+    "two or more fresh Worker runs for every hidden-oracle behavior case",
+    "distinct evidence-bearing grading for every invariant",
+    "complete model/client behavior artifact accepted by scripts/behavior_eval.py",
+    "cross-client evidence before claiming equivalent behavior outside the tested client"
+  ],
+  "optional_input_remaining": "owner-supplied verified support URL"
+}
