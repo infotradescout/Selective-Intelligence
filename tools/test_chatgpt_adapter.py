@@ -29,6 +29,22 @@ def main() -> int:
     require("subskills/si-worker/ROLE.md" in files, "Worker role reference is missing")
     require(not any("subskills/" in path and path.endswith("/SKILL.md") for path in files), "nested SKILL.md remains")
 
+    master_skill = (ADAPTER_ROOT / "SKILL.md").read_text(encoding="utf-8")
+    description = next(
+        line.removeprefix("description: ")
+        for line in master_skill.splitlines()
+        if line.startswith("description: ")
+    )
+    require(len(description) <= 1024, "ChatGPT discovery description exceeds 1024 characters")
+    for phrase in (
+        "repeated buttons, cards, fields, or divs",
+        "component sprawl",
+        "repository/codebase audit or realignment",
+        "Use Selective Intelligence for this?",
+        "Adopt only after explicit approval",
+    ):
+        require(phrase in description, f"ChatGPT discovery metadata is missing: {phrase}")
+
     adapter_metadata = json.loads((ADAPTER_ROOT / "metadata" / "chatgpt-adapter.json").read_text(encoding="utf-8"))
     require(adapter_metadata["behavioral_contract"] == "preserved", "adapter contract is not preserved")
     require(len(adapter_metadata["role_path_map"]) == 7, "not all Council roles were adapted")
