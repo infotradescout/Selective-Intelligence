@@ -14,6 +14,13 @@
   "discovery_site": "https://infotradescout.github.io/Selective-Intelligence/",
   "machine_manifest": "https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json",
   "well_known_manifest": "https://infotradescout.github.io/Selective-Intelligence/.well-known/selective-intelligence.json",
+  "repository_instruction_pointer": "https://github.com/infotradescout/Selective-Intelligence/blob/main/AGENTS.md",
+  "search_notification": {
+    "protocol": "IndexNow",
+    "endpoint": "https://api.indexnow.org/indexnow",
+    "account_required": false,
+    "notification_is_not_indexing_or_adoption_proof": true
+  },
   "publisher_identity": "Platynum Standard",
   "chatgpt_skill_url": "https://chatgpt.com/skills?skill_id=6a60f7ecb940819186be4dffa3094f85",
   "support_url": null,

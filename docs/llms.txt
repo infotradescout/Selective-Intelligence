@@ -12,6 +12,7 @@ Public discovery surface: https://infotradescout.github.io/Selective-Intelligenc
 Machine-readable contract: https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json
 Well-known contract: https://infotradescout.github.io/Selective-Intelligence/.well-known/selective-intelligence.json
 Canonical skill: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md
+Repository-context pointer: https://github.com/infotradescout/Selective-Intelligence/blob/main/AGENTS.md
 Zero-install entry point: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/JUMPSTART.md
 Portable skill directory: https://github.com/infotradescout/Selective-Intelligence/tree/main/skills/selective-intelligence
 ChatGPT one-SKILL adapter: https://github.com/infotradescout/Selective-Intelligence/tree/main/adapters/chatgpt/selective-intelligence

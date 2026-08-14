@@ -45,5 +45,8 @@ jobs:
       - name: Verify public discovery bridge
         run: python -B tools/test_discovery_bridge.py
 
+      - name: Verify repository-native client pointers
+        run: python -B tools/test_native_pointers.py
+
       - name: Verify release integrity
         run: python -B skills/selective-intelligence/scripts/release.py doctor --json
