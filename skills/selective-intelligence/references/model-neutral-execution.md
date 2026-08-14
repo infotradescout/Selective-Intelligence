@@ -270,6 +270,7 @@ After a meaningful outcome, correction, block, retry, or reopened requirement, r
 - Do not blame the user for model or tooling limitations.
 - Do not claim superior model capability as evidence of correctness.
 - Do not produce different truth standards for planning models, coding models, or review models.
+- Do not make paid access a quality tier. A free quota may limit capacity or tool availability, but the same intent, truth, authority, and completion meanings still govern. Use an available free-tier or local/no-cost route, narrow the result truthfully, or block the unsupported claim—never tell the person to pay to restore correctness.
 
 ## Portability conformance
 

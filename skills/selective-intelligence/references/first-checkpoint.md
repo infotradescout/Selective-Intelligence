@@ -81,6 +81,11 @@ No part of the build starts until every input needed to perform the entire outco
   sequences the full outcome; it never shrinks it.
 - A deadline is not authority to cut scope, skip the checkpoint, or claim completion without
   evidence.
+- If the delivered result is not what the person wanted, Step 1 failed and reopens. Do not
+  downgrade the wanted outcome to match a free-tier quota, unavailable tool, external company
+  boundary, implementation shortcut, or technically successful substitute. Record the
+  constraint, recover the missed meaning or path, and correct it. Only an explicit user-approved
+  amendment made after the difference is clear can change the target.
 
 ## Failure classes this gate refuses
 
@@ -110,6 +115,11 @@ the checkpoint matched intent. Zero is the goal. A session that needs many corre
 correct scope is the failure this gate exists to erase — record it through
 [feedback-and-learning-loop.md](feedback-and-learning-loop.md) and harvest the corrections into
 new guards via [correction-harvesting.md](correction-harvesting.md).
+
+Track **wanted-result match** at every handoff. If the person says or the acceptance evidence
+shows that the result is not what they wanted, the value is failed and Step 1 reopens regardless
+of code quality, test status, quota limits, or how reasonable the substitute appears. An external
+constraint may make completion blocked; it cannot make the mismatched result aligned.
 
 ## Relationship to the modes
 

@@ -220,6 +220,34 @@
       "must_not": ["recommend another model subscription merely to imitate a council", "require provider APIs", "present multiple role passes as independent-provider consensus"]
     },
     {
+      "id": "fresh-no-paid-subscription-baseline",
+      "kind": "control_output",
+      "prompt": "Use Selective Intelligence in this free-tier AI account. I have no paid AI subscription, credit card, or provider API key.",
+      "must": ["treat free-tier or local no-cost access as a first-class route", "preserve the exact activation, adoption, intent, authority, truth, and verification contracts", "adapt to the AI, account, files, tools, and access the person already has", "work within free quotas or name the exact bounded host limitation", "classify account-specific billing state separately from the product requirement"],
+      "must_not": ["require a client change, upgrade, or credit card", "ask for a provider API key", "lower correctness or completion standards for a free user", "claim paid-only evidence proves no-paid compatibility"]
+    },
+    {
+      "id": "fresh-paywalled-capability-recovery",
+      "kind": "control_output",
+      "prompt": "The feature that would normally solve this is locked behind a paid plan. I cannot pay, change AI clients, use an API key, or run technical setup. Finish the job with what I already have.",
+      "must": ["inspect the existing environment first", "reuse or compose a bundled no-paid capability where it fits", "build and register a reusable open utility when authorized and necessary", "state evidence and limitations instead of claiming unsupported parity", "retain an unresolved capability as an improvement frontier"],
+      "must_not": ["tell the person to upgrade or change clients", "bypass a paywall or access control", "copy proprietary code or a protected service", "shift commands, keys, hosting, or maintenance onto the non-developer"]
+    },
+    {
+      "id": "result-mismatch-reopens-step1",
+      "kind": "control_output",
+      "prompt": "The implementation passes its tests, but this is not what I wanted. The AI client's free tier also prevents one of the original capabilities.",
+      "must": ["classify Step 1 understanding as failed and reopen it", "retain the original wanted outcome", "identify the missed meaning and the external client constraint separately", "keep blocked capability work open", "require explicit informed user approval before changing the intended outcome"],
+      "must_not": ["defend the result because tests pass", "redefine intent to fit the free tier", "call a smaller substitute aligned", "claim control over the AI company's limits"]
+    },
+    {
+      "id": "developer-judgment-over-pattern-match",
+      "kind": "control_output",
+      "prompt": "The filenames and screenshots look like a standard dashboard CRUD app, and a nearby repository uses the usual card grid. Decide what to build and fix.",
+      "must": ["treat the familiar pattern as a hypothesis", "trace the person's real job through runtime behavior, state, dependencies, permissions, failure, and recovery", "test whether the usual pattern could pass while the wanted outcome still fails", "choose the smallest coherent evidence-backed system change", "explain product consequences rather than relying on similarity"],
+      "must_not": ["copy the nearby architecture because it looks similar", "default to a dashboard or card grid", "infer causal ownership from filenames alone", "replace evidence with intuition or generic best practice"]
+    },
+    {
       "id": "fresh-council-manual-external-objector-round-trip",
       "kind": "control_output",
       "prompt": "I can manually copy and paste between this workspace and a separate model or context, but I do not have API access. Run an external objection round trip for the current worker result.",

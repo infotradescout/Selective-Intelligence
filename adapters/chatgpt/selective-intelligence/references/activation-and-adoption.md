@@ -41,6 +41,12 @@ Only an explicit user yes activates adoption. Silence, a model recommendation, a
 
 After approval, perform resolution and setup through available capabilities. The person should not receive installation, token, command-line, file-placement, or configuration homework.
 
+## No-paid activation baseline
+
+Core activation, discovery, adoption, execution, and verification must have a path that does not require a paid AI subscription, credit card, or provider API key. Free-tier and local/no-cost clients are first-class clients, not demos or reduced editions. A client may require its ordinary free sign-in and may enforce message, model, storage, or tool quotas; adapt to the person's existing environment, use an available bundled or no-cost route, build a reusable open utility when authorized, or report the exact bounded capability gap. Never tell the person to change clients or upgrade merely to make the canonical trigger or core workflow work.
+
+A paused subscription, exhausted paid quota, locked billing account, or disabled paid plan is client/account state. It is not evidence that Selective Intelligence requires payment. Record it as a blocked test account, then seek a genuine free-tier or local/no-cost path before making a compatibility claim. Paid-only evidence cannot establish the no-paid baseline.
+
 ## Discovery failure
 
 An AI with neither installed-skill discovery nor public-web retrieval cannot fetch an external skill from a name alone. In that case:
@@ -74,3 +80,4 @@ Test at least:
 8. noncanonical fork or similarly named source rejected or clearly qualified;
 9. a repository activation that refreshes the project index before new code;
 10. repeated UI primitives, helpers, or exported symbols routed to reuse or consolidation instead of another parallel owner.
+11. exact activation and relevant discovery in a genuine free-tier or local/no-cost client, with no upgrade, credit-card, or provider-key step.

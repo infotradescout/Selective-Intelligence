@@ -103,6 +103,13 @@ Before declaring alignment, test these questions:
 
 Any “yes” blocks an Aligned verdict.
 
+Use the simplest final counterfactual: **Is this result what the person wanted?** If the answer is
+no, Step 1 failed. Reopen the intent checkpoint and trace the mismatch; do not defend the result
+with technical quality, available tooling, cost, a free-tier boundary, or another external
+constraint. A truthful external block remains Blocked or incomplete against the original intent.
+It becomes a different intended outcome only after the person explicitly approves that change
+with the material difference visible.
+
 Also ask whether the active Council could rigorously validate the wrong premise because every role inherited the same candidate lock. When that is possible, return to the pre-lock Intent Objector rather than adding another downstream reviewer.
 
 ## Alignment verdicts

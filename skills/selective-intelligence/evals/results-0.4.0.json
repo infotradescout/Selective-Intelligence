@@ -2,7 +2,7 @@
   "schema_version": 1,
   "skill": "selective-intelligence",
   "version": "0.4.0",
-  "observed_at": "2026-08-14T12:58:43Z",
+  "observed_at": "2026-08-14T18:12:33Z",
   "status": "local_release_candidate_controls_pass_live_client_smokes_fail",
   "deterministic_controls": {
     "result": "pass",
@@ -16,6 +16,7 @@
       "All preserved Council packet, permission, budget, binding, alignment, correction, resume, and provenance controls",
       "Start Pack creates one project index, and the index self-test inventories code, identifies repeated raw UI, and detects source drift",
       "The release contract rejects product-specific brands and the obsolete generic master-trigger handoff question from active public instructions",
+      "The release contract forbids paid-subscription prerequisites, validates the shipped no-paid capability catalog, preserves external client limits as constraints, reopens Step 1 on result mismatch, and requires causal developer judgment over blind pattern matching",
       "Eight synthetic intent, product-design, bridge, and completion behavior cases validate with hidden oracle separation",
       "Behavior evidence requires captured outputs, output digests, repeated contexts, distinct graders, per-invariant evidence, and a retained improvement frontier"
     ]
@@ -32,6 +33,66 @@
     "result": "not_run",
     "reason": "The complete evidence-bearing behavior suite still requires repeated Worker outputs and distinct per-invariant grading for every declared behavior case. The bounded live activation smoke matrix below does not substitute for that full evaluation.",
     "evidence": []
+  },
+  "free_tier_conformance": {
+    "result": "fail",
+    "paid_ai_subscription_required": false,
+    "requirement": "At least one genuine free-tier or local/no-cost client must pass both exact name-only activation and relevant discovery/adoption without a credit card, paid plan, provider API key, or upgrade step before the no-paid baseline can pass.",
+    "tested_clients": [
+      {
+        "model_client": "GitHub Copilot Chat web / Copilot Free / Auto (gpt-5-mini)",
+        "paid_subscription": false,
+        "activation_result": "fail",
+        "discovery_result": "fail",
+        "reason": "The genuine free-tier client neither resolved the exact wordmark nor discovered Selective Intelligence from the relevant unnamed problem. This is a compatibility defect, not a reason to upgrade."
+      }
+    ],
+    "not_cleanly_tested": [
+      "ChatGPT and Codex passed the bounded cases, but the account plan was not established as a genuine free-tier baseline.",
+      "Gemini passed no cases and the observed account exposed paid/workspace features rather than a clean free-tier baseline.",
+      "Claude Send was disabled by this test account's paused subscription state; that account block is not a Selective Intelligence payment requirement.",
+      "Cursor required repository context for the seedless case and the observed account was not a clean Hobby-tier baseline.",
+      "Kiro had no existing signed-in session, and the test did not start a new sign-in."
+    ],
+    "official_no_cost_tier_evidence": [
+      {
+        "client": "ChatGPT",
+        "url": "https://chatgpt.com/pricing/",
+        "observed_at": "2026-08-14",
+        "advertised_tier": "Free"
+      },
+      {
+        "client": "Claude",
+        "url": "https://claude.com/pricing",
+        "observed_at": "2026-08-14",
+        "advertised_tier": "Free"
+      },
+      {
+        "client": "Gemini",
+        "url": "https://gemini.google/subscriptions/",
+        "observed_at": "2026-08-14",
+        "advertised_tier": "Free"
+      },
+      {
+        "client": "GitHub Copilot",
+        "url": "https://github.com/features/copilot/plans",
+        "observed_at": "2026-08-14",
+        "advertised_tier": "Free"
+      },
+      {
+        "client": "Cursor",
+        "url": "https://cursor.com/pricing",
+        "observed_at": "2026-08-14",
+        "advertised_tier": "Hobby Free"
+      },
+      {
+        "client": "Kiro",
+        "url": "https://kiro.dev/pricing/",
+        "observed_at": "2026-08-14",
+        "advertised_tier": "Kiro Free"
+      }
+    ],
+    "classification": "Official product pages confirm no-cost tiers exist. Paid access is therefore not the product requirement. Current live evidence still fails the no-paid compatibility gate because the only clean free-tier run, Copilot Free, failed both cases."
   },
   "partial_smoke_observations": {
     "status": "two_openai_clients_passed_two_non_openai_clients_failed_two_activation_contract_cases",
@@ -136,8 +197,8 @@
       {
         "model_client": "Claude web / Opus 4.8 Medium",
         "authentication": "existing signed-in Chrome session",
-        "result": "blocked",
-        "reason": "The client displayed a paused-subscription warning and disabled Send; no test message was transmitted and no new sign-in was started."
+        "result": "blocked_test_account",
+        "reason": "The client displayed a paused-subscription warning and disabled Send in this existing account; no test message was transmitted and no new sign-in was started. This is account state, not evidence that Selective Intelligence requires payment."
       },
       {
         "model_client": "Cursor Agent web / Cursor Grok 4.6 High Fast on Auto",
@@ -180,6 +241,7 @@
     "distinct evidence-bearing grading for every invariant",
     "complete model/client behavior artifact accepted by scripts/behavior_eval.py",
     "passing non-OpenAI activation and discovery evidence before claiming cross-provider or general cross-client equivalence",
+    "passing no-paid activation and discovery evidence from a genuine free-tier or local/no-cost client before claiming the free-tier baseline",
     "public exact-name search visibility outside GitHub before claiming universal name-only discoverability"
   ],
   "optional_input_remaining": "owner-supplied verified support URL"

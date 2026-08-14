@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "skill": "selective-intelligence",
+  "policy": {
+    "work_with_existing_user_environment": true,
+    "paid_subscription_required": false,
+    "provider_api_key_required": false,
+    "bypass_paywalls_or_access_controls": false,
+    "claim_parity_without_evidence": false,
+    "respect_external_client_constraints": true,
+    "redefine_intent_to_fit_constraints": false
+  },
+  "capabilities": [
+    {
+      "job": "repository and codebase inventory",
+      "paths": ["scripts/project_index.py"],
+      "evidence": "generated project index, duplicate-owner checks, staleness detection"
+    },
+    {
+      "job": "intent checkpoint, correction, and resume control",
+      "paths": ["scripts/build_engine.py", "scripts/checkpoint.py", "scripts/text_gate.py"],
+      "evidence": "instruction-fidelity vertical and production-path unit tests"
+    },
+    {
+      "job": "permissions, budgets, and independent review packets",
+      "paths": ["scripts/policy_guard.py", "scripts/council.py"],
+      "evidence": "deterministic adversarial Council and policy controls"
+    },
+    {
+      "job": "behavior, release, and evidence validation",
+      "paths": ["scripts/eval.py", "scripts/behavior_eval.py", "scripts/release.py"],
+      "evidence": "release doctor, behavior evidence validator, reproducible packaging"
+    },
+    {
+      "job": "privacy-safe outcome feedback and suggestion capture",
+      "paths": ["scripts/feedback.py"],
+      "evidence": "privacy, identifier, permission, and symlink controls"
+    },
+    {
+      "job": "bounded prompt and work queue continuity",
+      "paths": ["scripts/prompt_queue.py", "scripts/lane_session.py"],
+      "evidence": "queue snapshots, lane ownership, and resume packets"
+    }
+  ]
+}
