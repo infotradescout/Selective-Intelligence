@@ -12,6 +12,8 @@
     "skill": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md",
     "skill_raw": "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/SKILL.md",
     "skill_public_mirror": "https://infotradescout.github.io/Selective-Intelligence/SKILL.md",
+    "strict_ai_guide": "https://infotradescout.github.io/Selective-Intelligence/AI-GUIDE.md",
+    "strict_ai_guide_source": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/AI-GUIDE.md",
     "jumpstart": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/JUMPSTART.md",
     "license": "https://github.com/infotradescout/Selective-Intelligence/blob/main/LICENSE",
     "citation": "https://infotradescout.github.io/Selective-Intelligence/CITATION.cff"
@@ -21,6 +23,8 @@
     "inspect_existing_context_first": true,
     "do_not_ask_generic_setup_question": true,
     "always_on_after_activation_or_approved_adoption": true,
+    "text_client_without_skill_loader_uses_strict_ai_guide": true,
+    "strict_guide_is_user_selected_by_direct_trigger_not_self_activating": true,
     "empty_context_final": "Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request."
   },
   "relevant_discovery": {
@@ -72,6 +76,7 @@
         "plugin skill"
       ],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "The skill must already be enabled for the account or installed through a supported plugin. Public name resolution is not guaranteed.",
       "official_documentation": "https://learn.chatgpt.com/docs/build-skills"
     },
@@ -85,6 +90,7 @@
         "~/.agents/skills/selective-intelligence"
       ],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "Codex loads the skill after it is present in a supported repository, user, admin, or system scope.",
       "official_documentation": "https://learn.chatgpt.com/docs/build-skills"
     },
@@ -100,6 +106,7 @@
         "~/.copilot/skills/selective-intelligence"
       ],
       "automatic_when_available": true,
+      "observed_status": "documented_route_with_prior_web_free_failures",
       "activation_boundary": "Agent Skills are supported in specific Copilot agent surfaces. A general Copilot web chat without the skill or repository context does not inherit it.",
       "official_documentation": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills"
     },
@@ -113,6 +120,7 @@
         "~/.claude/skills/selective-intelligence"
       ],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "Claude Code can load the skill automatically when relevant after it exists in a supported skill scope. Web and cloud sessions use their own enabled or synced skill sources.",
       "official_documentation": "https://code.claude.com/docs/en/skills"
     },
@@ -128,6 +136,7 @@
         "~/.cursor/skills/selective-intelligence"
       ],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "Cursor automatically discovers skills in supported project and user scopes. A seedless web agent that requires repository selection cannot prove no-context activation.",
       "official_documentation": "https://cursor.com/docs/skills"
     },
@@ -143,6 +152,7 @@
         "~/.gemini/skills/selective-intelligence"
       ],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "Gemini CLI discovers the skill in supported scopes, but its client requires activation consent before the skill gains access to its resources.",
       "official_documentation": "https://geminicli.com/docs/cli/using-agent-skills/"
     },
@@ -156,25 +166,45 @@
         "~/.kiro/skills/selective-intelligence"
       ],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "Kiro can import the public skill folder and activate it when relevant after it exists in a supported workspace or global scope.",
       "official_documentation": "https://kiro.dev/docs/skills/"
     },
     {
       "id": "web-ai",
       "name": "Web-capable AI",
-      "native_source": "https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json",
+      "native_source": "https://infotradescout.github.io/Selective-Intelligence/AI-GUIDE.md",
       "repository_pointer": null,
       "scopes": [
         "public web",
+        "ordinary text",
+        "AI-GUIDE.md",
         "llms.txt",
         "machine-readable JSON"
       ],
       "automatic_when_available": false,
-      "activation_boundary": "The AI must have public-web access and choose to resolve the wordmark. Publication improves resolution but cannot force a client to search or adopt retrieved instructions.",
+      "observed_status": "strict_guide_available_client_compliance_unverified",
+      "activation_boundary": "After a direct user trigger, a text-capable web AI should resolve AI-GUIDE.md and use it as the strict operating guide rather than summarize the repository. Publication cannot force a client to search or comply, so each client still needs live evidence.",
       "official_documentation": "https://infotradescout.github.io/Selective-Intelligence/llms.txt"
+    },
+    {
+      "id": "perplexity-free",
+      "name": "Perplexity Standard (Free)",
+      "native_source": "https://infotradescout.github.io/Selective-Intelligence/AI-GUIDE.md",
+      "repository_pointer": null,
+      "scopes": [
+        "live public-web search",
+        "limited basic file uploads",
+        "ordinary text"
+      ],
+      "automatic_when_available": false,
+      "observed_status": "fail_strict_guide_retest_pending",
+      "observed_at": "2026-08-15T03:17:44Z",
+      "activation_boundary": "Live free-tier evidence failed the bare trigger, activation after publisher-qualified discovery, and the one-prompt website outcome. Perplexity found the canonical project only after the publisher hint, then summarized it instead of using it. Its official Standard plan documents public search and limited basic file uploads, but no native Agent Skills route. AI-GUIDE.md is the strict text fallback; a fresh retest must pass before compatibility is claimed.",
+      "official_documentation": "https://www.perplexity.ai/help-center/en/articles/11187416-which-perplexity-subscription-plan-is-right-for-you"
     }
   ],
-  "client_support_verified_on": "2026-08-14",
+  "client_support_verified_on": "2026-08-15",
   "repository_context": {
     "pointer_source": "adapters/repository-pointer.md",
     "context_scoped": true,
@@ -206,7 +236,7 @@
     "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.0.json",
     "cross_client_equivalence_claimed": false,
     "publication_is_not_adoption_proof": true,
-    "source_contract_sha256": "c37acaff54b020a0af11341e7b13807f4b5a679af8b71786f96efc5799b8b546"
+    "source_contract_sha256": "9e16a495bf3ad9537bd2025dcf6de3215ef8431232926e7f045267e09932a215"
   },
   "companion": {
     "name": "Platynum-47",

@@ -39,11 +39,21 @@
         "discovery_result": "fail",
         "version_scope": "0.4.0 carry-forward baseline; v1 public retest pending",
         "reason": "The prior genuine free-tier run failed both seedless cases. This remains a compatibility defect, not a reason to upgrade or a claim about untested v1 behavior."
+      },
+      {
+        "model_client": "Perplexity Windows / Standard (Free) / default basic search",
+        "paid_subscription": false,
+        "activation_result": "fail",
+        "discovery_result": "partial",
+        "same_message_outcome_result": "fail",
+        "version_scope": "v1 public site before strict-guide correction",
+        "observed_at": "2026-08-15T03:17:44Z",
+        "reason": "The bare trigger resolved unrelated cognitive-science and article meanings. A publisher-qualified query found and summarized the canonical project, but a repeated exact trigger still produced another definition instead of activation. The one-prompt website response was a Markdown copy outline with invented location, contact, pricing, package, review, service-area, and operating claims rather than an openable verified website."
       }
     ]
   },
   "partial_smoke_observations": {
-    "status": "v1_public_retest_pending_with_prior_failures_retained",
+    "status": "v1_public_retest_started_with_failures_retained",
     "observed": [
       {
         "case_id": "master-trigger-exact-seedless",
@@ -52,11 +62,36 @@
             "model_client": "GitHub Copilot Chat web / Copilot Free / 0.4.0 carry-forward baseline",
             "verdicts": ["fail"],
             "reason": "The prior clean free-tier client did not resolve the exact wordmark. No v1 public byte or search result exists yet to retest."
+          },
+          {
+            "model_client": "Perplexity Windows / Standard (Free) / v1 public site",
+            "verdicts": ["fail"],
+            "reason": "The exact name-only trigger resolved unrelated meanings and did not find or activate the canonical skill."
+          }
+        ]
+      },
+      {
+        "case_id": "master-trigger-text-client-strict-guide",
+        "clients": [
+          {
+            "model_client": "Perplexity Windows / Standard (Free) / publisher-qualified repository discovery",
+            "verdicts": ["fail"],
+            "reason": "The client resolved and accurately summarized the canonical project, but it did not use the repository as the operating guide when the exact trigger was repeated."
+          }
+        ]
+      },
+      {
+        "case_id": "one-prompt-website-useful-first-deliverable",
+        "clients": [
+          {
+            "model_client": "Perplexity Windows / Standard (Free) / same conversation",
+            "verdicts": ["fail"],
+            "reason": "The response was a Markdown page-copy concept, not an openable website, and it introduced unsupported business facts despite the minimal-information boundary."
           }
         ]
       }
     ],
-    "limitations": "This record separates the current deterministic v1 implementation from live client results that cannot be measured until v1 is public. Historical failures are retained so versioning cannot erase them."
+    "limitations": "This record preserves privacy-safe manual findings rather than raw screenshots, prompts, or account data. The Perplexity run proves public-web identity retrieval only after a publisher hint; it does not prove strict-guide compliance. Historical failures are retained so a documentation change cannot be mistaken for behavioral improvement."
   },
   "one_prompt_website_benchmark": {
     "artifact": "evals/one-prompt-website.json",

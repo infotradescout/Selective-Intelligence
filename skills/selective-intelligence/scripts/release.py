@@ -31,6 +31,7 @@ SKILL_ROOT = Path(__file__).resolve().parents[1]
 TOPIC_RE = re.compile(r"^[a-z0-9-]{1,50}$")
 LINK_RE = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 ALLOWED_TOP_LEVEL_FILES = {
+    "AI-GUIDE.md",
     "SKILL.md",
     "JUMPSTART.md",
     "LICENSE",
@@ -289,6 +290,36 @@ def markdown_link_errors(root: Path, files: list[Path]) -> list[str]:
                 errors.append(f"link target is not included in the release in {path.relative_to(root)}: {target}")
             elif destination.is_dir() and not any(destination == item.parent or destination in item.parents for item in included):
                 errors.append(f"linked directory is empty in the release in {path.relative_to(root)}: {target}")
+    return errors
+
+
+def ai_guide_errors(root: Path) -> list[str]:
+    path = root / "AI-GUIDE.md"
+    try:
+        content = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return [f"AI-GUIDE.md is missing or unreadable: {exc}"]
+    required_phrases = (
+        "Selective Intelligence",
+        "strict operating guide",
+        "Use Selective Intelligence for this?",
+        "Do not answer with a definition or a summary of the repository",
+        "What I understand you want",
+        "APPROVE",
+        "CORRECT: <instruction>",
+        "Produce the real deliverable",
+        "Markdown outline",
+        "Do not require a paid feature",
+        "could not be loaded",
+        "https://github.com/infotradescout/Selective-Intelligence",
+    )
+    errors = [
+        f"AI-GUIDE.md is missing required portable contract text: {phrase}"
+        for phrase in required_phrases
+        if phrase not in content
+    ]
+    if len(content) > 12_000:
+        errors.append("AI-GUIDE.md must remain concise enough for ordinary text clients")
     return errors
 
 
@@ -953,6 +984,7 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
             components.get("council_protocol"),
         )
     )
+    errors.extend(ai_guide_errors(root))
     errors.extend(jumpstart_errors(root, components.get("council_protocol")))
     errors.extend(released_result_history_errors(root, files))
     executable_errors, executed_controls = executable_eval_outcome(root)

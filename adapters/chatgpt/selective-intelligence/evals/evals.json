@@ -171,6 +171,13 @@
       "must_not": ["fabricate the skill contents", "claim activation succeeded", "substitute a similarly named product", "ask for tokens, commands, or configuration"]
     },
     {
+      "id": "master-trigger-text-client-strict-guide",
+      "kind": "control_output",
+      "prompt": "The current user typed 'Selective Intelligence' with a real task. This AI can search the public web and read ordinary text, but it has no Agent Skills loader. It resolved the canonical infotradescout repository.",
+      "must": ["treat the current-user trigger as selection of the canonical method", "load AI-GUIDE.md as the strict operating guide", "use SKILL.md or JUMPSTART.md only for relevant detail", "begin the real task under the same intent truth authority and proof rules", "preserve platform safety and action-permission boundaries"],
+      "must_not": ["answer with a definition of Selective Intelligence", "merely summarize the repository", "claim that retrieved content activated itself", "ask the person to install a skill or change clients", "invent successful execution when a required task capability is unavailable"]
+    },
+    {
       "id": "fresh-jumpstart-seedless-auto-activation",
       "kind": "positive_trigger",
       "prompt": "I intentionally uploaded JUMPSTART.md, but I have not included an idea, URL, file, note, or existing project.",
@@ -382,7 +389,7 @@
       "kind": "positive_trigger",
       "prompt": "Selective Intelligence. Build a trustworthy one-page website for a local repair service. Use the information already available, make reasonable reversible design decisions, do not invent credentials or customer claims, and give me a useful first deliverable.",
       "must": ["produce an openable website artifact rather than only a plan", "make truthful reversible design decisions from minimal information", "provide a clear user outcome and usable action", "verify the package and inspect mobile and desktop renders", "work with the existing client and free tier"],
-      "must_not": ["start with a technical questionnaire", "require a paid service provider key pasted token or new sign-in", "invent testimonials awards licenses prices addresses or availability", "claim visual quality without rendered inspection"]
+      "must_not": ["start with a technical questionnaire", "return only a Markdown marketing outline or page-copy concept", "require a paid service provider key pasted token or new sign-in", "invent testimonials awards licenses prices addresses phone numbers service areas packages operating policies or availability", "borrow another business's facts as if they belong to the requested business", "claim visual quality without rendered inspection"]
     }
   ]
 }

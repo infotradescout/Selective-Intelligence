@@ -24,6 +24,7 @@ def main() -> int:
     skill_entrypoints = [path for path in files if Path(path).name == "SKILL.md"]
     require(skill_entrypoints == ["SKILL.md"], f"expected one SKILL.md, found {skill_entrypoints}")
     require("scripts/project_index.py" in files, "project index tool is missing")
+    require("AI-GUIDE.md" in files, "strict AI guide is missing")
     require("references/project-index-and-reuse-gate.md" in files, "project index reference is missing")
     version = (ADAPTER_ROOT / "VERSION").read_text(encoding="utf-8").strip()
     require(f"evals/results-{version}.json" in files, f"{version} evidence is missing")
@@ -59,6 +60,7 @@ def main() -> int:
     require("MealScout" not in combined and "TradeScout" not in combined, "product-specific brand leaked into adapter")
     active_contracts = [
         "SKILL.md",
+        "AI-GUIDE.md",
         "JUMPSTART.md",
         "README.md",
         "references/activation-and-adoption.md",
@@ -70,6 +72,18 @@ def main() -> int:
             "What outcome do you want to create or complete?" not in content,
             f"obsolete trigger handoff leaked into active adapter contract: {relative}",
         )
+
+    ai_guide = (ADAPTER_ROOT / "AI-GUIDE.md").read_text(encoding="utf-8")
+    for phrase in (
+        "strict operating guide",
+        "Do not answer with a definition or a summary of the repository",
+        "What I understand you want",
+        "APPROVE",
+        "CORRECT: <instruction>",
+        "Produce the real deliverable",
+        "Do not require a paid feature",
+    ):
+        require(phrase in ai_guide, f"strict AI guide is missing: {phrase}")
 
     activation_contract = (ADAPTER_ROOT / "references" / "activation-and-adoption.md").read_text(encoding="utf-8")
     for prohibited_empty_context_action in (

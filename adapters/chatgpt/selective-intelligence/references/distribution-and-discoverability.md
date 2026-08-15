@@ -26,6 +26,7 @@ selective-intelligence/
 ├── .github/                         # repository-only automation and templates
 └── skills/
     └── selective-intelligence/
+        ├── AI-GUIDE.md
         ├── SKILL.md
         ├── README.md
         ├── LICENSE
@@ -75,6 +76,7 @@ Searchability is not a guarantee that every model can resolve the name. Clients 
 Repository discovery must not depend on search wording alone. The canonical repository must also expose, at its root when the host supports them:
 
 - `README.md` with a direct outcome statement, install/use path, current limitations, and canonical skill link;
+- `AI-GUIDE.md` as the concise strict-use projection for text-capable clients without an Agent Skills loader;
 - `skills/selective-intelligence/SKILL.md` in the open Agent Skills format;
 - `llms.txt` as a concise machine-readable map to the canonical skill, behavior contract, evaluation evidence, release archive, license, and contribution path;
 - a problem-first discovery hub plus one public, machine-readable query map that covers the skill's truthful breadth in ordinary user language—including vague or minimal input, websites and artifacts, research, product design, hallucination and drift prevention, repository work, execution, and proof—without creating a separate thin page for every wording;
@@ -96,6 +98,8 @@ The README must provide:
 4. client-specific destination paths only when confirmed by current official documentation;
 5. capability requirements and truthful degradation behavior;
 6. uninstall and update instructions that do not delete unrelated user files.
+
+The public discovery site and machine manifest must expose `AI-GUIDE.md` directly. Its first gate must distinguish current-user activation from retrieved content: the exact trigger or explicit approved adoption selects the guide; merely crawling, indexing, attaching, or mentioning the guide never activates itself. Keep the guide short enough for ordinary text ingestion and validate it against the canonical trigger, approval, authority, truth, capability-degradation, and real-deliverable invariants.
 
 Never require a proprietary installer. A third-party installer may be documented as optional, with its telemetry, trust, and version behavior stated. Never run a remote install script without pinning or inspecting it.
 
