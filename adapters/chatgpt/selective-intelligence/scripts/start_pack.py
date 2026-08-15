@@ -23,9 +23,11 @@ from typing import Any, Iterable
 from urllib.parse import urlparse
 
 import project_index
+import execution_contract
 
 
 PACK_DIR = ".selective-intelligence"
+EXECUTION_CONTRACT_POLICY = "required"
 SCHEMA_VERSION = 1
 VALIDATOR_VERSION = "0.1.1"
 ID_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$")
@@ -213,6 +215,8 @@ def semantic_contract_digest(manifest: dict[str, Any]) -> str:
         "risk_triggers": manifest.get("risk_triggers"),
         "independent_review": projected_review,
     }
+    if "execution_contract_policy" in manifest:
+        canonical["execution_contract_policy"] = manifest.get("execution_contract_policy")
     payload = json.dumps(canonical, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
@@ -469,11 +473,116 @@ def required_artifacts(manifest: dict[str, Any]) -> set[str]:
     profile = project.get("profile", "standard")
     required = set(MICRO_ARTIFACTS if profile == "micro" else STANDARD_ARTIFACTS)
     active = manifest.get("active_build") if isinstance(manifest.get("active_build"), dict) else {}
-    for key in ("contract", "evidence"):
+    for key in ("contract", "evidence", "execution_contract"):
         value = active.get(key)
         if isinstance(value, str) and value:
             required.add(value)
     return required
+
+
+def active_execution_contract_errors(
+    pack: Path,
+    manifest: dict[str, Any],
+    *,
+    require: bool,
+    validate_decision: bool = True,
+) -> list[str]:
+    """Validate and identity-bind the active build's execution decision."""
+    active = manifest.get("active_build")
+    builds = manifest.get("builds")
+    if not isinstance(active, dict) or not isinstance(builds, list):
+        return ["active build execution contract cannot be resolved"] if require else []
+
+    active_id = active.get("id")
+    build = next(
+        (item for item in builds if isinstance(item, dict) and item.get("id") == active_id),
+        None,
+    )
+    active_path = active.get("execution_contract")
+    build_path = build.get("execution_contract") if isinstance(build, dict) else None
+    errors: list[str] = []
+    if not isinstance(active_path, str) or not active_path:
+        if require:
+            errors.append("active_build.execution_contract is required for this contract-aware Start Pack")
+        active_path = None
+    if not isinstance(build_path, str) or not build_path:
+        if require:
+            errors.append("the active build record must retain its execution_contract pointer")
+        build_path = None
+    if active_path is not None and build_path is not None and build_path != active_path:
+        errors.append("active_build.execution_contract must match the active build record")
+
+    resolved_path = active_path or build_path
+    if resolved_path is None:
+        return errors
+
+    path, path_error = safe_path(pack, resolved_path)
+    if path_error or path is None:
+        errors.append(f"active execution contract path is unsafe: {path_error}")
+        return errors
+    if path.is_symlink() or not path.is_file():
+        errors.append("active execution contract must be a regular registered file")
+        return errors
+
+    registered = {
+        item.get("path")
+        for item in manifest.get("artifacts", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    if resolved_path not in registered:
+        errors.append("active execution contract must be a registered Start Pack artifact")
+
+    if not validate_decision:
+        return errors
+
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"active execution contract cannot be read: {exc}")
+        return errors
+
+    project = manifest.get("project") if isinstance(manifest.get("project"), dict) else {}
+    release = manifest.get("release") if isinstance(manifest.get("release"), dict) else {}
+    expected_binding = {
+        "projectId": project.get("id"),
+        "releaseId": release.get("id"),
+        "releaseVersion": release.get("version"),
+        "buildId": active_id,
+        "lockVersion": build.get("lock_version") if isinstance(build, dict) else None,
+    }
+    errors.extend(
+        execution_contract.validate_contract(
+            payload,
+            expected_binding=expected_binding,
+            expected_requirement_ids={
+                item
+                for item in (build.get("requirements", []) if isinstance(build, dict) else [])
+                if isinstance(item, str)
+            },
+        )
+    )
+    return errors
+
+
+def execution_contract_aware(manifest: dict[str, Any]) -> bool:
+    if manifest.get("execution_contract_policy") == EXECUTION_CONTRACT_POLICY:
+        return True
+    active = manifest.get("active_build")
+    if isinstance(active, dict) and isinstance(active.get("execution_contract"), str):
+        return True
+    builds = manifest.get("builds")
+    if isinstance(builds, list) and any(
+        isinstance(item, dict) and isinstance(item.get("execution_contract"), str)
+        for item in builds
+    ):
+        return True
+    artifacts = manifest.get("artifacts")
+    return isinstance(artifacts, list) and any(
+        isinstance(item, dict)
+        and isinstance(item.get("path"), str)
+        and item["path"].endswith("/execution-contract.json")
+        for item in artifacts
+    )
 
 
 def markdown_link_diagnostics(pack: Path, artifact_paths: Iterable[str]) -> list[Diagnostic]:
@@ -833,6 +942,26 @@ def validate_manifest(
         diagnostics.append(Diagnostic("error", "SP060A", "an aligned Build Lock requires an active locked, in-progress, interrupted, or reconciled build", "lock.json"))
     if verdicts.get("build") == "aligned" and verdicts.get("definition") != "locked":
         diagnostics.append(Diagnostic("error", "SP060B", "Build Lock cannot align before Definition Lock", "lock.json"))
+
+    execution_declared = execution_contract_aware(manifest)
+    execution_controls_active = (
+        verdicts.get("definition") == "locked" or verdicts.get("build") == "aligned"
+    )
+    if execution_declared:
+        diagnostics.extend(
+            Diagnostic("error", "SP060C", message, active_build.get("execution_contract"))
+            for message in active_execution_contract_errors(
+                pack,
+                manifest,
+                require=True,
+                validate_decision=execution_controls_active,
+            )
+        )
+    policy = manifest.get("execution_contract_policy")
+    if policy is not None and policy != EXECUTION_CONTRACT_POLICY:
+        diagnostics.append(
+            Diagnostic("error", "SP060D", f"execution_contract_policy must be {EXECUTION_CONTRACT_POLICY}", "lock.json")
+        )
 
     for build_id, build in build_by_id.items():
         for dependency in build.get("depends_on", []):
@@ -1278,6 +1407,63 @@ def template_text(name: str, project_name: str, release_id: str, build_id: str) 
     return templates[name]
 
 
+def execution_contract_template(
+    project_id: str,
+    release_id: str,
+    release_version: str,
+    build_id: str,
+) -> dict[str, Any]:
+    """Create a registered but deliberately blocked execution decision."""
+    return {
+        "schemaVersion": execution_contract.SCHEMA_VERSION,
+        "binding": {
+            "projectId": project_id,
+            "releaseId": release_id,
+            "releaseVersion": release_version,
+            "buildId": build_id,
+            "lockVersion": release_version,
+        },
+        "phase": "first_delivery",
+        "wholeProduct": {
+            "preserved": True,
+            "summary": "UNRESOLVED",
+            "complexity": "multi_deliverable",
+        },
+        "deliverables": [
+            {
+                "id": "D1",
+                "active": True,
+                "outcome": "UNRESOLVED",
+                "entry": "UNRESOLVED",
+                "ending": "UNRESOLVED",
+                "proof": [],
+                "journeySteps": [],
+                "constraints": [],
+                "requirementIds": [],
+                "completionScope": "active_deliverable",
+                "completionClaims": [],
+                "excludedFromActive": [],
+                "informationComplete": False,
+                "fitsExecutionWindow": False,
+                "endToEnd": False,
+            },
+            {"id": "D2", "active": False, "outcome": "UNRESOLVED later deliverable"},
+        ],
+        "executionTarget": {
+            "kind": "other",
+            "productionIntent": False,
+            "establishedApplicationAvailable": False,
+            "repositoryFit": "unknown",
+            "sitesRole": "none",
+            "rationale": "UNRESOLVED",
+            "constraintsConsidered": [],
+            "coreValueDependsOn": {
+                name: False for name in execution_contract.OPERATIONAL_DEPENDENCIES
+            },
+        },
+    }
+
+
 def command_init(args: argparse.Namespace) -> int:
     root = Path(args.root).resolve()
     root.mkdir(parents=True, exist_ok=True)
@@ -1300,6 +1486,7 @@ def command_init(args: argparse.Namespace) -> int:
     artifact_names = list(MICRO_ARTIFACTS if args.profile == "micro" else STANDARD_ARTIFACTS)
     build_contract = f"builds/{args.build_id}/contract.md"
     build_evidence = f"builds/{args.build_id}/evidence.md"
+    build_execution_contract = f"builds/{args.build_id}/execution-contract.json"
     artifact_names.extend((build_contract, build_evidence))
     for relative in artifact_names:
         path = pack / relative
@@ -1308,6 +1495,16 @@ def command_init(args: argparse.Namespace) -> int:
             template_text(relative, args.project_name, args.release_id, args.build_id),
             encoding="utf-8",
         )
+    write_json(
+        pack / build_execution_contract,
+        execution_contract_template(
+            args.project_id,
+            args.release_id,
+            args.release_version,
+            args.build_id,
+        ),
+    )
+    artifact_names.append(build_execution_contract)
     artifacts = [
         {"path": relative, "version": args.release_version, "sha256": sha256(pack / relative)}
         for relative in artifact_names
@@ -1315,6 +1512,7 @@ def command_init(args: argparse.Namespace) -> int:
     manifest: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "validator_version": VALIDATOR_VERSION,
+        "execution_contract_policy": EXECUTION_CONTRACT_POLICY,
         "project": {"id": args.project_id, "name": args.project_name, "profile": args.profile},
         "release": {
             "id": args.release_id,
@@ -1325,6 +1523,7 @@ def command_init(args: argparse.Namespace) -> int:
             "id": args.build_id,
             "contract": build_contract,
             "evidence": build_evidence,
+            "execution_contract": build_execution_contract,
         },
         "authority": {
             "governing_sources": [],
@@ -1356,6 +1555,7 @@ def command_init(args: argparse.Namespace) -> int:
                 "overlap_approved_with": [],
                 "contract": build_contract,
                 "evidence": build_evidence,
+                "execution_contract": build_execution_contract,
             }
         ],
         "external_facts": [],
@@ -1463,6 +1663,21 @@ def command_seal(args: argparse.Namespace) -> int:
     if (args.transition or args.checkpoint) and (not valid_id(active_id) or not meaningful_text(active.get("lock_version"))):
         print("Phase transitions and checkpoints require a valid active build and lock_version", file=sys.stderr)
         return 2
+    contract_aware = execution_contract_aware(manifest)
+    if (args.transition or args.checkpoint) and not contract_aware:
+        print(
+            "Execution contract migration required before any transition or checkpoint seal",
+            file=sys.stderr,
+        )
+        return 2
+    if contract_aware and (args.transition or args.checkpoint):
+        execution_errors = active_execution_contract_errors(pack, manifest, require=True)
+        if execution_errors:
+            print(
+                f"Execution contract blocks sealing: {execution_errors[0]}",
+                file=sys.stderr,
+            )
+            return 2
     if args.checkpoint:
         if last_phase != "build" or last_phase_entry is None:
             print("Checkpoint requires an active Build phase", file=sys.stderr)

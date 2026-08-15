@@ -45,7 +45,7 @@ Sites is appropriate when it is actually the best environment for a bounded stan
 
 ## Enforce the decision
 
-Before implementation, create an execution contract and validate it with `scripts/execution_contract.py`. The contract must preserve the whole product, identify one active bounded deliverable and its proof, retain later deliverables, and record the execution-target evidence. A passing structural decision does not prove the product interpretation is correct, but a failing decision blocks implementation.
+Before implementation, create an execution contract and validate it with `scripts/execution_contract.py`. A new Start Pack creates and registers this contract under the active build, binds it to the project, release, build, lock version, and active requirement set, and carries a durable policy marker so removing a pointer cannot downgrade the pack to a legacy shape. Definition, Build, As-Built, Release, active-Build checkpoints, validation, and resume fail closed when the contract is missing, invalid, or no longer agrees with the active build record. Legacy packs remain readable, but cannot create another seal until explicitly migrated to the contract-aware shape. The contract must preserve the whole product, identify one active bounded deliverable, state what is excluded from the active delivery, bind completion claims to its requirements, require typed evidence with a reproducible procedure, expected result, observed result, and evidence reference, retain later deliverables, and record the execution-target evidence. A passing structural decision does not prove the product interpretation, observation, or authored operating facts are true, but a failing decision blocks implementation.
 
 Reject these failures:
 

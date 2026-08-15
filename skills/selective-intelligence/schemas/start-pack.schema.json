@@ -29,6 +29,7 @@
   "properties": {
     "schema_version": { "const": 1 },
     "validator_version": { "const": "0.1.1" },
+    "execution_contract_policy": { "const": "required" },
     "project": {
       "type": "object",
       "required": ["id", "name", "profile"],
@@ -55,7 +56,8 @@
       "properties": {
         "id": { "$ref": "#/$defs/id" },
         "contract": { "$ref": "#/$defs/relativePath" },
-        "evidence": { "$ref": "#/$defs/relativePath" }
+        "evidence": { "$ref": "#/$defs/relativePath" },
+        "execution_contract": { "$ref": "#/$defs/relativePath" }
       },
       "additionalProperties": true
     },
@@ -143,6 +145,7 @@
           "overlap_approved_with": { "$ref": "#/$defs/idArray" },
           "contract": { "$ref": "#/$defs/relativePath" },
           "evidence": { "$ref": "#/$defs/relativePath" },
+          "execution_contract": { "$ref": "#/$defs/relativePath" },
           "evidence_context": { "$ref": "#/$defs/evidenceContext" }
         },
         "additionalProperties": true

@@ -88,6 +88,82 @@ def refresh_control_digest(manifest: dict[str, Any]) -> None:
     manifest["control_digest"] = hashlib.sha256(payload).hexdigest()
 
 
+def write_valid_execution_contract(pack: Path, manifest: dict[str, Any]) -> None:
+    active = manifest["active_build"]
+    build = next(item for item in manifest["builds"] if item["id"] == active["id"])
+    payload = {
+        "schemaVersion": "si.execution-contract.v1",
+        "binding": {
+            "projectId": manifest["project"]["id"],
+            "releaseId": manifest["release"]["id"],
+            "releaseVersion": manifest["release"]["version"],
+            "buildId": active["id"],
+            "lockVersion": build["lock_version"],
+        },
+        "phase": "first_delivery",
+        "wholeProduct": {
+            "preserved": True,
+            "summary": "A local utility that produces one verified result.",
+            "complexity": "single_deliverable",
+        },
+        "deliverables": [
+            {
+                "id": "D1",
+                "active": True,
+                "outcome": "Run the local utility and receive its verified result.",
+                "entry": "Start the local command.",
+                "ending": "Observe the exact verified output.",
+                "proof": [
+                    {
+                        "type": "automated_test",
+                        "procedure": "Run the local command with the representative fixture.",
+                        "expected": "The command exits zero and emits the exact expected output.",
+                        "observed": "The command exited zero and emitted the exact expected output.",
+                        "evidenceRef": "builds/b001-foundation/evidence.md#representative-fixture",
+                    }
+                ],
+                "journeySteps": ["Run the command.", "Observe and verify the output."],
+                "constraints": ["Keep execution local, reversible, and isolated from unrelated files."],
+                "requirementIds": list(build["requirements"]),
+                "completionScope": "active_deliverable",
+                "completionClaims": [
+                    {
+                        "requirementId": "REQ-1",
+                        "scope": "active_deliverable",
+                        "claim": "The local command produces the expected verified output.",
+                    }
+                ],
+                "excludedFromActive": [],
+                "informationComplete": True,
+                "fitsExecutionWindow": True,
+                "endToEnd": True,
+            }
+        ],
+        "executionTarget": {
+            "kind": "established_repository",
+            "productionIntent": False,
+            "establishedApplicationAvailable": True,
+            "repositoryFit": "fit",
+            "sitesRole": "none",
+            "rationale": "The existing repository owns the local utility and its tests.",
+            "constraintsConsidered": ["The bounded work is repository code with no hosted operational state."],
+            "coreValueDependsOn": {
+                "persistentOperationalData": False,
+                "complexPermissions": False,
+                "substantialBackendWorkflows": False,
+                "repositoryIntegration": True,
+                "businessStateImageProcessing": False,
+                "multiStageBusinessLogic": False,
+                "migrationsAuditOrSystemOfRecord": False,
+            },
+        },
+    }
+    (pack / active["execution_contract"]).write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
 def prepare_locked_micro(root: Path, start_pack: str, through_build: bool = True) -> Path:
     run(
         [
@@ -150,6 +226,7 @@ def prepare_locked_micro(root: Path, start_pack: str, through_build: bool = True
             "claimed_owners": ["utility"],
         }
     )
+    write_valid_execution_contract(pack, manifest)
     lock_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     run([sys.executable, start_pack, "seal", "--root", str(root), "--transition", "definition"], {0})
     if not through_build:
