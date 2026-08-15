@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "verified_on": "2026-08-14",
+  "verified_on": "2026-08-15",
   "canonical_behavior_source": "skills/selective-intelligence",
   "rule": "Client integrations may point to or package the canonical skill, but may not fork its behavior.",
   "repository_pointer_source": "adapters/repository-pointer.md",
@@ -14,6 +14,7 @@
       "repository_pointer": null,
       "scopes": ["saved skill", "plugin skill"],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "The skill must already be enabled for the account or installed through a supported plugin. Public name resolution is not guaranteed.",
       "official_documentation": "https://learn.chatgpt.com/docs/build-skills"
     },
@@ -24,6 +25,7 @@
       "repository_pointer": "AGENTS.md",
       "scopes": [".agents/skills/selective-intelligence", "~/.agents/skills/selective-intelligence"],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "Codex loads the skill after it is present in a supported repository, user, admin, or system scope.",
       "official_documentation": "https://learn.chatgpt.com/docs/build-skills"
     },
@@ -34,6 +36,7 @@
       "repository_pointer": ".github/copilot-instructions.md",
       "scopes": [".agents/skills/selective-intelligence", ".github/skills/selective-intelligence", "~/.agents/skills/selective-intelligence", "~/.copilot/skills/selective-intelligence"],
       "automatic_when_available": true,
+      "observed_status": "documented_route_with_prior_web_free_failures",
       "activation_boundary": "Agent Skills are supported in specific Copilot agent surfaces. A general Copilot web chat without the skill or repository context does not inherit it.",
       "official_documentation": "https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills"
     },
@@ -44,6 +47,7 @@
       "repository_pointer": "CLAUDE.md",
       "scopes": [".claude/skills/selective-intelligence", "~/.claude/skills/selective-intelligence"],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "Claude Code can load the skill automatically when relevant after it exists in a supported skill scope. Web and cloud sessions use their own enabled or synced skill sources.",
       "official_documentation": "https://code.claude.com/docs/en/skills"
     },
@@ -54,6 +58,7 @@
       "repository_pointer": ".cursor/rules/selective-intelligence.mdc",
       "scopes": [".agents/skills/selective-intelligence", ".cursor/skills/selective-intelligence", "~/.agents/skills/selective-intelligence", "~/.cursor/skills/selective-intelligence"],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "Cursor automatically discovers skills in supported project and user scopes. A seedless web agent that requires repository selection cannot prove no-context activation.",
       "official_documentation": "https://cursor.com/docs/skills"
     },
@@ -64,6 +69,7 @@
       "repository_pointer": "GEMINI.md",
       "scopes": [".agents/skills/selective-intelligence", ".gemini/skills/selective-intelligence", "~/.agents/skills/selective-intelligence", "~/.gemini/skills/selective-intelligence"],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "Gemini CLI discovers the skill in supported scopes, but its client requires activation consent before the skill gains access to its resources.",
       "official_documentation": "https://geminicli.com/docs/cli/using-agent-skills/"
     },
@@ -74,18 +80,32 @@
       "repository_pointer": "AGENTS.md",
       "scopes": [".kiro/skills/selective-intelligence", "~/.kiro/skills/selective-intelligence"],
       "automatic_when_available": true,
+      "observed_status": "documented_route",
       "activation_boundary": "Kiro can import the public skill folder and activate it when relevant after it exists in a supported workspace or global scope.",
       "official_documentation": "https://kiro.dev/docs/skills/"
     },
     {
       "id": "web-ai",
       "name": "Web-capable AI",
-      "native_source": "https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json",
+      "native_source": "https://infotradescout.github.io/Selective-Intelligence/AI-GUIDE.md",
       "repository_pointer": null,
-      "scopes": ["public web", "llms.txt", "machine-readable JSON"],
+      "scopes": ["public web", "ordinary text", "AI-GUIDE.md", "llms.txt", "machine-readable JSON"],
       "automatic_when_available": false,
-      "activation_boundary": "The AI must have public-web access and choose to resolve the wordmark. Publication improves resolution but cannot force a client to search or adopt retrieved instructions.",
+      "observed_status": "strict_guide_available_client_compliance_unverified",
+      "activation_boundary": "After a direct user trigger, a text-capable web AI should resolve AI-GUIDE.md and use it as the strict operating guide rather than summarize the repository. Publication cannot force a client to search or comply, so each client still needs live evidence.",
       "official_documentation": "https://infotradescout.github.io/Selective-Intelligence/llms.txt"
+    },
+    {
+      "id": "perplexity-free",
+      "name": "Perplexity Standard (Free)",
+      "native_source": "https://infotradescout.github.io/Selective-Intelligence/AI-GUIDE.md",
+      "repository_pointer": null,
+      "scopes": ["live public-web search", "limited basic file uploads", "ordinary text"],
+      "automatic_when_available": false,
+      "observed_status": "fail_strict_guide_retest_pending",
+      "observed_at": "2026-08-15T03:17:44Z",
+      "activation_boundary": "Live free-tier evidence failed the bare trigger, activation after publisher-qualified discovery, and the one-prompt website outcome. Perplexity found the canonical project only after the publisher hint, then summarized it instead of using it. Its official Standard plan documents public search and limited basic file uploads, but no native Agent Skills route. AI-GUIDE.md is the strict text fallback; a fresh retest must pass before compatibility is claimed.",
+      "official_documentation": "https://www.perplexity.ai/help-center/en/articles/11187416-which-perplexity-subscription-plan-is-right-for-you"
     }
   ]
 }

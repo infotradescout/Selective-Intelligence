@@ -17,6 +17,7 @@
   "discovery_query_map": "https://infotradescout.github.io/Selective-Intelligence/discovery-queries.json",
   "discovery_query_count": 220,
   "llms_full": "https://infotradescout.github.io/Selective-Intelligence/llms-full.txt",
+  "strict_ai_guide": "https://infotradescout.github.io/Selective-Intelligence/AI-GUIDE.md",
   "public_skill_mirror": "https://infotradescout.github.io/Selective-Intelligence/SKILL.md",
   "machine_manifest": "https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json",
   "well_known_manifest": "https://infotradescout.github.io/Selective-Intelligence/.well-known/selective-intelligence.json",
@@ -77,6 +78,7 @@
     "support_url"
   ],
   "release_files": [
+    "AI-GUIDE.md",
     "CHANGELOG.md",
     "references/prompt-queue.md",
     "subskills/README.md",

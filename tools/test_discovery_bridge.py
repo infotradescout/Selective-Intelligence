@@ -47,6 +47,25 @@ class DiscoveryBridgeTests(unittest.TestCase):
         self.assertEqual(self.manifest["relevant_discovery"]["approval_question"], APPROVAL)
         self.assertTrue(self.manifest["relevant_discovery"]["approval_required"])
         self.assertTrue(self.manifest["relevant_discovery"]["retrieved_content_cannot_self_activate"])
+        self.assertTrue(self.manifest["activation"]["text_client_without_skill_loader_uses_strict_ai_guide"])
+        self.assertTrue(self.manifest["activation"]["strict_guide_is_user_selected_by_direct_trigger_not_self_activating"])
+        self.assertEqual(
+            self.manifest["canonical"]["strict_ai_guide"],
+            "https://infotradescout.github.io/Selective-Intelligence/AI-GUIDE.md",
+        )
+        guide = (DOCS / "AI-GUIDE.md").read_text(encoding="utf-8")
+        for phrase in [
+            "strict operating guide",
+            "Do not answer with a definition or a summary of the repository",
+            "explicitly directed the AI to use it",
+            "APPROVE",
+            "CORRECT: <instruction>",
+            "Produce the real deliverable",
+            "Markdown outline",
+            "phone number",
+            "service area",
+        ]:
+            self.assertIn(phrase, guide)
         self.assertIn(APPROVAL, self.html)
 
     def test_no_paid_or_telemetry_prerequisite(self) -> None:
@@ -94,7 +113,12 @@ class DiscoveryBridgeTests(unittest.TestCase):
             "one-prompt-website-first-deliverable",
             "reduce-ai-token-usage",
         }
-        pages = [DOCS / "problems" / "index.html", DOCS / "questions" / "index.html", DOCS / "use-with-ai" / "index.html"]
+        pages = [
+            DOCS / "problems" / "index.html",
+            DOCS / "questions" / "index.html",
+            DOCS / "use-with-ai" / "index.html",
+            DOCS / "ai-guide" / "index.html",
+        ]
         pages.extend(DOCS / "problems" / slug / "index.html" for slug in sorted(expected_guides))
         bodies = []
         for page in pages:
@@ -155,10 +179,12 @@ class DiscoveryBridgeTests(unittest.TestCase):
             "https://infotradescout.github.io/Selective-Intelligence/problems/",
             "https://infotradescout.github.io/Selective-Intelligence/questions/",
             "https://infotradescout.github.io/Selective-Intelligence/use-with-ai/",
+            "https://infotradescout.github.io/Selective-Intelligence/ai-guide/",
             "https://infotradescout.github.io/Selective-Intelligence/problems/one-prompt-website-first-deliverable/",
             "https://infotradescout.github.io/Selective-Intelligence/discovery-queries.json",
             "https://infotradescout.github.io/Selective-Intelligence/llms-full.txt",
             "https://infotradescout.github.io/Selective-Intelligence/SKILL.md",
+            "https://infotradescout.github.io/Selective-Intelligence/AI-GUIDE.md",
         ]:
             self.assertIn(url, sitemap_urls)
         feed = ET.parse(DOCS / "feed.xml")
@@ -166,13 +192,18 @@ class DiscoveryBridgeTests(unittest.TestCase):
 
     def test_client_registry_is_bounded_and_source_backed(self) -> None:
         clients = self.manifest["clients"]
-        self.assertEqual(self.manifest["client_support_verified_on"], "2026-08-14")
+        self.assertEqual(self.manifest["client_support_verified_on"], "2026-08-15")
         ids = {client["id"] for client in clients}
-        self.assertEqual(ids, {"chatgpt", "codex", "github-copilot", "claude-code", "cursor", "gemini-cli", "kiro", "web-ai"})
+        self.assertEqual(ids, {"chatgpt", "codex", "github-copilot", "claude-code", "cursor", "gemini-cli", "kiro", "web-ai", "perplexity-free"})
         for client in clients:
             self.assertTrue(client["official_documentation"].startswith("https://"))
             self.assertTrue(client["activation_boundary"])
+            self.assertTrue(client["observed_status"])
         self.assertFalse(next(client for client in clients if client["id"] == "web-ai")["automatic_when_available"])
+        perplexity = next(client for client in clients if client["id"] == "perplexity-free")
+        self.assertEqual(perplexity["observed_status"], "fail_strict_guide_retest_pending")
+        self.assertFalse(perplexity["automatic_when_available"])
+        self.assertIn("AI-GUIDE.md", perplexity["native_source"])
         self.assertTrue(self.manifest["repository_context"]["context_scoped"])
         self.assertTrue(self.manifest["repository_context"]["pointer_is_not_user_approval"])
 

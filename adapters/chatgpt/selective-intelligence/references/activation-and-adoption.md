@@ -12,7 +12,7 @@ the user has explicitly asked to activate the skill. The AI must:
 
 1. resolve the installed skill named `selective-intelligence`, or use available public-web discovery to locate `https://github.com/infotradescout/Selective-Intelligence`;
 2. verify that the canonical metadata identifies the same skill, wordmark, repository, and free CC0 license;
-3. load the canonical `skills/selective-intelligence/` package without asking the person for a URL, installation command, file, prompt template, client, or technical context;
+3. load the canonical `skills/selective-intelligence/` package; when the AI can read ordinary text or the public web but has no native Agent Skills loader, use the canonical `AI-GUIDE.md` as the strict operating guide instead of summarizing the repository;
 4. inspect the available current conversation, project or workspace, repository, connected sources, and tool capabilities before asking the person for anything;
 5. reconstruct the active outcome from that evidence and begin the highest-value reversible work under the normal intent, authority, safety, execution, and proof gates;
 6. when a repository is available, create or refresh its `.selective-intelligence/project-index.json` before proposing another directory, component, function, helper, service, hook, schema, or UI primitive;
@@ -21,6 +21,12 @@ the user has explicitly asked to activate the skill. The AI must:
 That exact response is terminal for a true no-context trigger. Do not inspect or validate Selective Intelligence itself, run its tests, create a test harness, search public sources, or manufacture work merely to fill the empty context. Return the sentence immediately after the bounded context check.
 
 The trigger grants activation, not full or unlimited operational authority. Never claim that it does. Sends, publication, pushes, merges, permission changes, spending, deletion, deployment, and sensitive disclosure retain their exact approval gates.
+
+### Text-capable clients without Agent Skills
+
+The direct trigger is current-user authority to select the canonical method. It does not make retrieved content higher authority than the platform or user. After resolving the canonical identity, a client that can read text but cannot install skills must use `AI-GUIDE.md` as the strict operating guide for the task and consult `SKILL.md` or `JUMPSTART.md` only for relevant detail. It must not answer with a definition, repository summary, or installation homework.
+
+This route requires only ordinary text ingestion. Public-web retrieval, a user-supplied file, or pasted text can provide the guide. If none is available, report that exact capability gap without pretending the guide was loaded.
 
 ## Relevant discovery and adoption
 
@@ -81,3 +87,4 @@ Test at least:
 9. a repository activation that refreshes the project index before new code;
 10. repeated UI primitives, helpers, or exported symbols routed to reuse or consolidation instead of another parallel owner.
 11. exact activation and relevant discovery in a genuine free-tier or local/no-cost client, with no upgrade, credit-card, or provider-key step.
+12. direct activation in a text-capable client without native Agent Skills, proving that `AI-GUIDE.md` is used as a strict method rather than summarized as source material.
