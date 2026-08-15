@@ -6,10 +6,12 @@ import hashlib
 import os
 import re
 import subprocess
+import tempfile
+import time
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Callable, Sequence
 
 
 class PolicyDenied(PermissionError):
@@ -40,6 +42,31 @@ def _inside(path: Path, root: Path) -> bool:
 
 def _digest(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8", errors="replace")).hexdigest()
+
+
+_MAX_CAPTURE_BYTES = 1024 * 1024
+
+
+def _captured_stream(handle: Any) -> tuple[str, str, int, bool]:
+    """Return a bounded preview plus a digest of the complete process stream."""
+    handle.flush()
+    handle.seek(0, os.SEEK_END)
+    size = handle.tell()
+    handle.seek(0)
+    digest = hashlib.sha256()
+    preview = bytearray()
+    while True:
+        chunk = handle.read(65536)
+        if not chunk:
+            break
+        digest.update(chunk)
+        if len(preview) < _MAX_CAPTURE_BYTES:
+            preview.extend(chunk[: _MAX_CAPTURE_BYTES - len(preview)])
+    truncated = size > _MAX_CAPTURE_BYTES
+    text = bytes(preview).decode("utf-8", errors="replace")
+    if truncated:
+        text += f"\n[output truncated after {_MAX_CAPTURE_BYTES} of {size} bytes]"
+    return text, digest.hexdigest(), size, truncated
 
 
 _MUTATING_GIT = {
@@ -731,6 +758,7 @@ def guarded_run(
     session_id: str,
     task_id: str,
     timeout: int = 120,
+    cancel_check: Callable[[], bool] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     command = [str(v) for v in argv]
     workdir = _resolved(cwd)
@@ -742,14 +770,35 @@ def guarded_run(
     if not decision["allowed"]:
         raise PolicyDenied(decision)
     started = _now()
-    proc = subprocess.run(
-        command,
-        cwd=str(workdir),
-        capture_output=True,
-        text=True,
-        timeout=timeout,
-        check=False,
-    )
+    with tempfile.TemporaryFile(mode="w+b") as stdout_file, tempfile.TemporaryFile(mode="w+b") as stderr_file:
+        proc = subprocess.Popen(
+            command,
+            cwd=str(workdir),
+            stdout=stdout_file,
+            stderr=stderr_file,
+        )
+        deadline = time.monotonic() + timeout
+        cancelled = False
+        while proc.poll() is None:
+            if cancel_check is not None and cancel_check():
+                cancelled = True
+                proc.terminate()
+                try:
+                    proc.wait(timeout=2)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    proc.wait()
+                break
+            if time.monotonic() >= deadline:
+                proc.kill()
+                proc.wait()
+                stdout, _, _, _ = _captured_stream(stdout_file)
+                stderr, _, _, _ = _captured_stream(stderr_file)
+                raise subprocess.TimeoutExpired(command, timeout, output=stdout, stderr=stderr)
+            time.sleep(0.05)
+        proc.wait()
+        stdout, stdout_digest, stdout_bytes, stdout_truncated = _captured_stream(stdout_file)
+        stderr, stderr_digest, stderr_bytes, stderr_truncated = _captured_stream(stderr_file)
     ended = _now()
     decision["adapterInvocationStatus"] = "INVOKED"
     evidence = {
@@ -767,9 +816,14 @@ def guarded_run(
         "startedAt": started,
         "endedAt": ended,
         "exitCode": proc.returncode,
-        "stdout": proc.stdout,
-        "stderr": proc.stderr,
-        "stdoutSha256": _digest(proc.stdout),
-        "stderrSha256": _digest(proc.stderr),
+        "cancelled": cancelled,
+        "stdout": stdout,
+        "stderr": stderr,
+        "stdoutSha256": stdout_digest,
+        "stderrSha256": stderr_digest,
+        "stdoutBytes": stdout_bytes,
+        "stderrBytes": stderr_bytes,
+        "stdoutTruncated": stdout_truncated,
+        "stderrTruncated": stderr_truncated,
     }
     return decision, evidence

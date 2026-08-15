@@ -15,10 +15,8 @@ or an optional managed provider without changing the session contract.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
-import re
 import sys
 import uuid
 from datetime import UTC, datetime
@@ -31,76 +29,14 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import capabilities as CAP  # noqa: E402
 import checkpoint as CP  # noqa: E402
+import context_budget as CB  # noqa: E402
+import feedback as FB  # noqa: E402
 import lane_session as LS  # noqa: E402
 from policy_guard import PolicyDenied, PolicyGuard, guarded_run, guarded_write_text  # noqa: E402
 
 
 class EngineError(RuntimeError):
     pass
-
-
-_CONTEXT_EXCLUDED_DIRS = {".git", "node_modules", ".venv", "venv", "__pycache__", ".cache", "dist", "build"}
-_SENSITIVE_NAME_PATTERNS = (
-    re.compile(r"^\.env(?:\..+)?$", re.I),
-    re.compile(r"(?:secret|credential|token|private[_-]?key)", re.I),
-    re.compile(r"(?:^|[._-])id_rsa(?:$|[._-])", re.I),
-    re.compile(r"\.(?:pem|p12|pfx|key)$", re.I),
-)
-_SENSITIVE_CONTENT = re.compile(
-    r"BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|(?:api[_-]?key|secret|token|password)\s*[:=]\s*['\"]?[^\s'\"]{8,}",
-    re.I,
-)
-
-
-def _context_bundle(workspace: Path, *, max_files: int = 50, max_bytes: int = 65536, max_file_bytes: int = 16384) -> dict[str, Any]:
-    selected: list[dict[str, Any]] = []
-    excluded: list[dict[str, str]] = []
-    used = 0
-    for path in sorted(workspace.rglob("*")):
-        if not path.is_file():
-            continue
-        relative = path.relative_to(workspace)
-        if any(part in _CONTEXT_EXCLUDED_DIRS for part in relative.parts):
-            excluded.append({"path": relative.as_posix(), "reason": "excluded directory"})
-            continue
-        if any(pattern.search(path.name) for pattern in _SENSITIVE_NAME_PATTERNS):
-            excluded.append({"path": relative.as_posix(), "reason": "sensitive filename"})
-            continue
-        try:
-            raw = path.read_bytes()
-        except OSError as exc:
-            excluded.append({"path": relative.as_posix(), "reason": f"read failed: {type(exc).__name__}"})
-            continue
-        digest = _sha_bytes(raw)
-        if len(raw) > max_file_bytes:
-            excluded.append({"path": relative.as_posix(), "reason": "file exceeds context file budget", "sha256": digest})
-            continue
-        try:
-            text = raw.decode("utf-8")
-        except UnicodeDecodeError:
-            excluded.append({"path": relative.as_posix(), "reason": "binary or non-UTF-8", "sha256": digest})
-            continue
-        if _SENSITIVE_CONTENT.search(text):
-            excluded.append({"path": relative.as_posix(), "reason": "potential secret content", "sha256": digest})
-            continue
-        if len(selected) >= max_files or used + len(raw) > max_bytes:
-            excluded.append({"path": relative.as_posix(), "reason": "context bundle budget exhausted", "sha256": digest})
-            continue
-        selected.append(
-            {
-                "path": relative.as_posix(),
-                "sha256": digest,
-                "bytes": len(raw),
-                "content": text,
-                "selectionReason": "small text file in authorized disposable workspace",
-            }
-        )
-        used += len(raw)
-    return {
-        "selected": selected,
-        "excluded": excluded,
-        "budget": {"maxFiles": max_files, "maxBytes": max_bytes, "maxFileBytes": max_file_bytes, "usedBytes": used},
-    }
 
 
 def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
@@ -126,6 +62,17 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
         for adapter in session.get("capabilityInventory", [])
         if adapter.get("executable")
     ]
+    context_bundle = CB.select_context(
+        workspace,
+        objective=session["objective"],
+        task=task,
+        acceptance_refs=task.get("acceptanceRefs", []),
+    )
+    coverage = context_bundle.get("outcomeCoverage", {})
+    if coverage.get("complete") is not True:
+        raise EngineError(
+            "context budget cannot preserve the bounded outcome; unresolved references or local dependencies remain"
+        )
     packet = {
         "schemaVersion": "si.worker_packet.v2",
         "packetId": f"packet-{uuid.uuid4().hex}",
@@ -157,7 +104,7 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
                 "deploy or publish",
             ],
         },
-        "contextBundle": _context_bundle(workspace),
+        "contextBundle": context_bundle,
         "requiredOutput": {
             "type": "object",
             "required": ["producer", "files"],
@@ -186,8 +133,45 @@ def _now() -> str:
     return datetime.now(UTC).isoformat()
 
 
-def _sha_bytes(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
+def _feedback_store(session: dict[str, Any]) -> Path | None:
+    workspace = session.get("workspace")
+    return Path(workspace).resolve() / FB.DEFAULT_STORE if workspace else None
+
+
+def _record_feedback(
+    session: dict[str, Any],
+    event: str,
+    *,
+    cause: str = "unknown",
+    validation_scope: str = "none",
+    attempt_count: int = 0,
+) -> bool:
+    task_id = session.get("feedbackTaskId")
+    store = _feedback_store(session)
+    if not isinstance(task_id, str) or store is None:
+        return False
+    try:
+        FB.record_event(
+            store=store,
+            task_id=task_id,
+            event=event,
+            cause=cause,
+            validation_scope=validation_scope,
+            attempt_count=attempt_count,
+            source="system",
+        )
+    except FB.FeedbackError as exc:
+        LS.record_event(session, "feedback.record_failed", {"event": event, "errorType": type(exc).__name__})
+        return False
+    LS.record_event(session, "feedback.recorded", {"event": event})
+    return True
+
+
+def _start_feedback(session: dict[str, Any]) -> None:
+    if session.get("feedbackTaskId"):
+        return
+    session["feedbackTaskId"] = str(uuid.uuid4())
+    _record_feedback(session, "task_started", cause="intent")
 
 
 def _load_json(path: str | os.PathLike[str]) -> dict[str, Any]:
@@ -402,6 +386,7 @@ def start_project(
             raise EngineError("missing initial checkpoint")
         CP.approve_checkpoint(session, checkpoint["checkpoint_id"])
         workspace_path.mkdir(parents=True, exist_ok=True)
+        _start_feedback(session)
         _apply_pending_plan(session)
     LS.save_session(session)
     return session
@@ -431,6 +416,7 @@ def approve_project(
     workspace = session.get("workspace")
     if workspace:
         Path(workspace).resolve().mkdir(parents=True, exist_ok=True)
+    _start_feedback(session)
     if plan is not None:
         validate_plan(plan)
         session["pendingPlan"] = plan
@@ -515,6 +501,7 @@ def interrupt_project(
         )
     except CP.CheckpointError as exc:
         raise EngineError(str(exc)) from exc
+    _record_feedback(session, "user_correction", cause="intent")
     LS.save_session(session)
     return session, result
 
@@ -683,6 +670,21 @@ def verify_task(
     workspace = Path(session["workspace"]).resolve()
     argv, cwd = _normalize_command(command, workspace)
     guard = _guard(session)
+
+    def interrupted() -> bool:
+        current = LS.load_session(session_id)
+        if not current:
+            return True
+        current_task = current.get("queue", {}).get(task_id) or {}
+        return bool(
+            current.get("siActive") is not True
+            or current.get("governanceMode") != "always_on_after_activation"
+            or current.get("generationAuthority") is not True
+            or current.get("executionLocked")
+            or current_task.get("cancelRequested")
+            or current_task.get("status") == "cancelled"
+        )
+
     try:
         decision, evidence = guarded_run(
             argv,
@@ -690,17 +692,43 @@ def verify_task(
             guard=guard,
             session_id=session_id,
             task_id=task_id,
+            cancel_check=interrupted,
         )
     except PolicyDenied as exc:
         LS.record_policy_decision(session, exc.decision)
         LS.transition_task(session, task_id, "failed", reason=exc.decision["reason"])
+        _record_feedback(session, "material_blocker", cause="safety_privacy")
         LS.save_session(session)
         raise
+
+    current = LS.load_session(session_id)
+    if not current:
+        raise EngineError("session disappeared during verification")
+    session = current
+    task = session.get("queue", {}).get(task_id)
+    if not task:
+        raise EngineError("task disappeared during verification")
     LS.record_policy_decision(session, decision)
     evidence = dict(evidence)
     evidence["authorized_checkpoint_id"] = session.get("authorizedCheckpointId")
     evidence["authorized_intent_hash"] = session.get("authorizedIntentHash")
     LS.record_command(session, evidence)
+    if evidence.get("cancelled"):
+        _record_feedback(session, "evidence_invalidated", cause="intent", validation_scope="focused")
+        LS.save_session(session)
+        return {
+            "session": session,
+            "passed": False,
+            "cancelled": True,
+            "verification": None,
+            "commandEvidence": evidence,
+            "repairTask": None,
+        }
+    try:
+        CP.assert_binding(session, task)
+    except CP.CheckpointError as exc:
+        LS.save_session(session)
+        raise EngineError(f"verification completed after authority changed: {exc}") from exc
     passed = evidence["exitCode"] == 0
     verification = LS.record_verification(session, task_id, evidence["evidenceId"], passed)
     verification["authorized_checkpoint_id"] = session.get("authorizedCheckpointId")
@@ -710,6 +738,7 @@ def verify_task(
         ok, reason = LS.transition_task(session, task_id, "complete")
         if not ok:
             raise EngineError(reason)
+        _record_feedback(session, "validation_passed", cause="unknown", validation_scope="focused")
     else:
         ok, reason = LS.transition_task(session, task_id, "repairing", reason="verification command failed")
         if not ok:
@@ -729,11 +758,13 @@ def verify_task(
                 "failureEvidenceId": evidence["evidenceId"],
             },
         )
+        _record_feedback(session, "validation_failed", cause="unknown", validation_scope="focused")
     CP.receipt(session, action="process.run", details={"taskId": task_id, "passed": passed})
     LS.save_session(session)
     return {
         "session": session,
         "passed": passed,
+        "cancelled": False,
         "verification": verification,
         "commandEvidence": evidence,
         "repairTask": repair_task,

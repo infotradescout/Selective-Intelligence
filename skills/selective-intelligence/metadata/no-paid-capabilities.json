@@ -40,6 +40,21 @@
       "job": "bounded prompt and work queue continuity",
       "paths": ["scripts/prompt_queue.py", "scripts/lane_session.py"],
       "evidence": "queue snapshots, lane ownership, and resume packets"
+    },
+    {
+      "job": "task-aware context selection and token budgeting",
+      "paths": ["scripts/context_budget.py", "scripts/build_engine.py"],
+      "evidence": "explicit-reference priority, relevance ranking, hard byte and file limits, secret exclusion, and selected-versus-avoided token estimates"
+    },
+    {
+      "job": "website first-deliverable package and review gates",
+      "paths": ["scripts/site_quality.py", "scripts/site_review_gate.py", "evals/one-prompt-website.json"],
+      "evidence": "dependency-free package checks plus a fail-closed rendered-review receipt that cannot override a human veto or blocking Product Design Objector finding"
+    },
+    {
+      "job": "local change protection and interruptible verification",
+      "paths": ["scripts/quality_gate.py", "scripts/policy_guard.py"],
+      "evidence": "one-command deterministic gate plus tested termination of SI-owned verification processes when interruption is observed"
     }
   ]
 }

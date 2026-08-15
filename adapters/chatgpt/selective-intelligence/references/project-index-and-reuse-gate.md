@@ -42,6 +42,8 @@ Creating new code is allowed only when the refreshed index and repository inspec
 
 An index warning is a search lead, not automatic proof of a defect. An exact duplicate file, competing exported owner, stale index, or missing canonical owner is a blocking architecture fact until resolved or explicitly justified in the governing project record.
 
+A generated adapter may clear an exact-duplicate finding only when its bounded adapter manifest explicitly names both `portable_source_path` and `adapter_path`, and the canonical and projected files have the same relative path below those roots. The index records each accepted projection exception. An undeclared copy or a third matching owner still fails closed.
+
 ## UI proliferation rule
 
 Before adding another button, card, field, form, dialog, table, or layout wrapper:

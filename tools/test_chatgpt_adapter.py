@@ -25,7 +25,8 @@ def main() -> int:
     require(skill_entrypoints == ["SKILL.md"], f"expected one SKILL.md, found {skill_entrypoints}")
     require("scripts/project_index.py" in files, "project index tool is missing")
     require("references/project-index-and-reuse-gate.md" in files, "project index reference is missing")
-    require("evals/results-0.4.0.json" in files, "0.4.0 evidence is missing")
+    version = (ADAPTER_ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    require(f"evals/results-{version}.json" in files, f"{version} evidence is missing")
     require("subskills/si-worker/ROLE.md" in files, "Worker role reference is missing")
     require(not any("subskills/" in path and path.endswith("/SKILL.md") for path in files), "nested SKILL.md remains")
 

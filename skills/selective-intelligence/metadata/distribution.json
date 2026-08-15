@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "skill": "selective-intelligence",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "component_versions": {
-    "skill": "0.4.0",
+    "skill": "1.0.0",
     "start_pack_validator": "0.1.1",
     "start_pack_schema": "0.1.1",
     "council_protocol": "0.3.0"
@@ -15,7 +15,7 @@
   "problem_discovery_hub": "https://infotradescout.github.io/Selective-Intelligence/problems/",
   "natural_language_question_library": "https://infotradescout.github.io/Selective-Intelligence/questions/",
   "discovery_query_map": "https://infotradescout.github.io/Selective-Intelligence/discovery-queries.json",
-  "discovery_query_count": 210,
+  "discovery_query_count": 220,
   "llms_full": "https://infotradescout.github.io/Selective-Intelligence/llms-full.txt",
   "public_skill_mirror": "https://infotradescout.github.io/Selective-Intelligence/SKILL.md",
   "machine_manifest": "https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json",
@@ -38,6 +38,9 @@
   "external_client_constraints": "respect_and_report_without_redefining_intent",
   "result_mismatch_reopens_step1": true,
   "developer_judgment_over_pattern_matching": true,
+  "always_on_after_activation_or_approved_adoption": true,
+  "token_efficiency_is_first_operating_priority": true,
+  "plain_concrete_language_required": true,
   "master_trigger": "Selective Intelligence",
   "direct_activation": "exact_phrase_in_current_user_input",
   "seedless_behavior": "automatic_context_discovery_and_begin",
@@ -68,7 +71,7 @@
   ],
   "portable_source_path": "skills/selective-intelligence",
   "recommended_vendored_path": ".agents/skills/selective-intelligence",
-  "archive_name": "selective-intelligence-0.4.0.zip",
+  "archive_name": "selective-intelligence-1.0.0.zip",
   "owner_supplied_before_publication": [],
   "owner_supplied_before_donations": [
     "support_url"
@@ -100,6 +103,8 @@
     "evals/results-0.2.0.json",
     "evals/results-0.3.0.json",
     "evals/results-0.4.0.json",
+    "evals/results-1.0.0.json",
+    "evals/one-prompt-website.json",
     "metadata/distribution.json",
     "metadata/no-paid-capabilities.json",
     "references/actual-intent-alignment.md",
@@ -129,6 +134,7 @@
     "references/start-mode.md",
     "references/step1-intent-control-status.md",
     "references/time-awareness.md",
+    "references/token-efficiency-and-language.md",
     "references/tool-interoperability.md",
     "references/ui-ux-and-output.md",
     "references/vibe-developer-bridge.md",
@@ -153,7 +159,15 @@
     "scripts/intent_contract.py",
     "scripts/policy_guard.py",
     "scripts/project_index.py",
+    "scripts/context_budget.py",
+    "scripts/site_quality.py",
+    "scripts/site_review_gate.py",
+    "scripts/quality_gate.py",
     "tests/run_instruction_fidelity_vertical.py",
+    "tests/test_context_budget.py",
+    "tests/test_feedback_integration.py",
+    "tests/test_process_interrupt.py",
+    "tests/test_site_review_gate.py",
     "tests/test_policy_guard_command_resolution.py",
     "tests/test_production_path.py"
   ]

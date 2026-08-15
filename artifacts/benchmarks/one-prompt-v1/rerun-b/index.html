@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#163631" />
+    <meta
+      name="description"
+      content="Describe what needs fixing and prepare a clear repair request to share with a local repair professional."
+    />
+    <meta property="og:title" content="Repair Desk — Start with what’s wrong" />
+    <meta
+      property="og:description"
+      content="Turn the details of a repair problem into a clear note you can share."
+    />
+    <title>Repair Desk — Start with what’s wrong</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#repair-form">Skip to the repair form</a>
+
+    <header class="site-header">
+      <a class="wordmark" href="#top" aria-label="Repair Desk home">
+        <span class="wordmark-mark" aria-hidden="true">RD</span>
+        <span>Repair Desk</span>
+      </a>
+      <a class="header-action" href="#repair-form">Start a repair note</a>
+    </header>
+
+    <main id="top">
+      <section class="workbench" aria-labelledby="page-title">
+        <div class="intro">
+          <p class="eyebrow">Local repair, clearly explained</p>
+          <h1 id="page-title">Start with what’s wrong.</h1>
+          <p class="lede">
+            Describe the item and the problem in plain words. You’ll get a clean
+            repair note to copy and share—without guessing at the diagnosis.
+          </p>
+
+          <div class="intake-guide" aria-label="What makes a useful repair request">
+            <p class="guide-title">The useful details</p>
+            <ol>
+              <li><span>01</span> What needs attention</li>
+              <li><span>02</span> What changed or stopped working</li>
+              <li><span>03</span> When you need it looked at</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="form-panel">
+          <div class="panel-heading">
+            <p class="panel-kicker">Repair request</p>
+            <p class="step-count" aria-hidden="true">01—04</p>
+          </div>
+
+          <form id="repair-form">
+            <div class="field">
+              <label for="item">What needs attention?</label>
+              <input
+                id="item"
+                name="item"
+                type="text"
+                autocomplete="off"
+                placeholder="For example: kitchen drawer or table lamp"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label for="symptom">What best describes the problem?</label>
+              <select id="symptom" name="symptom" required>
+                <option value="">Choose one</option>
+                <option>It stopped working</option>
+                <option>It works inconsistently</option>
+                <option>It is damaged</option>
+                <option>It needs maintenance</option>
+                <option>I am not sure yet</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="details">What did you notice?</label>
+              <textarea
+                id="details"
+                name="details"
+                rows="4"
+                placeholder="What happened, what you tried, or any sound, smell, leak, or visible damage"
+                required
+              ></textarea>
+              <p class="field-note">Do not include passwords, access codes, or private account details.</p>
+            </div>
+
+            <fieldset>
+              <legend>Timing</legend>
+              <div class="choice-row">
+                <label class="choice">
+                  <input type="radio" name="timing" value="Flexible" checked />
+                  <span>Flexible</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="timing" value="Soon" />
+                  <span>Soon</span>
+                </label>
+                <label class="choice">
+                  <input type="radio" name="timing" value="Time-sensitive" />
+                  <span>Time-sensitive</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <button class="primary-button" type="submit">
+              <span>Prepare my repair note</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          <section class="result" id="result" aria-live="polite" hidden>
+            <div class="result-heading">
+              <div>
+                <p class="panel-kicker">Ready to share</p>
+                <h2 tabindex="-1">Your repair note</h2>
+              </div>
+              <span class="result-check" aria-hidden="true">✓</span>
+            </div>
+            <pre id="repair-note"></pre>
+            <div class="result-actions">
+              <button class="primary-button" id="copy-note" type="button">
+                <span>Copy repair note</span>
+                <span aria-hidden="true">⧉</span>
+              </button>
+              <button class="text-button" id="edit-note" type="button">Edit details</button>
+            </div>
+            <p class="copy-status" id="copy-status"></p>
+          </section>
+        </div>
+      </section>
+
+      <section class="handoff" aria-labelledby="handoff-title">
+        <div>
+          <p class="eyebrow">Before the handoff</p>
+          <h2 id="handoff-title">A little context prevents a lot of guesswork.</h2>
+        </div>
+        <div class="handoff-list">
+          <article>
+            <span class="item-number" aria-hidden="true">01</span>
+            <div>
+              <h3>Photograph the problem</h3>
+              <p>Include the full item and one close view of any visible damage.</p>
+            </div>
+          </article>
+          <article>
+            <span class="item-number" aria-hidden="true">02</span>
+            <div>
+              <h3>Keep the history short</h3>
+              <p>Say when it changed and what happened immediately beforehand.</p>
+            </div>
+          </article>
+          <article>
+            <span class="item-number" aria-hidden="true">03</span>
+            <div>
+              <h3>Flag safety concerns</h3>
+              <p>Mention heat, smoke, sharp edges, exposed wiring, or active leaks.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Repair Desk</p>
+      <p>A practical starting point for a local repair conversation.</p>
+    </footer>
+  </body>
+</html>

@@ -30,14 +30,12 @@ Do not introduce telemetry, a paid compatibility layer, a vendor requirement, hi
 From the repository root, run the checks affected by your change. The full deterministic baseline is:
 
 ```bash
-python -B skills/selective-intelligence/scripts/eval.py controls --json
-python -B skills/selective-intelligence/scripts/council.py self-test
-python -B skills/selective-intelligence/scripts/behavior_eval.py self-test
-python -B -m unittest discover -s skills/selective-intelligence/tests -p 'test_*.py'
-python -B skills/selective-intelligence/scripts/release.py doctor --json
+python -B skills/selective-intelligence/scripts/quality_gate.py
 python -B tools/build_chatgpt_adapter.py --archive
 python -B tools/test_chatgpt_adapter.py
 ```
+
+The first command runs the deterministic controls, Council and behavior-evidence safeguards, unit tests, and release doctor locally with no paid service. It records only pass/fail identities and output digests. Hosted branch enforcement remains separate GitHub state; a local pass is never reported as a hosted check.
 
 The generated ChatGPT adapter must contain exactly one `SKILL.md`. Its seven Council role instructions remain complete under `subskills/*/ROLE.md`; do not hand-edit the generated adapter or remove role, index, evidence, or verification files to make an upload pass.
 

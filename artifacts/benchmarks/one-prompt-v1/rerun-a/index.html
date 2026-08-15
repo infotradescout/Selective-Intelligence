@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Turn a broken item's symptoms into a concise repair note without inventing price, timing, or business details.">
+    <meta name="theme-color" content="#e7552c">
+    <title>Repair note — describe the fault clearly</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#repair-form">Skip to the repair note</a>
+
+    <header class="tool-header">
+      <a class="tool-name" href="#main" aria-label="Repair note home">
+        <span class="tool-mark" aria-hidden="true"></span>
+        <span><strong>Repair note</strong><small>Local draft tool</small></span>
+      </a>
+      <p>Nothing is sent from this page.</p>
+    </header>
+
+    <main id="main" class="workbench">
+      <aside class="brief" aria-labelledby="page-title">
+        <p class="bench-label">Before a repair call</p>
+        <h1 id="page-title">Make the problem clear.</h1>
+        <p class="brief-copy">Record the item and what changed. You will get a short note to copy when you choose a verified repair service.</p>
+
+        <ol class="signal-list" aria-label="Useful details">
+          <li><span aria-hidden="true">01</span><strong>Name the item</strong><small>What is it?</small></li>
+          <li><span aria-hidden="true">02</span><strong>Describe the symptom</strong><small>What does it do now?</small></li>
+          <li><span aria-hidden="true">03</span><strong>Mark the change</strong><small>When did it start?</small></li>
+        </ol>
+
+        <a class="jump-action" href="#repair-form">Write the note <span aria-hidden="true">↓</span></a>
+      </aside>
+
+      <section class="note-board" aria-labelledby="note-title">
+        <div class="board-topline">
+          <div>
+            <p class="serial">FAULT CARD / UNSENT</p>
+            <h2 id="note-title">What should the repairer know?</h2>
+          </div>
+          <span class="status-tag"><i aria-hidden="true"></i> Draft</span>
+        </div>
+
+        <form id="repair-form">
+          <label for="item">
+            <span class="field-number">01</span>
+            <span class="field-copy"><strong>Item</strong><small>A lamp, latch, chair, appliance, or other object</small></span>
+            <input id="item" name="item" type="text" autocomplete="off" placeholder="Example: table lamp" required>
+          </label>
+
+          <label for="problem">
+            <span class="field-number">02</span>
+            <span class="field-copy"><strong>What changed?</strong><small>Include the symptom and when you first noticed it</small></span>
+            <textarea id="problem" name="problem" rows="5" placeholder="Example: the switch clicks, but the light stopped turning on yesterday" required></textarea>
+          </label>
+
+          <div class="form-finish">
+            <p>Price, timing, diagnosis, and repairability still need confirmation.</p>
+            <button type="submit">Prepare note <span aria-hidden="true">→</span></button>
+          </div>
+        </form>
+
+        <section class="request-result" id="request-result" aria-live="polite" aria-labelledby="result-title" tabindex="-1" hidden>
+          <p class="serial">FAULT CARD / READY TO COPY</p>
+          <h3 id="result-title">Your repair note</h3>
+          <pre id="request-summary"></pre>
+          <div class="result-actions">
+            <button type="button" id="copy-request">Copy note</button>
+            <button type="button" class="quiet-button" id="edit-request">Change details</button>
+          </div>
+          <p class="copy-status" id="copy-status" role="status"></p>
+        </section>
+      </section>
+    </main>
+
+    <section class="fact-boundary" aria-labelledby="boundary-title">
+      <p class="boundary-code">VERIFY BEFORE SENDING</p>
+      <h2 id="boundary-title">The note describes your problem. It does not invent the business.</h2>
+      <p>No business name, contact destination, service area, price, hours, credentials, warranty, diagnosis, turnaround, or customer claim is supplied here. Add only details you verify.</p>
+    </section>
+
+    <footer>
+      <p><strong>Repair note</strong> is a working name for this first website draft.</p>
+      <a href="#repair-form">Back to the note ↑</a>
+    </footer>
+  </body>
+</html>

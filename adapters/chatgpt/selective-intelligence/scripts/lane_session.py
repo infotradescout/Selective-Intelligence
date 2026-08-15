@@ -122,6 +122,8 @@ def new_session(
     session: dict[str, Any] = {
         "schemaVersion": SCHEMA_VERSION,
         "sessionId": f"si-{uuid.uuid4().hex}",
+        "siActive": True,
+        "governanceMode": "always_on_after_activation",
         "objective": objective,
         "workspace": workspace,
         "canonicalRoots": list(canonical_roots or []),
@@ -491,6 +493,8 @@ def summary(session: dict[str, Any]) -> dict[str, Any]:
         "sessionId": session["sessionId"],
         "state": global_state(session),
         "objective": session["objective"],
+        "siActive": session.get("siActive", False),
+        "governanceMode": session.get("governanceMode"),
         "activeIntent": session["activeIntent"],
         "queue": list(session["queue"].values()),
         "knownFacts": session["knownFacts"],

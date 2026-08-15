@@ -20,6 +20,7 @@ import checkpoint as CP
 import intent_contract as IC
 import lane_session as LS
 import build_engine as BE
+import site_quality as SQ
 from policy_guard import PolicyGuard
 
 
@@ -97,7 +98,58 @@ class CapabilityTests(unittest.TestCase):
         self.assertEqual(credential["verifiedCapabilities"], [])
 
 
+class SiteQualityTests(unittest.TestCase):
+    def test_complete_minimal_site_passes_without_network_or_paid_service(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "index.html").write_text(
+                """<!doctype html><html lang=\"en\"><head><title>River Repair</title>
+                <meta name=\"description\" content=\"Book trusted neighborhood repair help without a long intake form.\">
+                <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+                <style>main{max-width:70rem;margin:auto}@media(max-width:40rem){main{padding:1rem}}</style>
+                </head><body><nav><a href=\"#services\">Services</a></nav><main><h1>Repairs without the runaround</h1>
+                <section id=\"services\"><p>Tell us what broke and choose a time.</p><a href=\"mailto:help@river.test\">Request help</a></section>
+                </main></body></html>""",
+                encoding="utf-8",
+            )
+            result = SQ.audit_site(root)
+        self.assertTrue(result["passed"], result["checks"])
+        self.assertEqual(result["passedChecks"], result["totalChecks"])
+        self.assertEqual(result["root"], root.name)
+        self.assertNotIn(str(root.parent), json.dumps(result))
+
+    def test_placeholders_and_missing_delivery_basics_fail(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            (root / "index.html").write_text(
+                "<html><body><h1>Your Company</h1><a href='#'>Coming soon</a></body></html>",
+                encoding="utf-8",
+            )
+            result = SQ.audit_site(root)
+        failed = {check["check"] for check in result["checks"] if not check["passed"]}
+        self.assertFalse(result["passed"])
+        self.assertTrue({"language", "title", "description", "viewport", "links", "no_placeholders"}.issubset(failed))
+
+
 class CheckpointLockTests(unittest.TestCase):
+    def test_si_stays_on_after_activation_and_fails_closed_if_tampered_with(self):
+        with tempfile.TemporaryDirectory() as temp:
+            os.environ["SI_SESSION_DIR"] = temp
+            session = BE.start_project(
+                request="Build the wanted result and do not let me accidentally skip the checks",
+                workspace=str(Path(temp) / "ws"),
+                canonical_roots=[],
+                plan={"tasks": [{"key": "work", "title": "work", "queue": "ready", "kind": "worker"}]},
+                auto_approve=True,
+            )
+            task = next(iter(session["queue"].values()))
+            self.assertTrue(session["siActive"])
+            self.assertEqual(session["governanceMode"], "always_on_after_activation")
+            session["siActive"] = False
+            LS.save_session(session)
+            with self.assertRaisesRegex(BE.EngineError, "governance is not active"):
+                BE.make_worker_packet(session_id=session["sessionId"], task_id=task["taskId"])
+
     def test_no_side_effecting_work_before_approved_checkpoint(self):
         with tempfile.TemporaryDirectory() as temp:
             os.environ["SI_SESSION_DIR"] = temp

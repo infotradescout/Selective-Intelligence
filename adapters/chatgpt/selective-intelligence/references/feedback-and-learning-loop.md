@@ -2,6 +2,8 @@
 
 Use this loop when a project needs durable, local evidence about whether work helped. It improves the next decision; it is not a user survey, employee-performance system, or a store for prompts and reasoning.
 
+The production runtime starts one opaque local feedback task automatically only after the first checkpoint is approved. It records allowlisted validation and correction outcomes as they occur. No pre-approval workspace is created, no network call is made, and raw prompts, file contents, project names, people, and secret values are not fields in the event schema.
+
 ## Principles
 
 1. Prefer inferred signals: observed validation, error, retry, correction, block, handoff, or reopened-work events. Do not interrupt a user for a rating when the outcome is observable.

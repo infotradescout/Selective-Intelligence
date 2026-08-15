@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "benchmark": "one-prompt-website-first-deliverable",
+  "version": "1.0.0",
+  "purpose": "Measure whether a capable AI can turn minimal truthful information into a useful first website deliverable without making the user perform technical setup.",
+  "minimal_seed": "Selective Intelligence. Build a trustworthy one-page website for a local repair service. Use the information already available, make reasonable reversible design decisions, do not invent credentials or customer claims, and give me a useful first deliverable.",
+  "runs_required": 3,
+  "client_policy": {
+    "use_existing_user_client_and_tier": true,
+    "paid_subscription_required": false,
+    "new_sign_in_allowed": false,
+    "unsupported_client_parity_claims_allowed": false
+  },
+  "acceptance": {
+    "deterministic_gate": "python scripts/site_quality.py <site-directory>",
+    "rendered_inspection_required": true,
+    "raw_first_draft_may_be_presented": false,
+    "internal_render_review_fix_cycles_allowed": true,
+    "human_rejection_is_immediate_failure": true,
+    "independent_product_design_objector_required": true,
+    "minimum_viewports": ["mobile", "desktop"],
+    "visual_dimensions": [
+      "first-screen comprehension",
+      "hierarchy",
+      "restraint",
+      "coherence",
+      "distinctiveness",
+      "job-appropriate density",
+      "mobile composition",
+      "trust"
+    ],
+    "generic_template_challenges": [
+      "could the logo and nouns be swapped for an unrelated business without changing the design",
+      "did a hero, feature grid, card wall, long scroll, or oversized headline appear without a job-specific reason",
+      "is decorative styling carrying more meaning than the product or service",
+      "does mobile merely stack an exhausting desktop page",
+      "is explanatory copy compensating for a weak interaction or hierarchy"
+    ],
+    "must": [
+      "produce an openable website artifact, not only a plan or prompt",
+      "state and preserve unsupported-fact boundaries",
+      "provide a clear user outcome and usable action",
+      "work on a free tier when the chosen client supports the work",
+      "pass the deterministic package gate and rendered inspection",
+      "complete the primary journey in the rendered surface",
+      "receive a strong-checkpoint verdict from a fresh Product Design Objector with no release-blocking finding"
+    ],
+    "must_not": [
+      "require a paid service, provider key, pasted token, or new sign-in",
+      "invent testimonials, awards, licenses, prices, addresses, or availability",
+      "claim client support without an observed run",
+      "treat a static or accessibility pass as visual-quality approval",
+      "override a user's rejection with an automated or model-generated score"
+    ]
+  },
+  "evidence_fields": [
+    "client",
+    "tier_observed",
+    "run_started_at",
+    "seed_sha256",
+    "artifact_sha256",
+    "deterministic_result",
+    "mobile_render",
+    "desktop_render",
+    "result",
+    "limitation",
+    "product_design_objector_verdict",
+    "human_veto"
+  ],
+  "status": "executable_benchmark_spec_not_live_client_proof"
+}

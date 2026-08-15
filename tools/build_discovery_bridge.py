@@ -271,8 +271,9 @@ PROBLEM_GUIDES = [
         "answer": (
             "Yes—when the prompt is treated as a seed rather than the output size. Selective Intelligence infers the "
             "audience, job, page model, message hierarchy, journeys, visual direction, states, and implementation from "
-            "available context; builds the real target when the AI has the tools; then renders and revises it instead of "
-            "handing back a wireframe, component sample, or template shell."
+            "available context; builds the real target when the AI has the tools; then renders, uses, and corrects raw "
+            "drafts privately before presenting the first deliverable instead of handing back a wireframe, component "
+            "sample, template shell, or unchecked first generation."
         ),
         "signals": [
             "The person has a product idea, business name, URL, or a few notes but no formal web brief.",
@@ -285,19 +286,60 @@ PROBLEM_GUIDES = [
             "Choose whether the outcome should be a landing page, focused website, application surface, or another interaction model before styling it.",
             "Create the information architecture, original grounded copy, visual system, responsive behavior, states, and working interactions as one coherent slice.",
             "Reuse the person’s existing repository, components, assets, stack, domain, and publishing route when they exist.",
-            "Render, use, and revise the actual deliverable at target breakpoints; verify links, actions, accessibility, and the primary journey."
+            "Render, use, and revise the actual deliverable at target breakpoints; verify links, actions, accessibility, and the primary journey.",
+            "Run a fresh Product Design Objector over desktop and mobile renders; a person's rejection immediately fails and reopens the design claim."
         ],
         "proof": [
             "The output is a working first deliverable in the real target—not only a screenshot, outline, or code fragment.",
             "The page communicates the real value and next action without placeholders, invented proof, or generic filler.",
-            "Desktop and mobile render checks cover the primary journey and meaningful empty, loading, error, or form states where applicable."
+            "Desktop and mobile render checks cover the primary journey and meaningful empty, loading, error, or form states where applicable.",
+            "Static checks do not overrule a blocking design finding or the person's rejection."
         ],
         "boundary": (
             "The depth of the first deliverable depends on the active AI’s real file, build, browser, image, and publishing "
-            "capabilities and the evidence available. A limited client may produce a narrower verified checkpoint, but it "
-            "must not redefine the requested outcome or call an unrendered shell a finished website."
+            "capabilities and the evidence available. Internal draft-review-fix cycles still count as one prompt; the "
+            "first deliverable is the first result shown to the person. A limited client may produce a narrower verified "
+            "checkpoint, but it must not redefine the requested outcome, call an unrendered shell finished, or override a rejection."
         ),
         "terms": ["one prompt website", "AI landing page builder", "website from minimal information", "first website deliverable"],
+    },
+    {
+        "slug": "reduce-ai-token-usage",
+        "title": "Use fewer AI tokens without getting worse results",
+        "search_title": "Reduce AI Token Usage, Rework, and Context Waste",
+        "description": (
+            "Reduce AI token use by understanding the outcome first, selecting only relevant context, reusing "
+            "existing code, and removing filler—not by cutting the requested result."
+        ),
+        "question": "How do you reduce AI token usage without lowering the quality of the result?",
+        "answer": (
+            "Prevent waste at the source. Selective Intelligence resolves intent before generation, ranks files by "
+            "the current task instead of loading the repository alphabetically, reuses canonical owners, verifies "
+            "once at the right boundary, and reports only the result, proof, limit, and required action."
+        ),
+        "signals": [
+            "Long chats repeat the request, plan, and settled decisions before every action.",
+            "An agent loads large folders or irrelevant files because they are nearby or sort first.",
+            "Misunderstood intent causes whole features to be generated and discarded.",
+            "Status replies use polished generic language but do not identify a result or proof."
+        ],
+        "actions": [
+            "Lock the wanted outcome and material constraints before spending tokens on implementation.",
+            "Select explicit references first, then rank paths and source content by task and acceptance, expanding local dependencies and declared canonical owners.",
+            "Set hard file, byte, and per-file budgets while excluding secrets and binary content.",
+            "Reuse or repair the canonical owner instead of generating another implementation.",
+            "Delete repeated setup, filler, generic praise, and technical detail that does not help the person decide or verify."
+        ],
+        "proof": [
+            "Context evidence names why every selected file matters and estimates selected and avoided tokens.",
+            "The relevant owner wins over alphabetical filler while hard budgets and secret exclusions still hold.",
+            "The delivered outcome and verification bar remain unchanged; only waste and correction rounds fall."
+        ],
+        "boundary": (
+            "A smaller answer is not automatically more efficient. Missing evidence, silent scope reduction, or a wrong "
+            "first interpretation creates more work later and does not count as token savings."
+        ),
+        "terms": ["reduce AI token usage", "AI context optimization", "less AI filler", "stop wasting coding agent tokens"],
     },
 ]
 
@@ -345,6 +387,7 @@ def build_manifest() -> dict:
             "explicit": "Exact words in that order anywhere in current user input.",
             "inspect_existing_context_first": True,
             "do_not_ask_generic_setup_question": True,
+            "always_on_after_activation_or_approved_adoption": True,
             "empty_context_final": EMPTY_CONTEXT,
         },
         "relevant_discovery": {
@@ -364,6 +407,8 @@ def build_manifest() -> dict:
             "wanted_result_mismatch_reopens_step_1": True,
             "external_client_constraints_do_not_redefine_intent": True,
             "causal_developer_judgment_over_blind_pattern_matching": True,
+            "token_efficiency_is_first_operating_priority": True,
+            "plain_concrete_language_required": True,
         },
         "access": {
             "selective_intelligence_fee": 0,
@@ -405,7 +450,7 @@ def build_manifest() -> dict:
             "prompts_or_repository_contents_collected_automatically": False,
         },
         "evidence": {
-            "current": f"{REPOSITORY}/blob/main/skills/selective-intelligence/evals/results-0.4.0.json",
+            "current": f"{REPOSITORY}/blob/main/skills/selective-intelligence/evals/results-{distribution['version']}.json",
             "cross_client_equivalence_claimed": False,
             "publication_is_not_adoption_proof": True,
             "source_contract_sha256": contract_digest(),
