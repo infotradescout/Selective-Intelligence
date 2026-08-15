@@ -24,10 +24,14 @@ from urllib.parse import urlparse
 
 import project_index
 import execution_contract
+import council
 
 
 PACK_DIR = ".selective-intelligence"
 EXECUTION_CONTRACT_POLICY = "required"
+COUNCIL_COMPLETION_POLICY = "required"
+COUNCIL_REVIEW_SCHEMA_VERSION = 1
+OBSERVATION_RECEIPT_SCHEMA_VERSION = 1
 SCHEMA_VERSION = 1
 VALIDATOR_VERSION = "0.1.1"
 ID_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,127}$")
@@ -122,6 +126,7 @@ INDEPENDENT_REVIEW_FIELDS = {
     "scope",
     "revision",
 }
+ARTIFACT_ROLES = {"governance", "execution_contract", "council_review", "runner_receipt", "observation"}
 
 
 @dataclass(frozen=True)
@@ -166,6 +171,11 @@ def semantic_contract_digest(manifest: dict[str, Any]) -> str:
     active = manifest.get("active_build")
     if isinstance(active, dict) and isinstance(active.get("evidence"), str):
         evidence_paths.add(active["evidence"])
+    if isinstance(active, dict) and isinstance(active.get("council_review"), str):
+        evidence_paths.add(active["council_review"])
+    for key in ("observation_receipt", "observation_output"):
+        if isinstance(active, dict) and isinstance(active.get(key), str):
+            evidence_paths.add(active[key])
 
     artifacts: list[Any] = []
     for artifact in manifest.get("artifacts", []):
@@ -217,6 +227,8 @@ def semantic_contract_digest(manifest: dict[str, Any]) -> str:
     }
     if "execution_contract_policy" in manifest:
         canonical["execution_contract_policy"] = manifest.get("execution_contract_policy")
+    if "council_completion_policy" in manifest:
+        canonical["council_completion_policy"] = manifest.get("council_completion_policy")
     payload = json.dumps(canonical, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(payload).hexdigest()
 
@@ -473,7 +485,10 @@ def required_artifacts(manifest: dict[str, Any]) -> set[str]:
     profile = project.get("profile", "standard")
     required = set(MICRO_ARTIFACTS if profile == "micro" else STANDARD_ARTIFACTS)
     active = manifest.get("active_build") if isinstance(manifest.get("active_build"), dict) else {}
-    for key in ("contract", "evidence", "execution_contract"):
+    for key in (
+        "contract", "evidence", "execution_contract", "council_review",
+        "observation_receipt", "observation_output",
+    ):
         value = active.get(key)
         if isinstance(value, str) and value:
             required.add(value)
@@ -583,6 +598,466 @@ def execution_contract_aware(manifest: dict[str, Any]) -> bool:
         and item["path"].endswith("/execution-contract.json")
         for item in artifacts
     )
+
+
+def council_completion_aware(manifest: dict[str, Any]) -> bool:
+    if manifest.get("council_completion_policy") == COUNCIL_COMPLETION_POLICY:
+        return True
+    active = manifest.get("active_build")
+    if isinstance(active, dict) and isinstance(active.get("council_review"), str):
+        return True
+    builds = manifest.get("builds")
+    if isinstance(builds, list) and any(
+        isinstance(item, dict) and isinstance(item.get("council_review"), str)
+        for item in builds
+    ):
+        return True
+    artifacts = manifest.get("artifacts")
+    return isinstance(artifacts, list) and any(
+        isinstance(item, dict)
+        and isinstance(item.get("path"), str)
+        and item["path"].endswith("/council-review.json")
+        for item in artifacts
+    )
+
+
+def council_review_template() -> dict[str, Any]:
+    return {
+        "schema_version": COUNCIL_REVIEW_SCHEMA_VERSION,
+        "status": "pending",
+        "binding": None,
+        "case_packet_id": None,
+        "case_digest": None,
+        "alignment_packet_id": None,
+        "alignment_digest": None,
+        "requirement_proofs": [],
+        "case": None,
+    }
+
+
+def observation_receipt_template() -> dict[str, Any]:
+    return {"schema_version": OBSERVATION_RECEIPT_SCHEMA_VERSION, "receipts": []}
+
+
+def resolve_json_pointer(document: Any, fragment: str) -> Any | None:
+    """Resolve a local RFC 6901-style fragment without accepting fuzzy anchors."""
+    if not fragment.startswith("/"):
+        return None
+    current = document
+    for raw_token in fragment[1:].split("/"):
+        token = raw_token.replace("~1", "/").replace("~0", "~")
+        if isinstance(current, dict):
+            if token not in current:
+                return None
+            current = current[token]
+        elif isinstance(current, list):
+            if not token.isdigit():
+                return None
+            index = int(token)
+            if index >= len(current):
+                return None
+            current = current[index]
+        else:
+            return None
+    return current
+
+
+def _review_binding(manifest: dict[str, Any], build: dict[str, Any]) -> dict[str, Any]:
+    project = manifest.get("project") if isinstance(manifest.get("project"), dict) else {}
+    release = manifest.get("release") if isinstance(manifest.get("release"), dict) else {}
+    context = build.get("evidence_context") if isinstance(build.get("evidence_context"), dict) else {}
+    return {
+        "project_id": project.get("id"),
+        "release_id": release.get("id"),
+        "release_version": release.get("version"),
+        "build_id": build.get("id"),
+        "lock_version": build.get("lock_version"),
+        "source_revision": context.get("revision"),
+        "semantic_digest": semantic_contract_digest(manifest),
+        "validator_version": manifest.get("validator_version"),
+        "requirement_ids": sorted(item for item in build.get("requirements", []) if isinstance(item, str)),
+    }
+
+
+def active_council_review_errors(
+    pack: Path,
+    manifest: dict[str, Any],
+    *,
+    require_completion: bool,
+) -> list[str]:
+    """Validate the read-only Council bundle for the active build.
+
+    The wrapper is a Start Pack artifact. Its embedded Council case and every
+    implementation-evidence locator are independently recomputed from bytes.
+    """
+    active = manifest.get("active_build")
+    builds = manifest.get("builds")
+    if not isinstance(active, dict) or not isinstance(builds, list):
+        return ["active build Council review cannot be resolved"] if require_completion else []
+    active_id = active.get("id")
+    build = next((item for item in builds if isinstance(item, dict) and item.get("id") == active_id), None)
+    if not isinstance(build, dict):
+        return ["active build Council review cannot be resolved"] if require_completion else []
+
+    errors: list[str] = []
+    active_path = active.get("council_review")
+    build_path = build.get("council_review")
+    if not isinstance(active_path, str) or not active_path:
+        errors.append("active_build.council_review is required for this Council-aware Start Pack")
+    if not isinstance(build_path, str) or not build_path:
+        errors.append("the active build record must retain its council_review pointer")
+    if isinstance(active_path, str) and isinstance(build_path, str) and active_path != build_path:
+        errors.append("active_build.council_review must match the active build record")
+    relative = active_path if isinstance(active_path, str) and active_path else build_path
+    if not isinstance(relative, str) or not relative:
+        return errors
+
+    registered = {
+        item.get("path")
+        for item in manifest.get("artifacts", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    artifact_by_path = {
+        item.get("path"): item
+        for item in manifest.get("artifacts", [])
+        if isinstance(item, dict) and isinstance(item.get("path"), str)
+    }
+    if relative not in registered:
+        errors.append("active Council review must be a registered Start Pack artifact")
+    elif artifact_by_path[relative].get("role") != "council_review":
+        errors.append("active Council review artifact must have role council_review")
+    review_path, path_error = safe_path(pack, relative)
+    if path_error or review_path is None:
+        errors.append(f"active Council review path is unsafe: {path_error}")
+        return errors
+    if review_path.is_symlink() or not review_path.is_file():
+        errors.append("active Council review must be a regular non-symlink file")
+        return errors
+    try:
+        review = json.loads(review_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"active Council review cannot be read: {exc}")
+        return errors
+    if not isinstance(review, dict):
+        errors.append("active Council review must contain a JSON object")
+        return errors
+    expected_keys = {
+        "schema_version", "status", "binding", "case_packet_id", "case_digest",
+        "alignment_packet_id", "alignment_digest", "requirement_proofs", "case",
+    }
+    if set(review) != expected_keys:
+        errors.append("active Council review has an invalid field set")
+    if review.get("schema_version") != COUNCIL_REVIEW_SCHEMA_VERSION:
+        errors.append("active Council review schema_version is unsupported")
+    if not require_completion:
+        if review.get("status") not in {"pending", "verified", "failed"}:
+            errors.append("active Council review status is invalid")
+        return errors
+    if review.get("status") != "verified":
+        errors.append("positive completion requires a verified Council review")
+        return errors
+    if review.get("binding") != _review_binding(manifest, build):
+        errors.append("Council review binding does not match the exact active build")
+
+    case = review.get("case")
+    if not isinstance(case, dict):
+        errors.append("verified Council review requires an embedded Council case")
+        return errors
+    case_errors = council.validate_document(case)
+    if case_errors:
+        errors.append(f"Council case is invalid: {case_errors[0].code} {case_errors[0].message}")
+        return errors
+    case_binding = case.get("start_pack_binding")
+    review_binding = review.get("binding") if isinstance(review.get("binding"), dict) else {}
+    if not isinstance(case_binding, dict):
+        errors.append("verified Council case requires a non-null Start Pack binding")
+    else:
+        for case_key, review_key in (
+            ("project_id", "project_id"),
+            ("release_id", "release_id"),
+            ("semantic_digest", "semantic_digest"),
+            ("validator_version", "validator_version"),
+        ):
+            if case_binding.get(case_key) != review_binding.get(review_key):
+                errors.append(f"Council case {case_key} does not match the exact Start Pack subject")
+    project_boundary = case.get("project_boundary") if isinstance(case.get("project_boundary"), dict) else {}
+    if project_boundary.get("project_id") != review_binding.get("project_id"):
+        errors.append("Council case project boundary does not match the exact Start Pack subject")
+    if case.get("packet_type") != "council_case" or case.get("status") != "verified":
+        errors.append("Council case must be an applied verified case")
+    if review.get("case_packet_id") != case.get("packet_id"):
+        errors.append("Council review case_packet_id does not match its case")
+    recomputed_case_digest = council.document_digest(case)
+    if review.get("case_digest") != recomputed_case_digest or case.get("canonical_digest") != recomputed_case_digest:
+        errors.append("Council review case digest does not match canonical case bytes")
+
+    alignment = case.get("alignment_record")
+    if not isinstance(alignment, dict):
+        errors.append("verified Council case requires an applied alignment record")
+        return errors
+    alignment_errors = council.cross_validate_alignment(case, alignment)
+    if alignment_errors:
+        errors.append(f"Council alignment is invalid: {alignment_errors[0].code} {alignment_errors[0].message}")
+    recomputed_alignment_digest = council.document_digest(alignment)
+    if review.get("alignment_packet_id") != alignment.get("packet_id"):
+        errors.append("Council review alignment_packet_id does not match the applied alignment")
+    if review.get("alignment_digest") != recomputed_alignment_digest or alignment.get("canonical_digest") != recomputed_alignment_digest:
+        errors.append("Council review alignment digest does not match canonical alignment bytes")
+    if alignment.get("workflow_gate") != "pass" or alignment.get("alignment_verdict") != "aligned":
+        errors.append("Council completion requires an aligned workflow pass")
+    if alignment.get("open_finding_ids"):
+        errors.append("Council completion cannot retain open findings")
+    if any(not item.get("closed") for item in alignment.get("dispositions", []) if isinstance(item, dict)):
+        errors.append("Council completion cannot retain unresolved dispositions")
+    if any(
+        item.get("status") == "pending"
+        for item in alignment.get("corrections", [])
+        if isinstance(item, dict)
+    ):
+        errors.append("Council completion cannot retain pending corrections")
+    findings = {
+        item.get("finding_id"): item
+        for item in case.get("objector_response", {}).get("findings", [])
+        if isinstance(item, dict)
+    }
+    for disposition in alignment.get("dispositions", []):
+        if not isinstance(disposition, dict):
+            continue
+        finding = findings.get(disposition.get("finding_id"), {})
+        if finding.get("severity") == "blocking" and disposition.get("resolution") in {"sustained", "unresolved"}:
+            errors.append("Council completion cannot retain a sustained or unresolved blocking finding")
+
+    role_runs = [
+        case.get("worker_response", {}).get("role_run", {}),
+        case.get("objector_response", {}).get("role_run", {}),
+        alignment.get("role_run", {}),
+    ]
+    run_ids = [item.get("run_id") for item in role_runs]
+    context_ids = [item.get("context_id") for item in role_runs]
+    if len(set(run_ids)) != 3 or any(not valid_id(item) for item in run_ids):
+        errors.append("Worker, Objector, and Aligner must use distinct valid run IDs")
+    if len(set(context_ids)) != 3 or any(not meaningful_text(item) for item in context_ids):
+        errors.append("Worker, Objector, and Aligner must use distinct contexts")
+
+    proof_by_id = {
+        item.get("proof_id"): item
+        for item in case.get("proofs", [])
+        if isinstance(item, dict) and isinstance(item.get("proof_id"), str)
+    }
+    proof_producers: dict[str, str] = {}
+    authoritative_proofs: dict[str, dict[str, Any]] = {}
+    ambiguous_producers: set[str] = set()
+
+    def record_producer(proof: Any, run_id: Any) -> None:
+        if not isinstance(proof, dict) or not isinstance(proof.get("proof_id"), str) or not isinstance(run_id, str):
+            return
+        proof_id = proof["proof_id"]
+        if proof_id in proof_producers:
+            ambiguous_producers.add(proof_id)
+            return
+        proof_producers[proof_id] = run_id
+        authoritative_proofs[proof_id] = proof
+
+    worker_response = case.get("worker_response") if isinstance(case.get("worker_response"), dict) else {}
+    worker_run_id = worker_response.get("role_run", {}).get("run_id") if isinstance(worker_response.get("role_run"), dict) else None
+    for proof in worker_response.get("proofs", []) if isinstance(worker_response.get("proofs"), list) else []:
+        record_producer(proof, worker_run_id)
+    aligner_run_id = alignment.get("role_run", {}).get("run_id") if isinstance(alignment.get("role_run"), dict) else None
+    for correction in alignment.get("corrections", []) if isinstance(alignment.get("corrections"), list) else []:
+        if not isinstance(correction, dict):
+            continue
+        for proof in correction.get("revalidated_proofs", []) if isinstance(correction.get("revalidated_proofs"), list) else []:
+            record_producer(proof, aligner_run_id)
+    if ambiguous_producers:
+        errors.append(f"Council proof producer lineage is ambiguous: {sorted(ambiguous_producers)}")
+    invalidated = set(item for item in case.get("invalidated_proof_ids", []) if isinstance(item, str))
+    mappings = review.get("requirement_proofs")
+    expected_requirements = set(_review_binding(manifest, build)["requirement_ids"])
+    mapped: dict[str, set[str]] = {}
+    mapped_receipts: dict[str, set[str]] = {}
+    if not isinstance(mappings, list):
+        errors.append("Council review requirement_proofs must be an array")
+        mappings = []
+    for index, mapping in enumerate(mappings):
+        if not isinstance(mapping, dict) or set(mapping) != {"requirement_id", "proof_ids", "receipt_ids"}:
+            errors.append(f"Council review requirement_proofs[{index}] is invalid")
+            continue
+        requirement_id = mapping.get("requirement_id")
+        proof_ids = mapping.get("proof_ids")
+        receipt_ids = mapping.get("receipt_ids")
+        if not valid_id(requirement_id) or not isinstance(proof_ids, list) or not proof_ids or len(proof_ids) != len(set(proof_ids)):
+            errors.append(f"Council review requirement_proofs[{index}] needs one or more unique proof IDs")
+            continue
+        if not isinstance(receipt_ids, list) or not receipt_ids or any(not valid_id(item) for item in receipt_ids) or len(receipt_ids) != len(set(receipt_ids)):
+            errors.append(f"Council review requirement_proofs[{index}] needs one or more unique receipt IDs")
+            continue
+        if requirement_id in mapped:
+            errors.append(f"Council review maps requirement {requirement_id} more than once")
+            continue
+        mapped[requirement_id] = set(proof_ids)
+        mapped_receipts[requirement_id] = set(receipt_ids)
+    if set(mapped) != expected_requirements:
+        errors.append("Council review proof mappings must cover exactly the active requirement set")
+    mapped_proof_ids = set().union(*mapped.values()) if mapped else set()
+    required_proof_ids = {
+        item
+        for item in case.get("task", {}).get("required_proof_ids", [])
+        if isinstance(item, str)
+    }
+    if mapped_proof_ids != required_proof_ids:
+        errors.append("Council review mappings must use exactly the case task's required proof set")
+
+    evidence_by_id = {
+        item.get("evidence_id"): item
+        for item in case.get("evidence", [])
+        if isinstance(item, dict) and isinstance(item.get("evidence_id"), str)
+    }
+    all_mapped_receipts = [item for values in mapped_receipts.values() for item in values]
+    if len(all_mapped_receipts) != len(set(all_mapped_receipts)):
+        errors.append("Council review receipt IDs may map to only one active requirement")
+    expected_receipt_path = build.get("observation_receipt")
+    expected_output_path = build.get("observation_output")
+    if active.get("observation_receipt") != expected_receipt_path:
+        errors.append("active_build.observation_receipt must match the active build record")
+    if active.get("observation_output") != expected_output_path:
+        errors.append("active_build.observation_output must match the active build record")
+    if (
+        not isinstance(expected_receipt_path, str)
+        or artifact_by_path.get(expected_receipt_path, {}).get("role") != "runner_receipt"
+    ):
+        errors.append("active build requires a registered runner_receipt artifact")
+    if (
+        not isinstance(expected_output_path, str)
+        or artifact_by_path.get(expected_output_path, {}).get("role") != "observation"
+    ):
+        errors.append("active build requires a registered observation output artifact")
+    for requirement_id, proof_ids in mapped.items():
+        qualified_for_requirement: set[str] = set()
+        for proof_id in proof_ids:
+            proof = proof_by_id.get(proof_id)
+            if not isinstance(proof, dict) or proof.get("status") != "valid" or proof_id in invalidated:
+                errors.append(f"requirement {requirement_id} references a missing, invalid, or invalidated proof {proof_id}")
+                continue
+            producer_run_id = proof_producers.get(proof_id)
+            if (
+                proof_id in ambiguous_producers
+                or not isinstance(producer_run_id, str)
+                or authoritative_proofs.get(proof_id) != proof
+            ):
+                errors.append(f"proof {proof_id} has no unique authoritative Council producer")
+                continue
+            if proof.get("revision") != _review_binding(manifest, build)["source_revision"]:
+                errors.append(f"proof {proof_id} is stale for the active source revision")
+            refs = proof.get("evidence_refs")
+            if not isinstance(refs, list) or not refs:
+                errors.append(f"proof {proof_id} has no implementation evidence")
+                continue
+            qualified_for_proof: set[str] = set()
+            for evidence_id in refs:
+                evidence = evidence_by_id.get(evidence_id)
+                if not isinstance(evidence, dict) or evidence.get("classification") != "confirmed":
+                    errors.append(f"proof {proof_id} requires confirmed evidence {evidence_id}")
+                    continue
+                locator = evidence.get("locator")
+                if not isinstance(locator, str) or "#" not in locator:
+                    errors.append(f"evidence {evidence_id} requires an exact JSON Pointer fragment")
+                    continue
+                locator_path, fragment = locator.split("#", 1)
+                artifact = artifact_by_path.get(locator_path)
+                if not isinstance(artifact, dict) or artifact.get("role") != "runner_receipt":
+                    # Governance may accompany a proof, but it never qualifies it.
+                    continue
+                if locator_path != expected_receipt_path:
+                    errors.append(f"evidence {evidence_id} is not the active build's runner receipt")
+                    continue
+                resolved, locator_error = safe_path(pack, locator_path)
+                if locator_error or resolved is None or resolved.is_symlink() or not resolved.is_file():
+                    errors.append(f"evidence {evidence_id} receipt must resolve to a regular non-symlink file")
+                    continue
+                try:
+                    digest = sha256(resolved)
+                except OSError as exc:
+                    errors.append(f"evidence {evidence_id} cannot be read: {exc}")
+                    continue
+                if digest != evidence.get("content_digest"):
+                    errors.append(f"evidence {evidence_id} content digest does not match its bytes")
+                    continue
+                try:
+                    receipt_document = json.loads(resolved.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError) as exc:
+                    errors.append(f"evidence {evidence_id} receipt cannot be parsed: {exc}")
+                    continue
+                if (
+                    not isinstance(receipt_document, dict)
+                    or receipt_document.get("schema_version") != OBSERVATION_RECEIPT_SCHEMA_VERSION
+                    or not isinstance(receipt_document.get("receipts"), list)
+                ):
+                    errors.append(f"evidence {evidence_id} receipt document has an invalid schema")
+                    continue
+                receipt = resolve_json_pointer(receipt_document, fragment)
+                receipt_fields = {
+                    "receipt_id", "run_id", "proof_id", "requirement_id", "source_revision",
+                    "evidence_type", "procedure", "expected", "observed", "verdict",
+                    "exit_code", "observed_at", "output_path", "output_digest",
+                }
+                if not isinstance(receipt, dict) or set(receipt) != receipt_fields:
+                    errors.append(f"evidence {evidence_id} fragment does not resolve to an exact runner receipt")
+                    continue
+                receipt_id = receipt.get("receipt_id")
+                if (
+                    not valid_id(receipt_id)
+                    or receipt_id not in mapped_receipts.get(requirement_id, set())
+                    or receipt.get("proof_id") != proof_id
+                    or receipt.get("requirement_id") != requirement_id
+                ):
+                    errors.append(f"evidence {evidence_id} receipt does not match its requirement and proof mapping")
+                    continue
+                if receipt.get("run_id") != producer_run_id:
+                    errors.append(f"receipt {receipt_id} run_id does not match proof {proof_id}'s Council producer")
+                if receipt.get("source_revision") != _review_binding(manifest, build)["source_revision"]:
+                    errors.append(f"receipt {receipt_id} is stale for the active source revision")
+                if receipt.get("evidence_type") not in execution_contract.EVIDENCE_TYPES:
+                    errors.append(f"receipt {receipt_id} has an invalid evidence_type")
+                for field in ("procedure", "expected", "observed"):
+                    if not execution_contract._nonempty(receipt.get(field)):
+                        errors.append(f"receipt {receipt_id}.{field} must be a resolved observation")
+                receipt_text = " ".join(
+                    receipt.get(field, "")
+                    for field in ("procedure", "expected", "observed")
+                    if isinstance(receipt.get(field), str)
+                )
+                if execution_contract.SELF_ATTESTATION_RE.search(receipt_text) or any(
+                    marker in receipt_text.casefold()
+                    for marker in execution_contract.SELF_ATTESTATION_MARKERS
+                ):
+                    errors.append(f"receipt {receipt_id} is self-attestation, not an observation")
+                if receipt.get("verdict") != "passed" or receipt.get("exit_code") != 0:
+                    errors.append(f"receipt {receipt_id} must record a passing zero-exit observation")
+                if parse_timestamp(receipt.get("observed_at")) is None:
+                    errors.append(f"receipt {receipt_id}.observed_at must include a timezone")
+                output_path = receipt.get("output_path")
+                output_artifact = artifact_by_path.get(output_path)
+                if output_path != expected_output_path or not isinstance(output_artifact, dict) or output_artifact.get("role") != "observation":
+                    errors.append(f"receipt {receipt_id} must bind the active registered observation output")
+                else:
+                    output_file, output_error = safe_path(pack, output_path)
+                    if output_error or output_file is None or output_file.is_symlink() or not output_file.is_file():
+                        errors.append(f"receipt {receipt_id} output must be a regular non-symlink file")
+                    else:
+                        try:
+                            output_digest = sha256(output_file)
+                        except OSError as exc:
+                            errors.append(f"receipt {receipt_id} output cannot be read: {exc}")
+                        else:
+                            if output_digest != receipt.get("output_digest"):
+                                errors.append(f"receipt {receipt_id} output digest does not match its bytes")
+                qualified_for_proof.add(receipt_id)
+                qualified_for_requirement.add(receipt_id)
+            if not qualified_for_proof:
+                errors.append(f"proof {proof_id} lacks a qualifying structured runner receipt")
+        if qualified_for_requirement != mapped_receipts.get(requirement_id, set()):
+            errors.append(f"requirement {requirement_id} receipt mappings do not exactly match qualifying evidence")
+    return errors
 
 
 def markdown_link_diagnostics(pack: Path, artifact_paths: Iterable[str]) -> list[Diagnostic]:
@@ -817,6 +1292,9 @@ def validate_manifest(
             diagnostics.append(Diagnostic("warning", "SP023", "artifact has no sha256 digest", relative))
         if not isinstance(artifact.get("version"), str) or not artifact.get("version"):
             diagnostics.append(Diagnostic("error", "SP024", "artifact version is required", relative))
+        role = artifact.get("role")
+        if role is not None and role not in ARTIFACT_ROLES:
+            diagnostics.append(Diagnostic("error", "SP024A", f"artifact role must be one of {sorted(ARTIFACT_ROLES)}", relative))
 
     for relative in sorted(required_artifacts(manifest)):
         if relative not in artifact_by_path:
@@ -961,6 +1439,24 @@ def validate_manifest(
     if policy is not None and policy != EXECUTION_CONTRACT_POLICY:
         diagnostics.append(
             Diagnostic("error", "SP060D", f"execution_contract_policy must be {EXECUTION_CONTRACT_POLICY}", "lock.json")
+        )
+    council_declared = council_completion_aware(manifest)
+    if council_declared:
+        diagnostics.extend(
+            Diagnostic("error", "SP060E", message, active_build.get("council_review"))
+            for message in active_council_review_errors(
+                pack,
+                manifest,
+                require_completion=(
+                    verdicts.get("as_built") == "reconciled"
+                    or verdicts.get("release") == "closed"
+                ),
+            )
+        )
+    council_policy = manifest.get("council_completion_policy")
+    if council_policy is not None and council_policy != COUNCIL_COMPLETION_POLICY:
+        diagnostics.append(
+            Diagnostic("error", "SP060F", f"council_completion_policy must be {COUNCIL_COMPLETION_POLICY}", "lock.json")
         )
 
     for build_id, build in build_by_id.items():
@@ -1487,6 +1983,9 @@ def command_init(args: argparse.Namespace) -> int:
     build_contract = f"builds/{args.build_id}/contract.md"
     build_evidence = f"builds/{args.build_id}/evidence.md"
     build_execution_contract = f"builds/{args.build_id}/execution-contract.json"
+    build_council_review = f"builds/{args.build_id}/council-review.json"
+    build_observation_receipt = f"builds/{args.build_id}/observation-receipts.json"
+    build_observation_output = f"builds/{args.build_id}/observation-output.log"
     artifact_names.extend((build_contract, build_evidence))
     for relative in artifact_names:
         path = pack / relative
@@ -1505,14 +2004,32 @@ def command_init(args: argparse.Namespace) -> int:
         ),
     )
     artifact_names.append(build_execution_contract)
+    write_json(pack / build_council_review, council_review_template())
+    artifact_names.append(build_council_review)
+    write_json(pack / build_observation_receipt, observation_receipt_template())
+    artifact_names.append(build_observation_receipt)
+    (pack / build_observation_output).write_text("", encoding="utf-8")
+    artifact_names.append(build_observation_output)
+    artifact_roles = {
+        build_execution_contract: "execution_contract",
+        build_council_review: "council_review",
+        build_observation_receipt: "runner_receipt",
+        build_observation_output: "observation",
+    }
     artifacts = [
-        {"path": relative, "version": args.release_version, "sha256": sha256(pack / relative)}
+        {
+            "path": relative,
+            "version": args.release_version,
+            "sha256": sha256(pack / relative),
+            "role": artifact_roles.get(relative, "governance"),
+        }
         for relative in artifact_names
     ]
     manifest: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "validator_version": VALIDATOR_VERSION,
         "execution_contract_policy": EXECUTION_CONTRACT_POLICY,
+        "council_completion_policy": COUNCIL_COMPLETION_POLICY,
         "project": {"id": args.project_id, "name": args.project_name, "profile": args.profile},
         "release": {
             "id": args.release_id,
@@ -1524,6 +2041,9 @@ def command_init(args: argparse.Namespace) -> int:
             "contract": build_contract,
             "evidence": build_evidence,
             "execution_contract": build_execution_contract,
+            "council_review": build_council_review,
+            "observation_receipt": build_observation_receipt,
+            "observation_output": build_observation_output,
         },
         "authority": {
             "governing_sources": [],
@@ -1556,6 +2076,9 @@ def command_init(args: argparse.Namespace) -> int:
                 "contract": build_contract,
                 "evidence": build_evidence,
                 "execution_contract": build_execution_contract,
+                "council_review": build_council_review,
+                "observation_receipt": build_observation_receipt,
+                "observation_output": build_observation_output,
             }
         ],
         "external_facts": [],
@@ -1727,6 +2250,21 @@ def command_seal(args: argparse.Namespace) -> int:
             if verdicts.get("release") != "closed" or verdicts.get("as_built") != "reconciled" or active.get("status") != "reconciled":
                 print("Release transition requires closed release, reconciled as-built verdict, and reconciled active build", file=sys.stderr)
                 return 2
+    positive_completion = (
+        (args.transition == "as-built" and verdicts.get("as_built") == "reconciled")
+        or (args.transition == "release" and verdicts.get("release") == "closed")
+    )
+    if positive_completion:
+        if not council_completion_aware(manifest):
+            print(
+                "Council completion evidence migration required before a positive completion seal",
+                file=sys.stderr,
+            )
+            return 2
+        council_errors = active_council_review_errors(pack, manifest, require_completion=True)
+        if council_errors:
+            print(f"Council completion evidence blocks sealing: {council_errors[0]}", file=sys.stderr)
+            return 2
     current_snapshot, snapshot_error = artifact_snapshot(pack, manifest)
     if snapshot_error:
         print(f"Cannot seal: {snapshot_error}", file=sys.stderr)
@@ -1780,11 +2318,15 @@ def command_seal(args: argparse.Namespace) -> int:
             if previous_snapshot.get(path) != current_snapshot.get(path)
             or previous_snapshot.get(path) != declared_snapshot.get(path)
         }
-        allowed_changes = (
-            {active.get("evidence")}
-            if args.checkpoint or args.transition == "as-built"
-            else set()
-        )
+        allowed_changes = {active.get("evidence")} if args.checkpoint or args.transition == "as-built" else set()
+        if args.transition == "as-built":
+            allowed_changes.update(
+                {
+                    active.get("council_review"),
+                    active.get("observation_receipt"),
+                    active.get("observation_output"),
+                }
+            )
         disallowed = sorted(path for path in changed_paths if path not in allowed_changes)
         if disallowed:
             print(

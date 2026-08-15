@@ -527,7 +527,12 @@ def schema_errors(
         return ["release manifest must include at least one JSON Schema"]
 
     seen_names = {path.name for path in schema_paths}
-    for required_name in ("start-pack.schema.json", "council-packet.schema.json"):
+    for required_name in (
+        "start-pack.schema.json",
+        "council-packet.schema.json",
+        "council-review.schema.json",
+        "observation-receipt.schema.json",
+    ):
         if required_name not in seen_names:
             errors.append(f"release manifest is missing required schema: {required_name}")
 

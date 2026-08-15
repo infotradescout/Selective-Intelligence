@@ -2,17 +2,17 @@
   "schema_version": 1,
   "skill": "selective-intelligence",
   "version": "1.0.0",
-  "observed_at": "2026-08-15T01:40:11Z",
+  "observed_at": "2026-08-15T13:47:33Z",
   "status": "local_release_candidate_controls_pass_live_client_smokes_fail",
   "deterministic_controls": {
     "result": "pass",
-    "passed": 81,
+    "passed": 82,
     "failed": 0,
-    "executed_controls_sha256": "60a8b2013fac63ac11b835dc412047514e50325045d5dd51340c282d96ccfcdb",
+    "executed_controls_sha256": "923bca7d677b099cfc7eaa871b71e3766e7707f5eaa73746c47df88cdad4fcd6",
     "scope": "Release-doctor-safe structural, state, authority, evidence, Council, intent-intake, project-index, and behavior-artifact controls executed with --skip-release.",
     "coverage": [
-      "81 preserved deterministic release controls pass at the v1 candidate snapshot identified by the local quality gate",
-      "45 production-path unit tests cover always-on governance, secret-safe dependency-aware context budgets, automatic local feedback, site package and rendered-review gates, and deadlock-safe interruptible SI-owned verification",
+      "82 deterministic release controls pass at the v1 candidate snapshot identified by the local quality gate, including the positive-completion Council bridge",
+      "82 portable unit tests cover Council evidence binding, structured runner receipts, always-on governance, secret-safe dependency-aware context budgets, automatic local feedback, site package and rendered-review gates, and deadlock-safe interruptible SI-owned verification",
       "new public claims remain bounded by live client and rendered evidence"
     ]
   },

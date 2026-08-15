@@ -606,24 +606,11 @@ class StartPackExecutionContractTests(unittest.TestCase):
             self.assertGreater(json.loads(resume_output.getvalue())["validation_errors"], 0)
 
     def test_pointer_erasure_blocks_release_after_valid_as_built(self):
+        from test_council_completion_bridge import prepare_positive_completion
+
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            lock_path, _ = self.advance_to_build(root)
-            manifest = json.loads(lock_path.read_text(encoding="utf-8"))
-            manifest["verdicts"]["as_built"] = "reconciled"
-            manifest["builds"][0]["status"] = "reconciled"
-            manifest["builds"][0]["evidence_context"] = {
-                "revision": "abc123",
-                "environment": "local test environment",
-                "configuration": "focused regression configuration",
-                "role": "warehouse operator",
-                "fixture": "persisted slab inventory fixture",
-                "observed_at": "2026-08-15T12:00:00+00:00",
-                "expected": "Saved record reopens with editable fields",
-                "actual": "Saved record reopened with editable fields",
-                "flaky": False,
-            }
-            lock_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+            lock_path, _, _ = prepare_positive_completion(root)
             result, output = self.seal(root, "as-built")
             self.assertEqual(result, 0, output)
 
