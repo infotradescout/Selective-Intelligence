@@ -56,7 +56,7 @@ ChatGPT adapter rule: this bundle intentionally contains exactly one `SKILL.md`.
         anchor = "# Selective Intelligence\n"
         addition = """
 
-> **ChatGPT adapter.** This generated bundle preserves the canonical 0.4.0 behavior while satisfying ChatGPT's one-`SKILL.md` bundle rule. The portable source remains `skills/selective-intelligence/`; nested Council roles are reference files here so ChatGPT can store and load the complete package.
+> **ChatGPT adapter.** This generated bundle preserves the canonical 1.0.0 behavior while satisfying ChatGPT's one-`SKILL.md` bundle rule. The portable source remains `skills/selective-intelligence/`; nested Council roles are reference files here so ChatGPT can store and load the complete package.
 """
         if not text.startswith(anchor):
             raise ValueError("adapter README heading is missing")

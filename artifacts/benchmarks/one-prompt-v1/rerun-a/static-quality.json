@@ -1,0 +1,75 @@
+{
+  "schemaVersion": "si.site_quality.v1",
+  "root": "rerun-a",
+  "artifact": {
+    "path": "index.html",
+    "bytes": 4438,
+    "sha256": "ffe38767cc42f75f92993a3f38b6e61319bab91e02e30aa4b13bce44a1a41b07"
+  },
+  "passed": true,
+  "passedChecks": 12,
+  "totalChecks": 12,
+  "checks": [
+    {
+      "check": "index_html",
+      "passed": true,
+      "detail": "index.html found"
+    },
+    {
+      "check": "language",
+      "passed": true,
+      "detail": "html lang is set"
+    },
+    {
+      "check": "title",
+      "passed": true,
+      "detail": "page title is set"
+    },
+    {
+      "check": "description",
+      "passed": true,
+      "detail": "meta description is substantive"
+    },
+    {
+      "check": "viewport",
+      "passed": true,
+      "detail": "mobile viewport is set"
+    },
+    {
+      "check": "main_landmark",
+      "passed": true,
+      "detail": "main landmark found"
+    },
+    {
+      "check": "single_h1",
+      "passed": true,
+      "detail": "found 1 h1 element(s)"
+    },
+    {
+      "check": "usable_action",
+      "passed": true,
+      "detail": "found 7 usable action(s)"
+    },
+    {
+      "check": "links",
+      "passed": true,
+      "detail": "placeholder=[]; broken_local=[]"
+    },
+    {
+      "check": "image_alt",
+      "passed": true,
+      "detail": "all images declare alt text"
+    },
+    {
+      "check": "responsive_css",
+      "passed": true,
+      "detail": "responsive CSS signal found"
+    },
+    {
+      "check": "no_placeholders",
+      "passed": true,
+      "detail": "no visible placeholder copy found"
+    }
+  ],
+  "boundary": "deterministic package checks; visual quality still requires rendered inspection"
+}

@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A clear, local-first way to prepare a repair request and understand the next step.">
+  <meta name="theme-color" content="#1c211d">
+  <title>Local Repair | Start with the problem</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Assumption: This local-only draft uses the descriptive name “Local Repair” because no verified business name or contact details were supplied. -->
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Local Repair home">
+      <span class="brand-mark" aria-hidden="true">LR</span>
+      <span>Local Repair</span>
+    </a>
+    <nav aria-label="Primary navigation">
+      <a href="#request">Prepare a request</a>
+      <a href="#process">How it works</a>
+      <a href="#questions">Questions</a>
+    </nav>
+    <a class="header-action" href="#request">Start here</a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span aria-hidden="true"></span> Repair starts with clear details</p>
+        <h1 id="page-title">Tell us what <em>stopped working.</em></h1>
+        <p class="hero-intro">You do not need a technical diagnosis. Describe the item, what changed, and what you want it to do again. That is enough to begin a useful conversation.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#request">Build your repair brief</a>
+          <a class="text-link" href="#process">See the next steps <span aria-hidden="true">↓</span></a>
+        </div>
+        <dl class="truth-strip" aria-label="What to expect from this draft">
+          <div>
+            <dt>Service fit</dt>
+            <dd>Confirmed case by case</dd>
+          </div>
+          <div>
+            <dt>Pricing</dt>
+            <dd>Not guessed online</dd>
+          </div>
+          <div>
+            <dt>Your details</dt>
+            <dd>Stay on this device</dd>
+          </div>
+        </dl>
+      </div>
+
+      <aside class="bench-card" aria-label="Repair request checklist">
+        <div class="bench-card-top">
+          <p>Better details.<br>Fewer surprises.</p>
+          <span aria-hidden="true">01—03</span>
+        </div>
+        <ol class="bench-list">
+          <li>
+            <span>01</span>
+            <div><strong>Name the item</strong><small>Include a model or identifying detail if you have it.</small></div>
+          </li>
+          <li>
+            <span>02</span>
+            <div><strong>Describe the change</strong><small>What happened, when it started, and what you already tried.</small></div>
+          </li>
+          <li>
+            <span>03</span>
+            <div><strong>Confirm before work</strong><small>Agree on fit, next step, and cost approval before proceeding.</small></div>
+          </li>
+        </ol>
+        <div class="dial" aria-hidden="true"><span></span></div>
+      </aside>
+    </section>
+
+    <section class="request-section" id="request" aria-labelledby="request-title">
+      <div class="section-heading">
+        <p class="section-number">01 / Prepare</p>
+        <h2 id="request-title">Build a clear repair brief.</h2>
+        <p>This tool organizes the useful facts into a short note you can copy. It does not send, save, price, or approve anything.</p>
+      </div>
+
+      <div class="request-layout">
+        <form class="repair-form" id="repair-form">
+          <div class="field-row">
+            <div class="field">
+              <label for="item">What needs attention? <span>Required</span></label>
+              <input id="item" name="item" type="text" required autocomplete="off" placeholder="Example: table lamp">
+            </div>
+            <div class="field">
+              <label for="identifier">Model or identifying detail <span>Optional</span></label>
+              <input id="identifier" name="identifier" type="text" autocomplete="off" placeholder="Label, model, material, or size">
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="problem">What changed? <span>Required</span></label>
+            <textarea id="problem" name="problem" required rows="5" placeholder="Describe what it should do, what it does now, and when the problem began."></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="tried">What have you already tried? <span>Optional</span></label>
+              <input id="tried" name="tried" type="text" autocomplete="off" placeholder="Cleaning, reset, new part, nothing yet…">
+            </div>
+            <div class="field">
+              <label for="timing">Timing</label>
+              <select id="timing" name="timing">
+                <option value="Flexible">Flexible</option>
+                <option value="Soon">Soon</option>
+                <option value="Just gathering information">Just gathering information</option>
+              </select>
+            </div>
+          </div>
+
+          <fieldset>
+            <legend>Helpful context <span>Optional</span></legend>
+            <label class="check"><input type="checkbox" name="context" value="Photos are available"><span>Photos are available</span></label>
+            <label class="check"><input type="checkbox" name="context" value="The item can be brought in"><span>The item can be brought in</span></label>
+            <label class="check"><input type="checkbox" name="context" value="Access or size may need discussion"><span>Access or size may need discussion</span></label>
+          </fieldset>
+
+          <div class="form-actions">
+            <button class="button button-primary" type="submit">Create my brief</button>
+            <button class="button button-quiet" type="reset">Clear</button>
+          </div>
+          <p class="privacy-note"><span aria-hidden="true">●</span> This draft keeps your entries in this browser tab only.</p>
+          <noscript><p class="noscript">JavaScript is off. Use the checklist above to prepare the same details manually.</p></noscript>
+        </form>
+
+        <section class="brief-output" id="brief-output" aria-labelledby="brief-title" tabindex="-1">
+          <p class="output-kicker">Your repair brief</p>
+          <h3 id="brief-title">Ready when you are.</h3>
+          <p id="brief-guidance">Complete the form to create a concise note for a call, text, or email after the service’s contact details are confirmed.</p>
+          <pre id="brief-text" hidden></pre>
+          <button class="button button-dark" id="copy-brief" type="button" hidden>Copy brief</button>
+          <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
+        </section>
+      </div>
+    </section>
+
+    <section class="problem-section" aria-labelledby="problem-title">
+      <div class="section-heading compact">
+        <p class="section-number">02 / Describe</p>
+        <h2 id="problem-title">Start with the symptom, not the solution.</h2>
+      </div>
+      <div class="symptom-grid">
+        <article>
+          <span aria-hidden="true">A</span>
+          <h3>What it is</h3>
+          <p>Name the item and add any model, material, size, or location detail you can see.</p>
+        </article>
+        <article>
+          <span aria-hidden="true">B</span>
+          <h3>What it should do</h3>
+          <p>Explain the normal result in everyday language. No repair vocabulary is needed.</p>
+        </article>
+        <article>
+          <span aria-hidden="true">C</span>
+          <h3>What changed</h3>
+          <p>Share sounds, movement, damage, error messages, or the moment it stopped behaving normally.</p>
+        </article>
+        <article>
+          <span aria-hidden="true">D</span>
+          <h3>What matters next</h3>
+          <p>Note your timing and whether the item can move, be photographed, or needs on-site discussion.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="process-section" id="process" aria-labelledby="process-title">
+      <div class="process-intro">
+        <p class="section-number light">03 / Decide</p>
+        <h2 id="process-title">A repair should begin with a shared understanding.</h2>
+        <p>The first conversation should answer the practical questions before anyone commits to work.</p>
+      </div>
+      <ol class="process-steps">
+        <li>
+          <span>01</span>
+          <div><h3>Share the problem</h3><p>Use the brief, plus photos or identifying details if they help explain the item.</p></div>
+        </li>
+        <li>
+          <span>02</span>
+          <div><h3>Confirm the fit</h3><p>Check whether the item can be assessed and what the next practical step would be.</p></div>
+        </li>
+        <li>
+          <span>03</span>
+          <div><h3>Choose with clarity</h3><p>Discuss timing, any assessment charge, and the approval boundary before work begins.</p></div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="questions-section" id="questions" aria-labelledby="questions-title">
+      <div class="questions-heading">
+        <p class="section-number">04 / Know before you go</p>
+        <h2 id="questions-title">Useful questions, answered plainly.</h2>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>Can this page give me a repair price?</summary>
+          <p>No. The item, problem, and likely work need to be understood first. This draft deliberately avoids invented prices and estimates.</p>
+        </details>
+        <details>
+          <summary>Where does my form information go?</summary>
+          <p>Nowhere. The page formats your answers inside this browser tab. Nothing is transmitted or stored; copy the brief if you want to keep it.</p>
+        </details>
+        <details>
+          <summary>What should I avoid including?</summary>
+          <p>Do not add passwords, access codes, payment details, or other sensitive information. Item details and a plain description of the problem are enough to begin.</p>
+        </details>
+        <details>
+          <summary>What if the item seems unsafe?</summary>
+          <p>Stop using it. If there is smoke, sparking, leaking, unusual heat, a gas odor, or immediate danger, move away and contact the appropriate local emergency or qualified service.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="draft-note" aria-labelledby="draft-note-title">
+      <p class="section-number">Draft status</p>
+      <h2 id="draft-note-title">Truth first, details next.</h2>
+      <p>Business name, service area, hours, contact methods, repair categories, fees, credentials, guarantees, and policies are intentionally absent until they can be confirmed.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="brand footer-brand"><span class="brand-mark" aria-hidden="true">LR</span><span>Local Repair</span></div>
+    <p>A practical first draft for a local repair service.</p>
+    <a href="#top">Back to top ↑</a>
+  </footer>
+
+  <script>
+    (function () {
+      const form = document.getElementById('repair-form');
+      const output = document.getElementById('brief-output');
+      const title = document.getElementById('brief-title');
+      const guidance = document.getElementById('brief-guidance');
+      const brief = document.getElementById('brief-text');
+      const copyButton = document.getElementById('copy-brief');
+      const status = document.getElementById('copy-status');
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (!form.reportValidity()) return;
+
+        const data = new FormData(form);
+        const contexts = data.getAll('context');
+        const lines = [
+          'REPAIR REQUEST',
+          '',
+          'Item: ' + data.get('item').trim(),
+          data.get('identifier').trim() ? 'Identifying detail: ' + data.get('identifier').trim() : null,
+          'What changed: ' + data.get('problem').trim(),
+          data.get('tried').trim() ? 'Already tried: ' + data.get('tried').trim() : null,
+          'Timing: ' + data.get('timing'),
+          contexts.length ? 'Helpful context: ' + contexts.join('; ') : null,
+          '',
+          'Please confirm whether this is a fit and what information or assessment is needed next. No work or cost is approved by this note.'
+        ].filter(Boolean);
+
+        brief.textContent = lines.join('\n');
+        brief.hidden = false;
+        copyButton.hidden = false;
+        title.textContent = 'Your brief is ready.';
+        guidance.textContent = 'Review it, then copy it when a confirmed contact option is available.';
+        status.textContent = '';
+        output.classList.add('is-ready');
+        output.focus();
+      });
+
+      copyButton.addEventListener('click', async function () {
+        const text = brief.textContent;
+        try {
+          await navigator.clipboard.writeText(text);
+        } catch (error) {
+          const helper = document.createElement('textarea');
+          helper.value = text;
+          helper.setAttribute('readonly', '');
+          helper.style.position = 'fixed';
+          helper.style.opacity = '0';
+          document.body.appendChild(helper);
+          helper.select();
+          document.execCommand('copy');
+          helper.remove();
+        }
+        status.textContent = 'Brief copied.';
+        copyButton.textContent = 'Copied';
+        window.setTimeout(function () { copyButton.textContent = 'Copy brief'; }, 1800);
+      });
+
+      form.addEventListener('reset', function () {
+        window.setTimeout(function () {
+          brief.textContent = '';
+          brief.hidden = true;
+          copyButton.hidden = true;
+          title.textContent = 'Ready when you are.';
+          guidance.textContent = 'Complete the form to create a concise note for a call, text, or email after the service’s contact details are confirmed.';
+          status.textContent = '';
+          output.classList.remove('is-ready');
+        }, 0);
+      });
+    }());
+  </script>
+</body>
+</html>

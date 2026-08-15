@@ -92,6 +92,7 @@ class DiscoveryBridgeTests(unittest.TestCase):
             "vague-idea-to-complete-outcome",
             "research-without-hallucinations",
             "one-prompt-website-first-deliverable",
+            "reduce-ai-token-usage",
         }
         pages = [DOCS / "problems" / "index.html", DOCS / "questions" / "index.html", DOCS / "use-with-ai" / "index.html"]
         pages.extend(DOCS / "problems" / slug / "index.html" for slug in sorted(expected_guides))
@@ -115,7 +116,7 @@ class DiscoveryBridgeTests(unittest.TestCase):
         clusters = self.queries["clusters"]
         questions = [question for cluster in clusters for question in cluster["queries"]]
         self.assertGreaterEqual(len(clusters), 20)
-        self.assertEqual(len(questions), 210)
+        self.assertEqual(len(questions), 220)
         self.assertEqual(len({question.casefold() for question in questions}), len(questions))
         self.assertIn("no search-volume claim", self.queries["evidence_boundary"])
         self.assertTrue(self.queries["behavior"]["approval_required_before_adoption"])

@@ -117,6 +117,10 @@ SUSPICIOUS_PATTERNS = (
 )
 
 
+class FeedbackError(RuntimeError):
+    """Raised when an event would weaken the privacy-safe store contract."""
+
+
 def parse_uuid(value: str) -> str:
     try:
         identifier = uuid.UUID(value)
@@ -256,64 +260,89 @@ def infer_outcome(events: list[dict[str, Any]]) -> tuple[str, bool]:
     return "unknown", False
 
 
-def command_record(args: argparse.Namespace) -> int:
-    store = default_store(args.store)
+def record_event(
+    *,
+    store: Path,
+    task_id: str,
+    event: str,
+    cause: str = "unknown",
+    validation_scope: str = "none",
+    attempt_count: int = 0,
+    source: str = "system",
+    verdict: str | None = None,
+    inference_insufficient: bool = False,
+) -> dict[str, Any]:
+    """Append one allowlisted event and return it without printing its content."""
+    try:
+        task_id = parse_uuid(task_id)
+    except argparse.ArgumentTypeError as exc:
+        raise FeedbackError(str(exc)) from exc
     if has_symlink_component(store):
-        print("refusing to use a symlinked feedback store", file=sys.stderr)
-        return 2
+        raise FeedbackError("refusing to use a symlinked feedback store")
     existing, errors = read_events(store)
     if errors:
-        print("refusing to append to an invalid event store; run doctor first", file=sys.stderr)
-        return 2
-    task_events = [event for event in existing if event["task_id"] == args.task_id]
-    if args.event == "task_started" and task_events:
-        print("task_started must be the first and only start event for a task", file=sys.stderr)
-        return 2
-    if args.event != "task_started" and not any(event["event"] == "task_started" for event in task_events):
-        print("record task_started before outcome signals", file=sys.stderr)
-        return 2
-    if args.event == "verdict_recorded":
-        if not args.inference_insufficient:
-            print("manual verdict requires --inference-insufficient", file=sys.stderr)
-            return 2
-        if any(event["event"] in INFERENCE_EVENTS for event in task_events):
-            print("outcome is inferable for this task; do not record a manual verdict", file=sys.stderr)
-            return 2
-    elif args.verdict or args.inference_insufficient:
-        print("--verdict and --inference-insufficient apply only to verdict_recorded", file=sys.stderr)
-        return 2
+        raise FeedbackError("refusing to append to an invalid event store; run doctor first")
+    task_events = [item for item in existing if item["task_id"] == task_id]
+    if event == "task_started" and task_events:
+        raise FeedbackError("task_started must be the first and only start event for a task")
+    if event != "task_started" and not any(item["event"] == "task_started" for item in task_events):
+        raise FeedbackError("record task_started before outcome signals")
+    if event == "verdict_recorded":
+        if not inference_insufficient:
+            raise FeedbackError("manual verdict requires inference_insufficient")
+        if any(item["event"] in INFERENCE_EVENTS for item in task_events):
+            raise FeedbackError("outcome is inferable for this task; do not record a manual verdict")
+    elif verdict or inference_insufficient:
+        raise FeedbackError("verdict and inference_insufficient apply only to verdict_recorded")
 
-    event: dict[str, Any] = {
+    record: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "event_id": str(uuid.uuid4()),
         "occurred_at": utc_now(),
-        "task_id": args.task_id,
-        "event": args.event,
-        "cause": args.cause,
-        "validation_scope": args.validation_scope,
-        "attempt_count": args.attempt_count,
-        "source": "user_verdict" if args.event == "verdict_recorded" else args.source,
+        "task_id": task_id,
+        "event": event,
+        "cause": cause,
+        "validation_scope": validation_scope,
+        "attempt_count": attempt_count,
+        "source": "user_verdict" if event == "verdict_recorded" else source,
     }
-    if args.event == "verdict_recorded":
-        event["verdict"] = args.verdict
-    issue = validate_event(event)
+    if event == "verdict_recorded":
+        record["verdict"] = verdict
+    issue = validate_event(record)
     if issue:
-        print(f"refusing unsafe event: {issue}", file=sys.stderr)
-        return 2
+        raise FeedbackError(f"refusing unsafe event: {issue}")
     protect_local_store(store)
-    payload = (json.dumps(event, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
+    payload = (json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
     descriptor = os.open(store, os.O_APPEND | os.O_CREAT | os.O_WRONLY, 0o600)
     try:
         written = os.write(descriptor, payload)
         if written != len(payload):
-            print("event append was incomplete; run doctor before continuing", file=sys.stderr)
-            return 2
+            raise FeedbackError("event append was incomplete; run doctor before continuing")
     finally:
         os.close(descriptor)
     try:
         store.chmod(0o600)
     except OSError:
         pass
+    return record
+
+
+def command_record(args: argparse.Namespace) -> int:
+    try:
+        record_event(
+            store=default_store(args.store),
+            task_id=args.task_id,
+            event=args.event,
+            cause=args.cause,
+            validation_scope=args.validation_scope,
+            attempt_count=args.attempt_count,
+            source=args.source,
+            verdict=args.verdict,
+            inference_insufficient=args.inference_insufficient,
+        )
+    except FeedbackError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
     print("recorded local privacy-safe event")
     return 0
 

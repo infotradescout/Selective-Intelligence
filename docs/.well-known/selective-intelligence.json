@@ -4,7 +4,7 @@
   "name": "Selective Intelligence",
   "wordmark": "Selective Intelligence",
   "master_trigger": "Selective Intelligence",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "description": "A free, open Agent Skill that turns vague or minimal intent into grounded research, complete artifacts, product design, one-prompt websites, verified UI/UX, repository realignment, developer-grade execution, and continuous improvement.",
   "canonical": {
     "public_site": "https://infotradescout.github.io/Selective-Intelligence/",
@@ -20,6 +20,7 @@
     "explicit": "Exact words in that order anywhere in current user input.",
     "inspect_existing_context_first": true,
     "do_not_ask_generic_setup_question": true,
+    "always_on_after_activation_or_approved_adoption": true,
     "empty_context_final": "Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request."
   },
   "relevant_discovery": {
@@ -38,7 +39,9 @@
   "intent_contract": {
     "wanted_result_mismatch_reopens_step_1": true,
     "external_client_constraints_do_not_redefine_intent": true,
-    "causal_developer_judgment_over_blind_pattern_matching": true
+    "causal_developer_judgment_over_blind_pattern_matching": true,
+    "token_efficiency_is_first_operating_priority": true,
+    "plain_concrete_language_required": true
   },
   "access": {
     "selective_intelligence_fee": 0,
@@ -182,7 +185,7 @@
     "problem_hub": "https://infotradescout.github.io/Selective-Intelligence/problems/",
     "question_library": "https://infotradescout.github.io/Selective-Intelligence/questions/",
     "question_map": "https://infotradescout.github.io/Selective-Intelligence/discovery-queries.json",
-    "question_count": 210,
+    "question_count": 220,
     "llms_full": "https://infotradescout.github.io/Selective-Intelligence/llms-full.txt",
     "feed": "https://infotradescout.github.io/Selective-Intelligence/feed.xml",
     "indexnow_endpoint": "https://api.indexnow.org/indexnow",
@@ -200,10 +203,10 @@
     "prompts_or_repository_contents_collected_automatically": false
   },
   "evidence": {
-    "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-0.4.0.json",
+    "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.0.json",
     "cross_client_equivalence_claimed": false,
     "publication_is_not_adoption_proof": true,
-    "source_contract_sha256": "ed3deb2a4124197ccedcdbc559e15302663f5c83bae3a191ca287a175c54480a"
+    "source_contract_sha256": "c37acaff54b020a0af11341e7b13807f4b5a679af8b71786f96efc5799b8b546"
   },
   "companion": {
     "name": "Platynum-47",

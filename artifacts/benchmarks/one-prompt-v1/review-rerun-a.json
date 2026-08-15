@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "si.site_review.v1",
+  "humanVeto": false,
+  "renders": {
+    "mobile": "renders/rerun-a-mobile.png",
+    "desktop": "renders/rerun-a-desktop.png"
+  },
+  "primaryJourney": "pass",
+  "objector": {
+    "independent": true,
+    "verdict": "strong_checkpoint",
+    "blockingFindings": [],
+    "note": "The redesigned fault-card workbench clears the interchangeable editorial-template concern."
+  },
+  "dimensions": {
+    "comprehension": "pass",
+    "hierarchy": "pass",
+    "restraint": "pass",
+    "coherence": "pass",
+    "distinctiveness": "pass",
+    "density": "pass",
+    "mobile_composition": "pass",
+    "trust": "pass"
+  },
+  "genericSignals": {
+    "interchangeable_brand": false,
+    "unjustified_template_structure": false,
+    "decoration_over_meaning": false,
+    "desktop_stack_on_mobile": false,
+    "copy_compensates_for_weak_design": false
+  }
+}

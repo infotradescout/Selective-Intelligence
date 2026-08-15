@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "benchmark": "one-prompt-website-first-deliverable",
+  "release": "1.0.0",
+  "result": "fail",
+  "deterministic_package_checks": "3 of 3 passed",
+  "rendered_viewports": ["mobile", "desktop"],
+  "human_veto": true,
+  "failure_class": "visual_quality_below_requested_first_deliverable_standard",
+  "disposition": "Static validity did not establish design quality. The claim remains failed while fresh runs use the corrected render-review-fix gate.",
+  "privacy": "No raw prompt, personal data, secrets, or hidden reasoning recorded."
+}

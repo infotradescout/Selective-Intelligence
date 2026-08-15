@@ -9,7 +9,7 @@
 - Canonical skill: https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/SKILL.md
 - Machine contract: https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json
 - License: CC0-1.0
-- Current version: 0.4.0
+- Current version: 1.0.0
 - Selective Intelligence fee: 0
 - Paid AI subscription, credit card, provider API key, and telemetry: not required by Selective Intelligence
 
@@ -61,9 +61,15 @@ Guide: https://infotradescout.github.io/Selective-Intelligence/problems/research
 
 ### Build a credible website from one prompt
 
-Yes—when the prompt is treated as a seed rather than the output size. Selective Intelligence infers the audience, job, page model, message hierarchy, journeys, visual direction, states, and implementation from available context; builds the real target when the AI has the tools; then renders and revises it instead of handing back a wireframe, component sample, or template shell.
+Yes—when the prompt is treated as a seed rather than the output size. Selective Intelligence infers the audience, job, page model, message hierarchy, journeys, visual direction, states, and implementation from available context; builds the real target when the AI has the tools; then renders, uses, and corrects raw drafts privately before presenting the first deliverable instead of handing back a wireframe, component sample, template shell, or unchecked first generation.
 
 Guide: https://infotradescout.github.io/Selective-Intelligence/problems/one-prompt-website-first-deliverable/
+
+### Use fewer AI tokens without getting worse results
+
+Prevent waste at the source. Selective Intelligence resolves intent before generation, ranks files by the current task instead of loading the repository alphabetically, reuses canonical owners, verifies once at the right boundary, and reports only the result, proof, limit, and required action.
+
+Guide: https://infotradescout.github.io/Selective-Intelligence/problems/reduce-ai-token-usage/
 
 ## Natural-language discovery questions
 
@@ -425,6 +431,23 @@ Treat the prompt as a seed, infer the audience and real job, choose the right pa
 - What should be verified before an AI calls a one-prompt website a good first deliverable?
 
 Guide: https://infotradescout.github.io/Selective-Intelligence/problems/one-prompt-website-first-deliverable/
+
+### Reduce AI token use without reducing the result
+
+Prevent wasted generation by understanding intent first, selecting relevant context, reusing canonical code, verifying at the right boundary, and removing filler.
+
+- How do I reduce AI token usage without getting a worse result?
+- Why does my coding agent waste tokens reading unrelated files?
+- How can an AI choose only the repository context it actually needs?
+- Can an AI stop repeating my request and plan in every response?
+- How do I prevent a wrong first interpretation from wasting an entire context window?
+- Can a coding agent estimate how many tokens its selected files will use?
+- How do I make an AI reuse existing code instead of spending tokens generating duplicates?
+- What is the best way to reduce filler in AI coding responses?
+- Can AI save tokens without silently cutting features or verification?
+- How do I keep a long AI project accurate with a smaller working context?
+
+Guide: https://infotradescout.github.io/Selective-Intelligence/problems/reduce-ai-token-usage/
 
 ## Client routes
 

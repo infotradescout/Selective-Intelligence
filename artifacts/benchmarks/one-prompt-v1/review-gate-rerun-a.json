@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "si.site_review_gate.v1",
+  "passed": true,
+  "review": "review-rerun-a.json",
+  "renders": {
+    "mobile": "renders/rerun-a-mobile.png",
+    "desktop": "renders/rerun-a-desktop.png"
+  },
+  "errors": [],
+  "boundary": "Validates a rendered-review receipt; it does not independently judge image quality."
+}

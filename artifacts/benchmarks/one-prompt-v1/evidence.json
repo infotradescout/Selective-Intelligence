@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "si.one_prompt_website_evidence.v1",
+  "benchmark": "one-prompt-website-first-deliverable",
+  "release": "1.0.0",
+  "observedAt": "2026-08-15T01:15:08Z",
+  "seedSha256": "bd7e2d13b2904f6a37a18ad5bb6c4ea765884f3962cf2aac1de4e1aa81be3248",
+  "originalFailure": {
+    "result": "fail",
+    "humanVeto": true,
+    "evidence": "original-failure.json",
+    "reason": "The first displayed site was rejected as visually unacceptable even though all deterministic package checks passed."
+  },
+  "correctedRuns": [
+    {
+      "runId": "rerun-a",
+      "client": "current Codex desktop agent surface",
+      "tierObserved": "not established",
+      "newSignIn": false,
+      "paidServiceRequired": false,
+      "artifact": "rerun-a/index.html",
+      "artifactSha256": "ffe38767cc42f75f92993a3f38b6e61319bab91e02e30aa4b13bce44a1a41b07",
+      "deterministicResult": "pass_12_of_12",
+      "mobileRender": {
+        "path": "renders/rerun-a-mobile.png",
+        "sha256": "473e13b4fbde53f9076a7ea01a5c05ffa5239cb08f72830b0fbaf210a80073f2",
+        "formState": "renders/rerun-a-mobile-form.png"
+      },
+      "desktopRender": {
+        "path": "renders/rerun-a-desktop.png",
+        "sha256": "6a5ff1acac9ba355989591f2e88b90a46bf80f799bc48963b1d141e9484945ff"
+      },
+      "primaryJourney": "pass_cabinet_hinge_note_generated",
+      "productDesignObjectorVerdict": "strong_checkpoint",
+      "reviewReceipt": "review-rerun-a.json",
+      "humanVeto": false,
+      "result": "pass"
+    },
+    {
+      "runId": "rerun-b",
+      "client": "current Codex desktop agent surface",
+      "tierObserved": "not established",
+      "newSignIn": false,
+      "paidServiceRequired": false,
+      "artifact": "rerun-b/index.html",
+      "artifactSha256": "11bc692c6febed32b9153f9ea819925a7e7b619a507d66b9885f95d4d2812b69",
+      "deterministicResult": "pass_12_of_12",
+      "mobileRender": {
+        "path": "renders/rerun-b-mobile.png",
+        "sha256": "4e16ad18785e65c85f09830ef5435e8483781d804bc9c10506e44e1796878735"
+      },
+      "desktopRender": {
+        "path": "renders/rerun-b-desktop.png",
+        "sha256": "f24d5869f07ae969377a157888be4836006f0ddf603e51a76cfd749076cc6da2"
+      },
+      "primaryJourney": "pass_repair_note_generated",
+      "productDesignObjectorVerdict": "strong_checkpoint",
+      "reviewReceipt": "review-rerun-b.json",
+      "humanVeto": false,
+      "result": "pass"
+    },
+    {
+      "runId": "rerun-c",
+      "client": "current Codex desktop agent surface",
+      "tierObserved": "not established",
+      "newSignIn": false,
+      "paidServiceRequired": false,
+      "artifact": "rerun-c/index.html",
+      "artifactSha256": "94c0bba6baa2022b61cb6ffab9a9cfffcf08549d9479902a62c5470f7ecace26",
+      "deterministicResult": "pass_12_of_12",
+      "mobileRender": {
+        "path": "renders/rerun-c-mobile.png",
+        "sha256": "e388970ac2a10d495325956816c6cb870a0a888528da4e0b358f35402587f167",
+        "formState": "renders/rerun-c-mobile-form.png"
+      },
+      "desktopRender": {
+        "path": "renders/rerun-c-desktop.png",
+        "sha256": "0c7b83d5949a2160e6a08549ec4cb089f6088825c7a85692737b175811504e11"
+      },
+      "primaryJourney": "pass_repair_note_generated",
+      "productDesignObjectorVerdict": "strong_checkpoint",
+      "reviewReceipt": "review-rerun-c.json",
+      "humanVeto": false,
+      "result": "pass"
+    }
+  ],
+  "result": "pass_bounded_current_codex_surface_after_human_veto_remediation",
+  "limitations": [
+    "This evidence covers one current Codex surface; it is not free-tier or cross-client proof.",
+    "humanVeto false on corrected runs means no rejection was observed for those renders; it is not a claim of explicit user approval.",
+    "The repair service is a benchmark subject, not Selective Intelligence product copy or a published business."
+  ],
+  "privacy": "No raw private prompt history, personal data, secrets, or hidden reasoning is recorded."
+}

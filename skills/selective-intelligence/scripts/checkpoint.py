@@ -236,6 +236,8 @@ def require_authorized_checkpoint(
     allow_side_effect: bool = True,
 ) -> dict[str, Any]:
     """Fail closed unless an approved, non-stale checkpoint authorizes work."""
+    if session.get("siActive") is not True or session.get("governanceMode") != "always_on_after_activation":
+        raise CheckpointError("Selective Intelligence governance is not active; execution denied")
     if session.get("correctionMode") or session.get("mutationFrozen"):
         raise CheckpointError("session is in correction/interrupt mode; side effects denied")
     if session.get("executionLocked"):

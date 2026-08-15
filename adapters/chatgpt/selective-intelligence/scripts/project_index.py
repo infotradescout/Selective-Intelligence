@@ -216,6 +216,65 @@ def load_existing(path: Path) -> object:
         return None
 
 
+def declared_generated_projections(root: Path) -> list[dict[str, str]]:
+    """Read bounded adapter manifests that name one canonical source and projection.
+
+    Generated adapters are intentional mirrors, not competing owners. The
+    exception is accepted only when a repository manifest explicitly names
+    both roots and duplicate paths have the same suffix below those roots.
+    """
+    projections: list[dict[str, str]] = []
+    for manifest in sorted(root.glob("adapters/**/metadata/*-adapter.json")):
+        try:
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        source = data.get("portable_source_path")
+        destination = data.get("adapter_path")
+        if not isinstance(source, str) or not isinstance(destination, str):
+            continue
+        source_path = Path(source)
+        destination_path = Path(destination)
+        if (
+            source_path.is_absolute()
+            or destination_path.is_absolute()
+            or ".." in source_path.parts
+            or ".." in destination_path.parts
+        ):
+            continue
+        source_value = source_path.as_posix().strip("/")
+        destination_value = destination_path.as_posix().strip("/")
+        if not source_value or not destination_value or source_value == destination_value:
+            continue
+        if not (root / source_path).is_dir() or not (root / destination_path).is_dir():
+            continue
+        projections.append(
+            {
+                "canonical": source_value,
+                "projection": destination_value,
+                "manifest": safe_relative(root, manifest),
+            }
+        )
+    return projections
+
+
+def generated_projection_exception(paths: list[str], projections: list[dict[str, str]]) -> dict[str, str] | None:
+    if len(paths) != 2:
+        return None
+    for projection in projections:
+        canonical_prefix = projection["canonical"] + "/"
+        adapter_prefix = projection["projection"] + "/"
+        canonical_paths = [path for path in paths if path.startswith(canonical_prefix)]
+        adapter_paths = [path for path in paths if path.startswith(adapter_prefix)]
+        if len(canonical_paths) != 1 or len(adapter_paths) != 1:
+            continue
+        canonical_suffix = canonical_paths[0][len(canonical_prefix) :]
+        adapter_suffix = adapter_paths[0][len(adapter_prefix) :]
+        if canonical_suffix == adapter_suffix:
+            return projection
+    return None
+
+
 def build_index(root: Path, existing: object = None) -> dict[str, Any]:
     root = root.resolve()
     canonical, reuse_decisions = retained_governance(existing)
@@ -281,8 +340,14 @@ def build_index(root: Path, existing: object = None) -> dict[str, Any]:
     for item in raw_ui:
         raw_paths_by_tag[item["tag"]].add(item["path"])
 
+    projections = declared_generated_projections(root)
+    justified_duplicates: list[dict[str, Any]] = []
     findings: list[dict[str, Any]] = []
     for group in duplicate_files:
+        exception = generated_projection_exception(group["paths"], projections)
+        if exception is not None:
+            justified_duplicates.append({**group, "exception": exception})
+            continue
         findings.append({"severity": "error", "code": "PI001", "message": "Exact duplicate source files require consolidation or an explicit exception.", "paths": group["paths"]})
     for collision in symbol_collisions:
         findings.append({"severity": "error", "code": "PI002", "message": f"Exported symbol {collision['name']} has multiple candidate owners.", "paths": [item["path"] for item in collision["owners"]]})
@@ -306,7 +371,11 @@ def build_index(root: Path, existing: object = None) -> dict[str, Any]:
         "files": files,
         "symbols": symbols,
         "ui": {"primitive_candidates": ui_candidates, "raw_elements": raw_ui},
-        "duplicates": {"exact_files": duplicate_files, "exported_symbol_collisions": symbol_collisions},
+        "duplicates": {
+            "exact_files": duplicate_files,
+            "justified_generated_projections": justified_duplicates,
+            "exported_symbol_collisions": symbol_collisions,
+        },
     }
     return {
         "schema_version": SCHEMA_VERSION,
@@ -420,7 +489,36 @@ def command_self_test(_: argparse.Namespace) -> int:
         stale, stale_code = doctor(root, output)
         if stale_code != 1 or not stale["stale"]:
             raise AssertionError("project index did not detect source drift")
-    print(json.dumps({"passed": True, "index_version": INDEX_VERSION, "checks": ["inventory", "ui-proliferation", "freshness"]}, indent=2))
+
+        projection_root = root / "projection-fixture"
+        canonical = projection_root / "skills/example/scripts"
+        adapter = projection_root / "adapters/chatgpt/example/scripts"
+        metadata = projection_root / "adapters/chatgpt/example/metadata"
+        canonical.mkdir(parents=True)
+        adapter.mkdir(parents=True)
+        metadata.mkdir(parents=True)
+        payload = "def shared_owner():\n    return True\n"
+        (canonical / "owner.py").write_text(payload, encoding="utf-8")
+        (adapter / "owner.py").write_text(payload, encoding="utf-8")
+        (metadata / "chatgpt-adapter.json").write_text(
+            json.dumps(
+                {
+                    "portable_source_path": "skills/example",
+                    "adapter_path": "adapters/chatgpt/example",
+                }
+            ),
+            encoding="utf-8",
+        )
+        projected = build_index(projection_root)
+        if any(item["code"] == "PI001" for item in projected["findings"]):
+            raise AssertionError("declared generated projection was treated as a competing owner")
+        if len(projected["inventory"]["duplicates"]["justified_generated_projections"]) != 1:
+            raise AssertionError("generated projection exception was not recorded")
+        (projection_root / "rogue.py").write_text(payload, encoding="utf-8")
+        rogue = build_index(projection_root)
+        if not any(item["code"] == "PI001" for item in rogue["findings"]):
+            raise AssertionError("undeclared third duplicate did not fail closed")
+    print(json.dumps({"passed": True, "index_version": INDEX_VERSION, "checks": ["inventory", "ui-proliferation", "freshness", "generated-projection-boundary"]}, indent=2))
     return 0
 
 
