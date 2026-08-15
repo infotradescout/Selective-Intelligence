@@ -24,8 +24,13 @@ def main() -> int:
     skill_entrypoints = [path for path in files if Path(path).name == "SKILL.md"]
     require(skill_entrypoints == ["SKILL.md"], f"expected one SKILL.md, found {skill_entrypoints}")
     require("scripts/project_index.py" in files, "project index tool is missing")
+    require("scripts/execution_contract.py" in files, "execution contract tool is missing")
     require("AI-GUIDE.md" in files, "strict AI guide is missing")
     require("references/project-index-and-reuse-gate.md" in files, "project index reference is missing")
+    require(
+        "references/execution-bounding-and-target-selection.md" in files,
+        "execution bounding and target reference is missing",
+    )
     version = (ADAPTER_ROOT / "VERSION").read_text(encoding="utf-8").strip()
     require(f"evals/results-{version}.json" in files, f"{version} evidence is missing")
     require("subskills/si-worker/ROLE.md" in files, "Worker role reference is missing")
@@ -81,6 +86,8 @@ def main() -> int:
         "APPROVE",
         "CORRECT: <instruction>",
         "Produce the real deliverable",
+        "Preserve breadth; bound execution",
+        "Do not default to Sites",
         "Do not require a paid feature",
     ):
         require(phrase in ai_guide, f"strict AI guide is missing: {phrase}")
@@ -98,8 +105,20 @@ def main() -> int:
             f"empty-context terminal rule is missing: {prohibited_empty_context_action}",
         )
 
+    execution_reference = (
+        ADAPTER_ROOT / "references" / "execution-bounding-and-target-selection.md"
+    ).read_text(encoding="utf-8")
+    for phrase in (
+        "discovery-to-execution explosion",
+        "phase-delegation burden",
+        "convenient-target adoption",
+        "persistent operational or transactional data",
+    ):
+        require(phrase in execution_reference, f"execution adoption gate is missing: {phrase}")
+
     commands = [
         [sys.executable, str(ADAPTER_ROOT / "scripts" / "project_index.py"), "self-test"],
+        [sys.executable, str(ADAPTER_ROOT / "scripts" / "execution_contract.py"), "self-test"],
         [sys.executable, str(ADAPTER_ROOT / "scripts" / "behavior_eval.py"), "self-test"],
         [sys.executable, "-m", "unittest", "discover", "-s", str(ADAPTER_ROOT / "tests"), "-p", "test_*.py"],
         [sys.executable, str(ADAPTER_ROOT / "scripts" / "eval.py"), "controls", "--skip-release"],

@@ -24,6 +24,9 @@ JumpStart is not a pre-build mode. It is the full Tier 1 execution gate for this
   "empty_context_response": "Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request.",
   "seeded_behavior": "begin_immediately",
   "project_index": "auto_refresh_before_new_code",
+  "delivery_boundary": "preserve_whole_product_activate_one_end_to_end_deliverable",
+  "execution_target": "fit_operational_requirements_prefer_established_repository",
+  "sites_operational_production_default": "deny",
   "validation_status_without_validator": "manual_unverified",
   "minimum_configuration": "one_capable_ai_client",
   "additional_ai_services": "optional",
@@ -81,7 +84,7 @@ Build the most useful reversible candidate interpretation, then challenge it bef
 
 JumpStart always runs the full Tier 1 workflow. If a request is a true throwaway with explicit user request to do only a local proof-of-concept, it may run a short local experiment, but it still follows this same continuity and completion contract before any durable claim.
 
-The full contract is: lock intent, run Start Pack controls, build through Worker/Objector/Aligner/Verifier lanes, and stop only on a real human-only action boundary. Two guardrails never scale down:
+The full contract is: lock intent, preserve the complete product as ordered deliverables, validate one active end-to-end deliverable and its execution target, run Start Pack controls, build that bounded slice through Worker/Objector/Aligner/Verifier lanes, and leave the next baseline. Discovery can be broad; execution cannot be unbounded. Choose the phase boundary without making the person invent it. Prefer a fitting established application or repository for operational products; do not default to Sites when persistent data, complex permissions, backend workflows, repository integration, business-state image processing, or multi-stage logic carry the production value. Two guardrails never scale down:
 - do not send/publish/push/purchase/provision/deploy without explicit authority
 - do not claim completion without proof
 
@@ -163,13 +166,14 @@ Treat all prices, plans, limits, model names, and provider features as volatile 
 1. **Reconstruct:** separate authoritative evidence from candidate meaning; recover outcome, user/job, prohibitions, priorities, scope, and proof.
 2. **Challenge intent:** test a plausible competing interpretation and the consequences before material execution.
 3. **Design the experience:** for user-facing work, choose the interaction model and information architecture before styling or component generation.
-4. **Orchestrate:** bind sufficient intent, evidence boundary, permissions, proof, and exact Worker task. If queue context is active, write a queue snapshot and check owner, branch, and sequence before each continuation.
-5. **Work:** build or perform the bounded outcome; report artifacts, evidence, tests, failures, assumptions, and unknowns without redefining the lock.
-6. **Object:** challenge specific claims, artifacts, evidence, product design, permissions, duplication, scope drift, and failure cases. Do not invent an unrelated replacement.
-7. **Align:** compare every objection with reconstructed intent and observed evidence. Sustain, reject, or leave it unresolved with reasons. Consensus is not proof.
-8. **Correct and revalidate:** return sustained material objections to the Worker and invalidate affected proof. Re-run the required evidence after correction.
-9. **Apply authority:** present only unresolved product choices or exact external actions to the authorized human or quorum.
-10. **Resume or hand off:** preserve exact state, weaknesses, and the next improvement frontier before context, capacity, provider, branch, or agent changes.
+4. **Bound and target:** preserve the whole product, select one active end-to-end deliverable that fits the current run, retain later deliverables, choose the execution target from the operating requirements, and validate the decision.
+5. **Orchestrate:** bind sufficient intent, evidence boundary, permissions, proof, execution target, and exact active Worker task. If queue context is active, write a queue snapshot and check owner, branch, and sequence before each continuation.
+6. **Work:** build or perform only the active bounded outcome; report artifacts, evidence, tests, failures, assumptions, and unknowns without redefining the lock or absorbing later deliverables.
+7. **Object:** challenge specific claims, artifacts, evidence, product design, delivery bounding, target fit, permissions, duplication, scope drift, and failure cases. Do not invent an unrelated replacement.
+8. **Align:** compare every objection with reconstructed intent and observed evidence. Sustain, reject, or leave it unresolved with reasons. Consensus is not proof.
+9. **Correct and revalidate:** return sustained material objections to the Worker and invalidate affected proof. Re-run the required evidence after correction.
+10. **Apply authority:** present only unresolved product choices or exact external actions to the authorized human or quorum.
+11. **Resume or hand off:** preserve exact state, later deliverables, weaknesses, and the next improvement frontier before context, capacity, provider, branch, or agent changes.
 
 A release checkpoint requires the observable outcome and proportionate proof. Activity, agreement, a passing narrow test, or the absence of objections is not proof. Never call a checkpoint perfect or permanently complete; distinguish release-blocking defects, non-blocking weaknesses, untested conditions, and the next highest-value improvement without blocking useful delivery forever.
 
@@ -188,6 +192,9 @@ Intent Lock:
 Exact task:
 Included scope:
 Prohibited scope:
+Whole-product deliverable map:
+Active bounded deliverable:
+Execution target and rationale:
 Approved evidence references:
 Evidence excerpts, with source and sensitivity:
 Permissions allowed:

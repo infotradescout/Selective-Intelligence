@@ -2,6 +2,12 @@
 
 All notable behavior changes to Selective Intelligence are recorded here.
 
+## Unreleased
+
+- Separated full-product discovery from active execution. The first checkpoint now preserves the complete product as ordered deliverables while activating one information-complete, end-to-end first loop that fits the current run. Later non-dependent unknowns no longer block D1, the person is not asked to invent phases, and one closed slice cannot be presented as whole-product completion.
+- Added an independent execution-target adoption gate. Sites is rejected as the default production target when the product's core value depends on operational data, complex permissions, backend workflows, repository integration, business-state image processing, multi-stage logic, migrations, audit history, or system-of-record behavior. Fitting established application repositories take precedence; Sites remains valid for bounded standalone experiences, prototypes, presentations, information surfaces, and simpler web products.
+- Added `execution_contract.py`, focused unit coverage, and behavioral cases for a camera-to-inventory slab workflow and the Sites rejection boundary. Documentation-only compliance is insufficient: invalid delivery or target decisions now fail a deterministic contract.
+
 ## 1.0.0 - 2026-08-14
 
 - Made token efficiency the first operating priority without reducing the wanted result: task-aware context selection now ranks exact references and task relevance ahead of alphabetical filler, keeps hard secret/file/byte limits, and reports selected and avoided token estimates.

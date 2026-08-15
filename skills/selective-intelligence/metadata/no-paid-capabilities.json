@@ -42,6 +42,11 @@
       "evidence": "queue snapshots, lane ownership, and resume packets"
     },
     {
+      "job": "bounded first-deliverable and execution-target validation",
+      "paths": ["scripts/execution_contract.py"],
+      "evidence": "fail-closed whole-product preservation, active vertical-slice, execution-window, established-repository, and operational Sites controls"
+    },
+    {
       "job": "task-aware context selection and token budgeting",
       "paths": ["scripts/context_budget.py", "scripts/build_engine.py"],
       "evidence": "explicit-reference priority, relevance ranking, hard byte and file limits, secret exclusion, and selected-versus-avoided token estimates"

@@ -19,7 +19,7 @@ It gives the final "done" or "not done" message in simple words.
 
 ## Steps
 1. Confirm the top risks and proof are still true.
-2. Check one final time that the result is deploy-safe for the claimed scope.
+2. Check one final time that the active deliverable is deploy-safe for its claimed scope and that later deliverables remain open.
 3. Write a short handoff with:
    - what changed
    - what is proven
@@ -37,5 +37,6 @@ Return:
 
 ## Non-negotiable rules
 - Never claim complete if proof is missing.
+- Say `done` only for the active bounded deliverable; never inflate it into whole-product completion.
 - If no deploy/live proof exists, say so plainly.
 - Keep the user explanation short and plain.

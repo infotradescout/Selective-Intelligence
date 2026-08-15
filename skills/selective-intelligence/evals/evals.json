@@ -13,15 +13,29 @@
       "id": "first-checkpoint-cold-build",
       "kind": "positive_trigger",
       "prompt": "I've got an idea for an app people build in from their phone. Just take it and build the whole thing in a day.",
-      "must": ["emit a full-scope intent checkpoint before any code", "recover the largest truthful outcome, not the literal minimal ask", "decompose the whole product into bounded slices with proof", "map canonical reuse before building anything", "reach information sufficiency before starting any slice", "separate genuine authority decisions from inferred execution", "timestamp the checkpoint in UTC"],
-      "must_not": ["ship a trimmed single-thread MVP as the finished product", "cut scope to fit the deadline and call it complete", "ask the user to supply scope the seed implies", "start a slice before the information to perform all of it is in hand", "write application code before the checkpoint exists"]
+      "must": ["emit a full-scope intent checkpoint before any code", "recover the largest truthful product outcome, not the literal minimal ask", "preserve the whole product as dependency-ordered deliverables with proof", "select one meaningful end-to-end first deliverable that fits the current execution window", "reach information sufficiency for the active deliverable and any foundation choice it makes", "derive the phase boundary without asking the user to split the product", "separate genuine authority decisions from inferred execution", "timestamp the checkpoint in UTC"],
+      "must_not": ["attempt to research architect build integrate and verify the entire discovered system in one execution", "erase later deliverables to fit the deadline", "call the bounded first deliverable the completed whole product", "ask the user to supply scope or phases the system can derive", "block an independent first loop on non-dependent inputs for later deliverables", "write application code before the checkpoint exists"]
     },
     {
       "id": "acceptance-invent-si-with-user-layer",
       "kind": "positive_trigger",
       "prompt": "Invent Selective Intelligence with a user layer.",
-      "must": ["emit the full-scope checkpoint as the first deliverable, before any partial output", "deliver the complete doctrine (first-checkpoint, non-developer surface, time-awareness, friction ladder with Tier-1 default, output economy, enforcement model)", "deliver both layers: the SI engine/skill package and a non-developer user layer that runs it", "make the user layer one-click and vibe-coder-grade, never a developer wall", "reach information sufficiency and canonical reuse before building; sequence the system into tiers with proof", "produce it uncorrected — correction-rounds-to-correct-deliverable approaches zero"],
-      "must_not": ["require the user to drag the scope out over many corrections", "ship a trimmed editor, a token wall, or a plan-only stub as the deliverable", "start building before the checkpoint is complete and information-sufficient", "present prose gates as if they were already enforced"]
+      "must": ["emit the full-scope checkpoint before implementation", "preserve the complete doctrine and non-developer user layer as the whole-product definition", "decompose the system into dependency-ordered deliverables with proof", "make the active first deliverable one complete checkpoint-to-bounded-execution-to-verification loop", "make the user layer one-click and vibe-coder-grade, never a developer wall", "reach active-deliverable information sufficiency and canonical reuse before building", "produce the first deliverable uncorrected — correction-rounds-to-correct-deliverable approaches zero"],
+      "must_not": ["attempt to build the complete doctrine runtime integrations clients and user layer in one execution", "require the user to drag the scope or phase boundaries out over many corrections", "ship a token wall or plan-only stub as the active deliverable", "erase later deliverables or call D1 the whole product", "present prose gates as if they were already enforced"]
+    },
+    {
+      "id": "bounded-first-deliverable-operational-inventory",
+      "kind": "positive_trigger",
+      "prompt": "Selective Intelligence. I need an app that starts by photographing stone slabs. Research shows the real product also needs receiving, purchase orders and containers, bundles, individual slabs, locations, barcodes, holds, sales, transfers, pricing controls, inventory history, and a live public/private catalog. Build it.",
+      "must": ["preserve the complete operational inventory product definition", "choose the first deliverable without asking the user to invent phases", "make D1 an end-to-end camera to adjustable crop to photo to stone information to dimensions to cost and price to bundle or slab record to save to inventory list to reopen and edit loop", "sequence receiving and inheritance, warehouse and barcodes, holds and sales, catalog visibility, and hardening as later deliverables", "state that D1 closes only the active slice and not the whole product", "select a production application or fitting established repository and define proof for D1"],
+      "must_not": ["attempt the entire discovered product in one execution", "return only a form mockup architecture plan schema or page", "make the user choose the phases", "call Sites the production system of record", "claim D1 completes the full inventory product"]
+    },
+    {
+      "id": "execution-target-reject-sites-operational-app",
+      "kind": "control_output",
+      "prompt": "The user has an established application repository. The discovered production product needs persistent inventory state, private pricing by role, image processing, warehouse workflows, transfers, holds and sales, audit history, and a later catalog integration. Sites is available. Choose the execution target and explain the first delivery boundary.",
+      "must": ["reject Sites as the default production execution target", "prefer the fitting established application repository", "name the operational requirements that make Sites unsuitable", "preserve Sites only as an optional bounded prototype presentation or simple surface when useful", "select one bounded end-to-end first deliverable and preserve later deliverables"],
+      "must_not": ["choose Sites because it is readily available", "treat a Sites prototype as the production foundation or system of record", "attempt every discovered workflow in the first run", "ask the user to decide the technical platform or phase plan"]
     },
     {
       "id": "non-developer-surface-connector",

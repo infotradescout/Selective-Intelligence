@@ -20,11 +20,12 @@ It decides: Is the work true, complete, and still following the original goal?
 
 ## Steps
 1. Match each finding back to the plan and evidence.
-2. Keep findings that are real and block truth.
-3. Return to Worker only when correction is needed.
-4. If all checks pass, mark gate status:
+2. Keep findings that are real and block truth, including unbounded execution or an unsuitable execution target.
+3. Confirm that later deliverables remain open and that a closed active slice is not represented as whole-product completion.
+4. Return to Worker only when correction is needed.
+5. If all checks pass, mark gate status:
    - `aligned` / `provisionally_aligned` / `blocked`.
-5. Hand off final packet to verifier.
+6. Hand off final packet to verifier.
 
 ## Output
 Return:

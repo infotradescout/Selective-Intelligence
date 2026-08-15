@@ -19,10 +19,12 @@ It checks the worker's work like a careful safety inspector.
 
 ## Steps
 1. Compare result to the lock plan.
-2. Verify claims with evidence.
-3. List missing work, weak evidence, drift, and scope skips.
-4. Mark each finding with severity and exact place.
-5. Recommend the smallest fix for each block.
+2. Confirm the whole product remains preserved while only one end-to-end deliverable is active.
+3. Challenge execution-window fit and reject Sites as the primary target when operational data, permissions, backend workflows, repository integration, or multi-stage logic carry the production value.
+4. Verify claims with evidence.
+5. List missing work, weak evidence, drift, and scope skips.
+6. Mark each finding with severity and exact place.
+7. Recommend the smallest fix for each block.
 
 ## Output
 Return:
@@ -34,4 +36,5 @@ Return:
 - No style-only policing.
 - No invented success claims.
 - No new scope that was not in the lock unless called out as a needed follow-up.
+- Treat unbounded execution, layer-only slices, erased later deliverables, and convenient-target adoption as blocking adoption defects.
 - Use plain language for all findings and why they matter.
