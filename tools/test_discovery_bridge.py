@@ -201,7 +201,7 @@ class DiscoveryBridgeTests(unittest.TestCase):
             self.assertTrue(client["observed_status"])
         self.assertFalse(next(client for client in clients if client["id"] == "web-ai")["automatic_when_available"])
         perplexity = next(client for client in clients if client["id"] == "perplexity-free")
-        self.assertEqual(perplexity["observed_status"], "fail_strict_guide_retest_pending")
+        self.assertEqual(perplexity["observed_status"], "fail_after_strict_guide_publication")
         self.assertFalse(perplexity["automatic_when_available"])
         self.assertIn("AI-GUIDE.md", perplexity["native_source"])
         self.assertTrue(self.manifest["repository_context"]["context_scoped"])

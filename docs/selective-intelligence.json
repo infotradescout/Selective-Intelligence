@@ -198,9 +198,9 @@
         "ordinary text"
       ],
       "automatic_when_available": false,
-      "observed_status": "fail_strict_guide_retest_pending",
-      "observed_at": "2026-08-15T03:17:44Z",
-      "activation_boundary": "Live free-tier evidence failed the bare trigger, activation after publisher-qualified discovery, and the one-prompt website outcome. Perplexity found the canonical project only after the publisher hint, then summarized it instead of using it. Its official Standard plan documents public search and limited basic file uploads, but no native Agent Skills route. AI-GUIDE.md is the strict text fallback; a fresh retest must pass before compatibility is claimed.",
+      "observed_status": "fail_after_strict_guide_publication",
+      "observed_at": "2026-08-15T03:50:46Z",
+      "activation_boundary": "Live free-tier evidence failed the bare trigger, activation after publisher-qualified discovery, and the one-prompt website outcome. After AI-GUIDE.md was public and its 23 discovery URLs were submitted to IndexNow, a new exact name-only session still chose the 2003 article and cognitive-science meanings instead of the canonical project. Its official Standard plan documents public search and limited basic file uploads, but no native Agent Skills route. The strict guide is available; Perplexity Free remains incompatible until a fresh run actually uses it.",
       "official_documentation": "https://www.perplexity.ai/help-center/en/articles/11187416-which-perplexity-subscription-plan-is-right-for-you"
     }
   ],
