@@ -91,6 +91,7 @@ def run_gate() -> dict[str, Any]:
         _run("deterministic_controls", [py, "-B", str(scripts / "eval.py"), "controls", "--json", "--skip-release"]),
         _run("council_safeguards", [py, "-B", str(scripts / "council.py"), "self-test"]),
         _run("behavior_evidence_safeguards", [py, "-B", str(scripts / "behavior_eval.py"), "self-test"]),
+        _run("execution_contract", [py, "-B", str(scripts / "execution_contract.py"), "self-test"]),
         _run("unit_tests", [py, "-B", "-m", "unittest", "discover", "-s", str(tests), "-p", "test_*.py"]),
         _run("release_integrity", [py, "-B", str(scripts / "release.py"), "doctor", "--json"]),
     ]

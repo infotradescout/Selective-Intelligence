@@ -70,6 +70,9 @@ Use it when you want an agent to:
 - bridge a non-developer's product direction into exact journeys, design, architecture, implementation, operations, and proof without technical homework;
 - match effort to the stakes: build a throwaway, local prototype immediately with no ceremony, then graduate to full locking, review, and proof once the work gains persistence, real users, money, or a deployment;
 - define a new product, smallest complete MVP, architecture, data, APIs, UI/UX, build order, and proof before coding;
+- preserve a broad discovered product while building one bounded end-to-end first deliverable and sequencing the rest without making the user invent phases;
+- choose the production execution target from operational requirements, preferring a fitting established repository and reserving Sites for bounded experiences, prototypes, presentations, and simpler web products; Start Pack phase gates enforce the build-bound decision before implementation;
+- require a digest-verified, exact-build Council completion bundle before a Start Pack can claim reconciled As-Built or a closed Release, while keeping truthful partial and unverifiable checkpoints usable;
 - resume a project across models, agents, branches, or interrupted sessions without losing the governing truth;
 - crawl a repository and reconcile intended behavior with routes, components, services, schemas, permissions, tests, deployment, and live surfaces;
 - consolidate duplicate modules and place new work under clear canonical ownership;

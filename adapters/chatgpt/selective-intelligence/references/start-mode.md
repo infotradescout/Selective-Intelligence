@@ -6,6 +6,7 @@ Use Start mode when a project is new, substantially blank, or being deliberately
 
 - [Required result](#required-result)
 - [Choose proportional rigor](#choose-proportional-rigor)
+- [Choose the execution boundary and target](#choose-the-execution-boundary-and-target)
 - [Define the MVP / smallest viable release](#define-the-mvp--smallest-viable-release)
 - [Create the Start Pack](#create-the-start-pack)
 - [Lock decisions truthfully](#lock-decisions-truthfully)
@@ -26,14 +27,15 @@ Produce a durable **Start Pack** that lets a different capable model or develope
 Do not begin project implementation until:
 
 - the desired outcome, primary user job, non-negotiables, prohibitions, and completion proof are Locked or Supported;
-- the smallest viable release is a complete end-to-end value loop;
+- the complete discovered product is preserved as dependency-ordered deliverables;
+- the active first deliverable is a complete end-to-end value loop that fits the current execution window;
 - every material product, architecture, data, API, access, UI, operational, and release decision is resolved or explicitly bounded;
 - unresolved choices that could change the business model, user journey, security boundary, irreversible architecture, or substantial cost have been put to the authorized user in one plain-language question;
 - the first build slice has an observable acceptance contract and a **Before-build locked** verdict.
 
 “Everything defined” does not require predicting every implementation detail. It requires closing every category below, marking truly irrelevant items **Not applicable** with a reason, and preventing implementation agents from silently making material product decisions. Reversible technical details may remain implementation choices only when they cannot change a locked contract.
 
-When the user authorizes building, do not stop at the Start Pack. Lock the first slice, execute it, reconcile it, and continue within the authorized scope.
+When the user authorizes building, do not stop at the Start Pack. Lock the first bounded slice, execute it, reconcile it, and establish the next baseline. Do not absorb later deliverables into the same execution merely because discovery found them or the first slice completed early.
 
 If the project is a restart, replacement, extraction, or adjacent product, inventory inherited users, data, domains, traffic, integrations, assets, public promises, credentials, deployments, and obligations before treating the repository as greenfield.
 
@@ -46,6 +48,14 @@ Choose the path from risk and reversibility, not project prestige:
 - **High assurance:** sensitive data, multi-tenant access, public mutation, payments or entitlements, AI autonomy, destructive migrations, regulated domains, or meaningful production risk. Use the complete pack, operational safety gates, machine validation, and independent review.
 
 Escalate the profile when new evidence crosses a trigger. Never use Micro to evade a material unknown or safety obligation. Never force a throwaway one-file experiment through enterprise ceremony when its boundary and disposal are explicit.
+
+## Choose the execution boundary and target
+
+Apply [execution-bounding-and-target-selection.md](execution-bounding-and-target-selection.md) before defining the active release. Discovery and architecture cover the complete product; execution activates one bounded deliverable at a time. The first deliverable must complete a meaningful user loop through the necessary UI, behavior, data, access, persistence, recovery, and proof. Retain the rest as later deliverables with dependency order and acceptance outcomes.
+
+Choose this boundary from user value, dependencies, integration risk, available tools, context capacity, and verification cost. The person should not need to know how to phase the application. Validate the decision with `scripts/execution_contract.py` before implementation.
+
+Choose the execution target separately. When the product's core value depends on operational data, permissions, backend workflows, repository integration, image processing tied to business state, multi-stage logic, migrations, audit history, or system-of-record behavior, Sites is not the default production target. Prefer the person's fitting established application or repository. Use Sites for bounded standalone experiences, prototypes, presentations, information surfaces, or simpler web products only when it fits their actual operating requirements.
 
 ## Define the MVP / smallest viable release
 
@@ -112,7 +122,7 @@ python3 <skill-path>/scripts/start_pack.py resume --root <project>
 
 Phase transitions are non-repeatable: Definition follows an unlocked or amended baseline, Build follows Definition or As-Built, As-Built follows Build, and Release follows As-Built. A repeated phase cannot be used to absorb drift. Use an authorized amendment for semantic change. Use `--checkpoint` only inside an active Build phase to preserve legal `locked`, `in_progress`, and `interrupted` status moves plus the active build's evidence; it retains the same phase, build, lock version, and semantic digest and cannot reconcile a build or close a release. Checkpoints may add evidence invalidations but never erase them. Clearing an invalidation requires updated active-build evidence and a Reconciled As-Built transition. Material blockers are semantic controls and require amendment rather than checkpoint rewriting.
 
-The validator checks allowed verdicts, required artifacts, safe paths, control and semantic digests, per-seal artifact ledgers, links, IDs, build dependencies, overlapping active owners and requirements, requirement coverage, ordered Definition → Build → As-Built → Release transitions, stale facts, risk triggers, invalidated evidence, and release closure. A Start Pack not checked by the validator or an equivalent implementation is **structurally unverified**, never machine-locked. If execution is unavailable, continue manually and name that limitation rather than lowering the contract.
+The validator checks allowed verdicts, required artifacts, safe paths, control and semantic digests, per-seal artifact ledgers, links, IDs, build dependencies, overlapping active owners and requirements, requirement coverage, ordered Definition → Build → As-Built → Release transitions, stale facts, risk triggers, invalidated evidence, and release closure. It also registers a per-build execution contract, binds it to the active project/release/build/lock and requirement set, records a durable policy marker, and revalidates its delivery boundary and execution target during validation, resume, checkpoints, and every phase transition. Contract-aware packs fail if either active pointer is removed or disagrees with the build record; genuine legacy packs remain readable only when no policy marker, pointer, or registered execution-contract artifact exists, and must be explicitly migrated before another transition or checkpoint can seal. A Start Pack not checked by the validator or an equivalent implementation is **structurally unverified**, never machine-locked. Structural validity does not prove that authored product facts or observations are true; independent evidence and objection still govern that judgment. If execution is unavailable, continue manually and name that limitation rather than lowering the contract.
 
 Keep one canonical source for each decision and never create competing plans.
 
@@ -121,11 +131,11 @@ Every Start Pack must close these contracts:
 | Contract | Required contents |
 |---|---|
 | Actual Intent Lock | Outcome, primary user and job, reason, authority, non-negotiables, prohibitions, tradeoffs, scope boundary, completion proof, confidence |
-| Product and Scope | Actors, use cases, smallest viable release, included/deferred/excluded capabilities, dependencies, assumptions, acceptance evidence |
+| Product and Scope | Actors, use cases, complete discovered product, bounded active deliverable, later deliverables, dependencies, assumptions, acceptance evidence |
 | Decision Classes and Authority | Product invariants, release commitments, hypotheses, reversible implementation choices, deferred decisions, decision owner, escalation rule |
 | Journeys and States | Entry triggers, happy paths, failure and recovery paths, state machines, lifecycle endings, actor handoffs, notification points |
 | Surfaces and Reachability | Route/page/screen inventory, role exposure, navigation and deep links, actions, public/private boundaries, loading/empty/error/success states |
-| System Architecture | Runtime components, deployment topology, data flow, trust boundaries, dependency direction, background work, external services, failure boundaries |
+| System Architecture | Runtime components, execution-target decision, deployment topology, data flow, trust boundaries, dependency direction, background work, external services, failure boundaries |
 | Canonical Ownership | Feature and module boundaries, deliberate directories, public interfaces, shared primitives, registries, ownership, reuse and extension rules |
 | Data Contract | Entities, relationships, field types, required/null rules, keys, uniqueness, constraints, indexes, ownership, lifecycle, retention/deletion, migrations, seed strategy |
 | API and Integration Contract | Appropriate internal and external APIs, methods/events, owners and consumers, request/response schemas, auth, errors, idempotency, retries, timeouts, rate limits, versioning, webhooks, cost and provider limits |
@@ -133,7 +143,7 @@ Every Start Pack must close these contracts:
 | UI/UX Contract | Information architecture, design direction and tokens, canonical primitives, content hierarchy, interaction states, responsive targets, accessibility, copy/action/route agreement |
 | Operations and Measurement | Environments, configuration, observability, logs/metrics/traces as appropriate, analytics events, outcome metrics, deployment, rollback, support and incident ownership |
 | Verification and Release | Test layers, realistic fixtures, contract and migration checks, rendered UI inspection, end-to-end journeys, security checks, release gate, live verification plan |
-| Delivery Plan | Dependency-ordered vertical slices, acceptance contract per slice, risks, decision owners, change process, build and reconciliation status |
+| Delivery Plan | Dependency-ordered vertical slices, one active bounded deliverable, execution-window fit, acceptance contract per slice, risks, decision owners, change process, build and reconciliation status |
 | Decision and Evidence Ledger | Decision, status, authority, rationale, affected contracts, evidence, version, date, superseded decision, open conflicts |
 | Product-to-Code Coverage | Each capability tracked through Intended, Specified, Modeled, Implemented, Wired, Reachable, Usable, Verified, and Live |
 | Feedback and Learning | Run outcome, correction and recurrence signals, gate effectiveness, minimal user verdict when needed, privacy-safe improvement evidence |
@@ -188,6 +198,8 @@ Assign every MVP and mandatory requirement to a build before Definition Lock. If
 
 Order work by dependencies and user value. Prefer slices that connect the necessary UI, behavior, data, access, and evidence for one observable user outcome. Avoid separate “build all pages,” “build all APIs,” and “build all database tables” phases that postpone integration until the end.
 
+Preserve the whole sequence, but activate only the first slice whose implementation and proof fit the current run. A later slice remains specified, not silently abandoned. Close and reconcile the active slice before promoting another slice to active.
+
 For each slice, define:
 
 - user outcome and governing intent rule;
@@ -228,7 +240,7 @@ Verdict:
 
 ### 2. Build Lock (during-build)
 
-Implement only the locked slice and preserve its contracts. Keep the coverage map current. Search before creating, register every new surface, and keep feature code inside its canonical owner.
+Implement only the locked active slice and preserve its contracts plus the later-deliverable map. Keep the coverage map current. Search before creating, register every new surface, and keep feature code inside its canonical owner.
 
 Do not continue from an unrecorded or stale base. A merge, rebase, lock-version change, upstream contract change, or newly overlapping owner requires refresh, validation, impact analysis, and re-lock before affected work continues. Independently passing parallel builds are not integration evidence.
 

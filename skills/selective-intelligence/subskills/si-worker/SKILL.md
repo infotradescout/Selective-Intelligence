@@ -19,7 +19,7 @@ It builds or edits the project to match the plan.
 
 ## Steps
 1. Read the plan and current code.
-2. Make only the edits needed for this slice.
+2. Make only the edits needed for the active bounded deliverable. Do not absorb later deliverables into the run.
 3. Keep code in canonical folders and avoid parallel duplicate paths.
 4. Record what changed and what was skipped.
 5. Return a short result packet with proof:
@@ -37,6 +37,7 @@ Return:
 
 ## Non-negotiable rules
 - Match every changed behavior to the locked plan.
+- Close only the active deliverable, never the whole discovered product.
 - Never claim tests passed without proof.
 - Avoid asking the user to do technical steps that can be done in code.
 - Explain any technical point in plain, non-developer language.

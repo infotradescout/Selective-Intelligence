@@ -88,6 +88,82 @@ def refresh_control_digest(manifest: dict[str, Any]) -> None:
     manifest["control_digest"] = hashlib.sha256(payload).hexdigest()
 
 
+def write_valid_execution_contract(pack: Path, manifest: dict[str, Any]) -> None:
+    active = manifest["active_build"]
+    build = next(item for item in manifest["builds"] if item["id"] == active["id"])
+    payload = {
+        "schemaVersion": "si.execution-contract.v1",
+        "binding": {
+            "projectId": manifest["project"]["id"],
+            "releaseId": manifest["release"]["id"],
+            "releaseVersion": manifest["release"]["version"],
+            "buildId": active["id"],
+            "lockVersion": build["lock_version"],
+        },
+        "phase": "first_delivery",
+        "wholeProduct": {
+            "preserved": True,
+            "summary": "A local utility that produces one verified result.",
+            "complexity": "single_deliverable",
+        },
+        "deliverables": [
+            {
+                "id": "D1",
+                "active": True,
+                "outcome": "Run the local utility and receive its verified result.",
+                "entry": "Start the local command.",
+                "ending": "Observe the exact verified output.",
+                "proof": [
+                    {
+                        "type": "automated_test",
+                        "procedure": "Run the local command with the representative fixture.",
+                        "expected": "The command exits zero and emits the exact expected output.",
+                        "observed": "The command exited zero and emitted the exact expected output.",
+                        "evidenceRef": "builds/b001-foundation/evidence.md#representative-fixture",
+                    }
+                ],
+                "journeySteps": ["Run the command.", "Observe and verify the output."],
+                "constraints": ["Keep execution local, reversible, and isolated from unrelated files."],
+                "requirementIds": list(build["requirements"]),
+                "completionScope": "active_deliverable",
+                "completionClaims": [
+                    {
+                        "requirementId": "REQ-1",
+                        "scope": "active_deliverable",
+                        "claim": "The local command produces the expected verified output.",
+                    }
+                ],
+                "excludedFromActive": [],
+                "informationComplete": True,
+                "fitsExecutionWindow": True,
+                "endToEnd": True,
+            }
+        ],
+        "executionTarget": {
+            "kind": "established_repository",
+            "productionIntent": False,
+            "establishedApplicationAvailable": True,
+            "repositoryFit": "fit",
+            "sitesRole": "none",
+            "rationale": "The existing repository owns the local utility and its tests.",
+            "constraintsConsidered": ["The bounded work is repository code with no hosted operational state."],
+            "coreValueDependsOn": {
+                "persistentOperationalData": False,
+                "complexPermissions": False,
+                "substantialBackendWorkflows": False,
+                "repositoryIntegration": True,
+                "businessStateImageProcessing": False,
+                "multiStageBusinessLogic": False,
+                "migrationsAuditOrSystemOfRecord": False,
+            },
+        },
+    }
+    (pack / active["execution_contract"]).write_text(
+        json.dumps(payload, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
 def prepare_locked_micro(root: Path, start_pack: str, through_build: bool = True) -> Path:
     run(
         [
@@ -150,6 +226,7 @@ def prepare_locked_micro(root: Path, start_pack: str, through_build: bool = True
             "claimed_owners": ["utility"],
         }
     )
+    write_valid_execution_contract(pack, manifest)
     lock_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     run([sys.executable, start_pack, "seal", "--root", str(root), "--transition", "definition"], {0})
     if not through_build:
@@ -205,6 +282,34 @@ def control_tests(include_release: bool = True) -> list[str]:
 
         lock_path = root / ".selective-intelligence" / "lock.json"
         fresh_baseline = lock_path.read_text(encoding="utf-8")
+        fresh_manifest = json.loads(fresh_baseline)
+        review_relative = fresh_manifest.get("active_build", {}).get("council_review")
+        review_registered = {
+            item.get("path")
+            for item in fresh_manifest.get("artifacts", [])
+            if isinstance(item, dict)
+        }
+        if (
+            fresh_manifest.get("council_completion_policy") != "required"
+            or not isinstance(review_relative, str)
+            or fresh_manifest.get("builds", [{}])[0].get("council_review") != review_relative
+            or review_relative not in review_registered
+        ):
+            raise AssertionError("fresh Start Pack did not register an active-build Council completion bridge")
+        review_payload = json.loads((root / ".selective-intelligence" / review_relative).read_text(encoding="utf-8"))
+        if review_payload.get("status") != "pending":
+            raise AssertionError("fresh Council completion bridge must be pending, not self-verified")
+        passed.append("Start Pack initializes a registered pending Council completion bridge")
+
+        missing_council_pointer = json.loads(fresh_baseline)
+        del missing_council_pointer["active_build"]["council_review"]
+        lock_path.write_text(json.dumps(missing_council_pointer, indent=2) + "\n", encoding="utf-8")
+        result = run([sys.executable, start_pack, "validate", "--root", str(root), "--json"], {1})
+        if "SP060E" not in {item["code"] for item in json.loads(result.stdout)}:
+            raise AssertionError("Council-aware Start Pack accepted a removed active review pointer")
+        lock_path.write_text(fresh_baseline, encoding="utf-8")
+        passed.append("Council completion bridge cannot be downgraded by pointer erasure")
+
         invalid_definition = json.loads(fresh_baseline)
         invalid_definition["verdicts"]["definition"] = "locked"
         invalid_definition_text = json.dumps(invalid_definition, indent=2) + "\n"
@@ -594,23 +699,11 @@ def control_tests(include_release: bool = True) -> list[str]:
             active_evidence.read_text(encoding="utf-8") + "\nRevalidated REQ-1 against the exact reconciled revision.\n",
             encoding="utf-8",
         )
-        run([sys.executable, start_pack, "seal", "--root", str(closure_root), "--transition", "as-built"], {0})
-        passed.append("reconciled as-built evidence can explicitly clear invalidation")
-        as_built_baseline = closure_lock.read_text(encoding="utf-8")
-        repeated_as_built = json.loads(as_built_baseline)
-        repeated_as_built["requirements"][0]["behavior"] = "Silently changed after As-built"
-        closure_lock.write_text(json.dumps(repeated_as_built, indent=2) + "\n", encoding="utf-8")
+        pending_completion_baseline = closure_lock.read_bytes()
         run([sys.executable, start_pack, "seal", "--root", str(closure_root), "--transition", "as-built"], {2})
-        closure_lock.write_text(as_built_baseline, encoding="utf-8")
-        passed.append("repeated As-built seal cannot bypass amendment control")
-        closure_manifest = json.loads(closure_lock.read_text(encoding="utf-8"))
-        closure_manifest["verdicts"]["release"] = "closed"
-        closure_lock.write_text(json.dumps(closure_manifest, indent=2) + "\n", encoding="utf-8")
-        run([sys.executable, start_pack, "seal", "--root", str(closure_root), "--transition", "release"], {0})
-        result = run([sys.executable, start_pack, "validate", "--root", str(closure_root), "--json"], {0})
-        if json.loads(result.stdout):
-            raise AssertionError("valid release closure did not pass")
-        passed.append("release closure requires and accepts exact reconciled evidence")
+        if closure_lock.read_bytes() != pending_completion_baseline:
+            raise AssertionError("rejected pending-Council completion seal mutated the lock")
+        passed.append("positive completion rejects pending Council evidence atomically")
 
         store = root / "feedback.jsonl"
         task_id = str(uuid.uuid4())
@@ -740,6 +833,10 @@ def control_tests(include_release: bool = True) -> list[str]:
             if linked_store.exists():
                 raise AssertionError("feedback escaped through a symlinked ancestor")
             passed.append("feedback rejects symlinked ancestor paths")
+
+    bridge_tests = SKILL_ROOT / "tests" / "test_council_completion_bridge.py"
+    run([sys.executable, "-B", str(bridge_tests)], {0})
+    passed.append("Council completion bridge accepts verified evidence and rejects substitutions")
 
     council_script = SKILL_ROOT / "scripts" / "council.py"
     if not council_script.is_file():

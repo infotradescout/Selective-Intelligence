@@ -1,11 +1,11 @@
 # First Checkpoint
 
 The first response to any build-shaped request is a locked, full-scope intent checkpoint —
-recovered from minimal input — not code, not a trimmed deliverable, not a permission request.
-No part of the build begins until this checkpoint is complete **and every input needed to
-perform the entire outcome is in hand.** This is the gate that makes minimal input produce
-complete outcomes. The skill's readiness is measured by how few correction rounds a user needs
-to reach a correct checkpoint; the target is zero.
+recovered from minimal input — not code, not an unbounded promise, and not a permission request.
+The checkpoint preserves the complete discovered product while selecting one information-complete,
+end-to-end first deliverable that fits the current execution window. Discovery can be broad;
+execution must be bounded. The skill's readiness is measured by how few correction rounds a user
+needs to reach a correct checkpoint; the target is zero.
 
 ## Contents
 
@@ -31,10 +31,10 @@ artifacts, and evidence, and naming each material assumption. Do not ask the use
 recovered.
 
 1. **Recovered full intent** — the largest truthful outcome the seed supports, not the literal
-   minimal ask. Treat the prompt as a seed, never as the output size. Scoping the deliverable
-   down to fit available effort or time is forbidden here.
+   minimal ask. Treat the prompt as a seed, never as the product-definition size.
 2. **Whole-product decomposition** — the complete system as bounded slices (tiers), each with
-   inputs, outputs, an owner, and its proof. No slice is dropped for being hard or large.
+   inputs, outputs, an owner, and its proof. No slice is dropped for being hard or large. Mark one
+   first deliverable active and preserve the rest as ordered later deliverables.
 3. **Canonical reuse map** — for each slice, what already exists to reuse or extend
    (repositories, patterns, prior art, this skill's own machinery). Rebuilding what exists is
    forbidden: reuse → extend → extract → only then add.
@@ -54,33 +54,40 @@ recovered.
    the outcome live (obtain a key, register an OAuth app, deploy, approve, connect a source), up
    front. These are discovered at checkpoint time, never mid-build. Everything else is the AI's
    to build; the human-layer list is the exact, minimal set of steps left for the person.
+9. **Execution boundary and target** — define the active deliverable's complete user loop, proof,
+   dependencies, and fit to the current run. Choose the execution environment from the product's
+   operational requirements and established repository workflow, not tool convenience. Apply
+   [execution-bounding-and-target-selection.md](execution-bounding-and-target-selection.md).
 
 Stamp the checkpoint with a UTC timestamp and carry it forward (see
 [time-awareness.md](time-awareness.md)).
 
 ## Information sufficiency before execution
 
-No part of the build starts until every input needed to perform the entire outcome is in hand.
+No part of the active deliverable starts until every input needed to perform that deliverable is
+in hand and the whole-product definition is sufficient to prevent an incompatible foundation.
 
 - **Recover first.** Fill the information by inference from the seed, the repository, connected
   evidence, and established constraints before considering a question.
 - **Resolve genuine unknowns in one consolidated, up-front pass** — only the few answers that
-  would materially change the product, authority, sensitive-data boundary, consequential cost,
-  or an irreversible choice. Ask them together, once, in plain language, with recommended
-  defaults.
-- **Never trickle-ask mid-build, and never begin a slice while a later slice's blocking inputs
-  are still unknown.** Partial starts on partial information are drift.
+  would materially change the active deliverable, authority, sensitive-data boundary,
+  consequential cost, or an irreversible foundation choice. Ask them together, once, in plain
+  language, with recommended defaults.
+- **Record future unknowns without blocking independent value.** A later deliverable's unknown
+  input does not block the active slice unless the slice depends on it or would make the future
+  choice expensive or irreversible. Resolve it before that later deliverable's Definition Lock.
+- **Never trickle-ask inside the active deliverable.** Starting it on partial information is drift.
 
 ## Enforcement
 
-- No application code, no trimmed deliverable, and no permission-per-step before the checkpoint
-  exists and is information-complete.
+- No application code and no permission-per-step before the checkpoint exists, the active
+  deliverable is information-complete, and its execution contract passes validation.
 - Present the checkpoint, then execute under the authority split — confirming only the genuine
   decisions, once, not each step.
-- Scope-reduction and single-threading are drift, not prudence. "Smallest viable release"
-  sequences the full outcome; it never shrinks it.
-- A deadline is not authority to cut scope, skip the checkpoint, or claim completion without
-  evidence.
+- Erasing discovered product scope is drift. Sequencing it into bounded deliverables is required.
+  "Smallest viable release" preserves the full outcome while completing one useful loop at a time.
+- A deadline or context window is not authority to erase scope, skip proof, or inflate a partial
+  result. It is evidence used to choose a smaller complete active loop.
 - If the delivered result is not what the person wanted, Step 1 failed and reopens. Do not
   downgrade the wanted outcome to match a free-tier quota, unavailable tool, external company
   boundary, implementation shortcut, or technically successful substitute. Record the
@@ -92,9 +99,12 @@ No part of the build starts until every input needed to perform the entire outco
 Mined from real correction sessions; each is a named guard:
 
 - **scope-reduction-as-completion** — trimming the deliverable to fit one thread or one day and
-  calling it done.
-- **single-thread default** — building one file at a time instead of decomposing for parallel or
-  council execution.
+  calling the whole product done. Bounded sequencing is not this failure.
+- **discovery-to-execution explosion** — attempting to research, architect, build, integrate, and
+  verify every discovered capability in one execution instead of selecting a bounded first loop.
+- **phase-delegation burden** — asking the user to decide how to split the product instead of
+  deriving the boundary from dependencies, user value, and execution constraints.
+- **layer slice** — presenting a page, schema, service, or plan as a complete vertical deliverable.
 - **ask-instead-of-recover** — asking the user for understanding the system should infer from the
   seed and existing artifacts.
 - **vibe-sprint-under-deadline** — "pick one, go fast" energy that manufactures drift and false
@@ -102,8 +112,13 @@ Mined from real correction sessions; each is a named guard:
 - **literal-ask-over-full-intent** — treating the minimal prompt as the requested output size.
 - **trim-without-authority** — deferring or cutting features and labeling them done or closed
   without the user's scope decision.
-- **partial-start-before-info-complete** — beginning any slice before the information to perform
-  all of it is in hand.
+- **partial-start-before-info-complete** — beginning the active deliverable before the information
+  to perform and verify that deliverable is in hand.
+- **future-input blockade** — refusing an independent first loop because a later deliverable's
+  non-dependent input is not yet available.
+- **convenient-target adoption** — choosing a builder such as Sites because it is available even
+  though the production product requires operational data, permissions, backend workflows, or
+  established-repository integration.
 - **false-choice-when-both-required** — offering the user an either/or between options that are
   all needed. If both (or all) are required, do them all; a non-decision is not a question. Only
   a genuine, mutually exclusive, outcome-changing fork is worth asking.
@@ -125,7 +140,8 @@ constraint may make completion blocked; it cannot make the mismatched result ali
 
 The checkpoint is the mandatory front door for build-shaped work; it is not a new mode. Start
 mode then executes it (Before-build locked), the friction ladder sets how much ceremony each
-slice earns, the council runs the slices, and the Resume Packet carries state across contexts.
+slice earns, the council runs the active deliverable, and the Resume Packet carries the later
+deliverable map and next safe action across contexts.
 
 ## Relationship to live steering and model interchangeability
 
