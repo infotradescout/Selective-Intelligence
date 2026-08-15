@@ -46,9 +46,9 @@
         "activation_result": "fail",
         "discovery_result": "partial",
         "same_message_outcome_result": "fail",
-        "version_scope": "v1 public site before strict-guide correction",
-        "observed_at": "2026-08-15T03:17:44Z",
-        "reason": "The bare trigger resolved unrelated cognitive-science and article meanings. A publisher-qualified query found and summarized the canonical project, but a repeated exact trigger still produced another definition instead of activation. The one-prompt website response was a Markdown copy outline with invented location, contact, pricing, package, review, service-area, and operating claims rather than an openable verified website."
+        "version_scope": "v1 public site before and after strict-guide publication",
+        "observed_at": "2026-08-15T03:50:46Z",
+        "reason": "The initial bare trigger resolved unrelated cognitive-science and article meanings. A publisher-qualified query found and summarized the canonical project, but a repeated exact trigger still produced another definition instead of activation. The one-prompt website response was a Markdown copy outline with invented location, contact, pricing, package, review, service-area, and operating claims rather than an openable verified website. After AI-GUIDE.md was public and its discovery URLs were submitted, a new exact name-only session again chose the article and cognitive-science meanings instead of the project."
       }
     ]
   },
@@ -64,9 +64,9 @@
             "reason": "The prior clean free-tier client did not resolve the exact wordmark. No v1 public byte or search result exists yet to retest."
           },
           {
-            "model_client": "Perplexity Windows / Standard (Free) / v1 public site",
+            "model_client": "Perplexity Windows / Standard (Free) / v1 public strict-guide site",
             "verdicts": ["fail"],
-            "reason": "The exact name-only trigger resolved unrelated meanings and did not find or activate the canonical skill."
+            "reason": "A fresh post-publication exact name-only session resolved the 2003 article and cognitive-science meanings and did not find or activate the canonical skill."
           }
         ]
       },
@@ -91,7 +91,7 @@
         ]
       }
     ],
-    "limitations": "This record preserves privacy-safe manual findings rather than raw screenshots, prompts, or account data. The Perplexity run proves public-web identity retrieval only after a publisher hint; it does not prove strict-guide compliance. Historical failures are retained so a documentation change cannot be mistaken for behavioral improvement."
+    "limitations": "This record preserves privacy-safe manual findings rather than raw screenshots, prompts, or account data. Perplexity identity retrieval worked only after a publisher hint; the fresh post-publication exact-name run still failed, so strict-guide compliance is not proved. Historical failures are retained so a documentation change cannot be mistaken for behavioral improvement."
   },
   "one_prompt_website_benchmark": {
     "artifact": "evals/one-prompt-website.json",

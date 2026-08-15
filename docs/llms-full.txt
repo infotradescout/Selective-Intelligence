@@ -504,7 +504,7 @@ Official documentation: https://infotradescout.github.io/Selective-Intelligence/
 ### Perplexity Standard (Free)
 
 Scopes: live public-web search, limited basic file uploads, ordinary text
-Boundary: Live free-tier evidence failed the bare trigger, activation after publisher-qualified discovery, and the one-prompt website outcome. Perplexity found the canonical project only after the publisher hint, then summarized it instead of using it. Its official Standard plan documents public search and limited basic file uploads, but no native Agent Skills route. AI-GUIDE.md is the strict text fallback; a fresh retest must pass before compatibility is claimed.
+Boundary: Live free-tier evidence failed the bare trigger, activation after publisher-qualified discovery, and the one-prompt website outcome. After AI-GUIDE.md was public and its 23 discovery URLs were submitted to IndexNow, a new exact name-only session still chose the 2003 article and cognitive-science meanings instead of the canonical project. Its official Standard plan documents public search and limited basic file uploads, but no native Agent Skills route. The strict guide is available; Perplexity Free remains incompatible until a fresh run actually uses it.
 Official documentation: https://www.perplexity.ai/help-center/en/articles/11187416-which-perplexity-subscription-plan-is-right-for-you
 
 ## Evidence boundary
