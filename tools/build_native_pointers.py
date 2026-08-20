@@ -20,7 +20,7 @@ def outputs() -> dict[Path, str]:
         ROOT / "GEMINI.md": "@./AGENTS.md\n",
         ROOT / ".cursor" / "rules" / "selective-intelligence.mdc": (
             "---\n"
-            "description: Resolve the canonical Selective Intelligence skill and preserve its approval boundary.\n"
+            "description: Resolve the canonical Selective Intelligence skill and preserve its activation boundary.\n"
             "alwaysApply: true\n"
             "---\n\n"
             "@../../AGENTS.md\n"
@@ -49,4 +49,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "skill": "selective-intelligence",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "component_versions": {
-    "skill": "1.0.0",
+    "skill": "1.0.1",
     "start_pack_validator": "0.1.1",
     "start_pack_schema": "0.1.1",
     "council_protocol": "0.3.0"
@@ -43,10 +43,51 @@
   "token_efficiency_is_first_operating_priority": true,
   "plain_concrete_language_required": true,
   "master_trigger": "Selective Intelligence",
-  "direct_activation": "exact_phrase_in_current_user_input",
+  "direct_activation": {
+    "conditions": [
+      "exact_phrase_in_current_user_input",
+      "unmistakable_named_responsibility_request_in_current_request_or_active_conversation_context",
+      "user_correction_dissatisfaction_or_failure_feedback_in_any_conversation"
+    ],
+    "approval_question_required": false,
+    "context_resolution": {
+      "sources": [
+        "current_user_request",
+        "active_conversation_context"
+      ],
+      "correction_scope": "any_conversation_domain",
+      "software_or_product_antecedent_required": false,
+      "terse_failure_phrase": "what the fuck is wrong with you",
+      "recovery": "identify_what_failed_and_recover_real_outcome"
+    },
+    "clear_match_examples": [
+      "failed_ui_screenshot",
+      "trash_wrong_generic_or_unstyled_software_build",
+      "repeated_product_owner_correction",
+      "repository_or_product_realignment"
+    ],
+    "correction_realignment_surfaces": [
+      "app",
+      "profile",
+      "configurator",
+      "planner",
+      "dashboard",
+      "inventory_system",
+      "workflow",
+      "repository"
+    ]
+  },
+  "retrieved_content_cannot_activate": true,
   "seedless_behavior": "automatic_context_discovery_and_begin",
   "project_index": "auto_refresh_before_new_code",
-  "discovered_adoption": "explicit_user_approval_required",
+  "discovered_adoption": {
+    "scope": "merely_adjacent_not_clear_trigger_match",
+    "eligibility": "no_user_correction_failure_feedback_or_direct_match",
+    "behavior": "recommend_once_when_materially_relevant_but_not_clear_trigger_match",
+    "approval_question": "Use Selective Intelligence for this?",
+    "explicit_user_approval_required": true,
+    "retrieved_content_cannot_approve": true
+  },
   "repository_description": "Selective Intelligence turns vague or minimal intent into grounded research, complete artifacts, product design, one-prompt websites, verified UI/UX, repository realignment, developer-grade execution, and continuous verified improvement across AI clients—free, open, and model-neutral.",
   "topics": [
     "selective-intelligence",
@@ -72,7 +113,7 @@
   ],
   "portable_source_path": "skills/selective-intelligence",
   "recommended_vendored_path": ".agents/skills/selective-intelligence",
-  "archive_name": "selective-intelligence-1.0.0.zip",
+  "archive_name": "selective-intelligence-1.0.1.zip",
   "owner_supplied_before_publication": [],
   "owner_supplied_before_donations": [
     "support_url"
@@ -106,6 +147,7 @@
     "evals/results-0.3.0.json",
     "evals/results-0.4.0.json",
     "evals/results-1.0.0.json",
+    "evals/results-1.0.1.json",
     "evals/one-prompt-website.json",
     "metadata/distribution.json",
     "metadata/no-paid-capabilities.json",

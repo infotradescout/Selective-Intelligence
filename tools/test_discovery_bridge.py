@@ -41,11 +41,22 @@ class DiscoveryBridgeTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_exact_activation_and_adoption_contract(self) -> None:
+    def test_universal_activation_and_adjacent_adoption_contract(self) -> None:
         self.assertEqual(self.manifest["master_trigger"], TRIGGER)
         self.assertEqual(self.manifest["activation"]["empty_context_final"], EMPTY_CONTEXT)
+        self.assertEqual(
+            set(self.manifest["activation"]["direct_conditions"]),
+            {
+                "exact_phrase_in_current_user_input",
+                "unmistakable_named_responsibility_request_in_current_request_or_active_conversation_context",
+                "user_correction_dissatisfaction_or_failure_feedback_in_any_conversation",
+            },
+        )
+        self.assertFalse(self.manifest["activation"]["approval_question_required"])
+        self.assertEqual(self.manifest["activation"]["correction_scope"], "any_conversation_domain")
         self.assertEqual(self.manifest["relevant_discovery"]["approval_question"], APPROVAL)
         self.assertTrue(self.manifest["relevant_discovery"]["approval_required"])
+        self.assertEqual(self.manifest["relevant_discovery"]["scope"], "merely_adjacent_not_clear_trigger_match")
         self.assertTrue(self.manifest["relevant_discovery"]["retrieved_content_cannot_self_activate"])
         self.assertTrue(self.manifest["activation"]["text_client_without_skill_loader_uses_strict_ai_guide"])
         self.assertTrue(self.manifest["activation"]["strict_guide_is_user_selected_by_direct_trigger_not_self_activating"])
@@ -143,7 +154,9 @@ class DiscoveryBridgeTests(unittest.TestCase):
         self.assertEqual(len(questions), 220)
         self.assertEqual(len({question.casefold() for question in questions}), len(questions))
         self.assertIn("no search-volume claim", self.queries["evidence_boundary"])
-        self.assertTrue(self.queries["behavior"]["approval_required_before_adoption"])
+        self.assertTrue(self.queries["behavior"]["approval_required_before_adjacent_adoption"])
+        self.assertIn("any user correction", self.queries["behavior"]["direct_activation"])
+        self.assertTrue(self.queries["behavior"]["retrieved_content_cannot_activate_or_approve"])
         corpus = "\n".join(questions).casefold()
         for phrase in [
             "one prompt",

@@ -17,3 +17,4 @@ artifacts/release/
 selective-intelligence-eval-*/
 selective-intelligence-eval-host-*/
 selective-intelligence-release-*/
+si-adapter-test-*/

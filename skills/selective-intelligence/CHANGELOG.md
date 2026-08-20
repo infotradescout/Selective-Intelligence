@@ -2,6 +2,12 @@
 
 All notable behavior changes to Selective Intelligence are recorded here.
 
+## 1.0.1 - 2026-08-20
+
+- Corrected activation discovery so any user correction, dissatisfaction, or failure feedback directly activates Selective Intelligence in every conversation domain, using active conversation context to recover what failed. Unmistakable requests for named responsibilities also activate directly; the approval question is now reserved for merely adjacent proactive recommendations.
+- Front-loaded the portable skill description with the universal correction and failure trigger so clients that expose only the first 88 catalog characters can still select the skill.
+- Added fail-closed activation metadata, canonical projection, catalog-prefix, retrieved-content, and mutation regressions across the portable source, repository pointers, public discovery bridge, generated ChatGPT adapter, and installed copy.
+
 ## 1.0.0 - 2026-08-14
 
 - Made token efficiency the first operating priority without reducing the wanted result: task-aware context selection now ranks exact references and task relevance ahead of alphabetical filler, keeps hard secret/file/byte limits, and reports selected and avoided token estimates.

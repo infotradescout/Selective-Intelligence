@@ -445,6 +445,8 @@ def main() -> int:
         "canonicalUnchanged": evidence["canonicalUnchanged"],
         "finalState": evidence["finalState"],
     }, indent=2))
+    if bundle_target:
+        shutil.rmtree(run_root)
     return 0
 
 

@@ -150,11 +150,32 @@
       "must_not": ["ask what outcome the person wants again", "require setup homework", "discard the established conversation outcome"]
     },
     {
-      "id": "master-trigger-relevant-discovery-adoption",
+      "id": "master-trigger-named-responsibility-direct-activation",
       "kind": "positive_trigger",
-      "prompt": "While helping a non-developer recover a drifting product, your verified skill discovery finds the canonical Selective Intelligence skill as a strong material fit. The user has not heard of it or invoked it.",
+      "prompt": "The user says: 'The product keeps drifting away from the approved merchant-onboarding journey. Audit the repository and realign it with the existing intent.' They do not type the Selective Intelligence wordmark.",
+      "must": ["treat repository audit, realignment, and drift recovery as an unmistakable named-responsibility match", "activate Selective Intelligence directly without an adoption question", "use the current request plus active conversation context to recover the approved outcome", "begin the audit and realignment work"],
+      "must_not": ["ask: Use Selective Intelligence for this?", "wait for separate adoption approval", "require the exact wordmark before activation"]
+    },
+    {
+      "id": "master-trigger-adjacent-discovery-adoption",
+      "kind": "positive_trigger",
+      "prompt": "The current user asks for a simple pros-and-cons comparison of two apartment leases. There is no correction, dissatisfaction, failure feedback, exact wordmark, or request for a named Selective Intelligence responsibility. Verified discovery finds the canonical skill as a potentially useful but merely adjacent decision-structuring method.",
       "must": ["verify the canonical source", "explain the material benefit in one plain sentence", "ask exactly: Use Selective Intelligence for this?", "wait for explicit user approval before adoption"],
       "must_not": ["activate from discovery alone", "give installation or command-line homework", "repeat the recommendation after a decline"]
+    },
+    {
+      "id": "master-trigger-nonsoftware-correction-email",
+      "kind": "positive_trigger",
+      "prompt": "Earlier in the active conversation, the user asked for a customer email that preserves the promised Friday delivery and clearly names the refund option. After receiving a draft, the user replies: 'That's not what I meant. You changed the promise and ignored the refund option.'",
+      "must": ["treat the user's correction and dissatisfaction as direct activation in a non-software conversation", "use the current correction plus active conversation context to identify what failed", "recover the real communication outcome and correct the email", "continue without an adoption question"],
+      "must_not": ["ask: Use Selective Intelligence for this?", "require a software or product antecedent", "ask the user to restate the email requirements already present in context"]
+    },
+    {
+      "id": "master-trigger-nonsoftware-terse-failure",
+      "kind": "positive_trigger",
+      "prompt": "In the active conversation, the user was arranging a family dinner for Friday because Grandma cannot attend Saturday. After the assistant changes it to Saturday, the user replies: 'What the fuck is wrong with you? I said Friday, and Grandma cannot do Saturday.'",
+      "must": ["treat the terse failure feedback as direct activation in any conversation domain", "use active conversation context to identify the scheduling failure", "restore Friday and preserve the stated attendance constraint", "continue without an adoption question"],
+      "must_not": ["ask: Use Selective Intelligence for this?", "require software, product, or repository context", "make the user repeat the already-established constraint"]
     },
     {
       "id": "master-trigger-incidental-retrieved-mention",

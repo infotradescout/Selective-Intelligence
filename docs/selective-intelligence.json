@@ -4,7 +4,7 @@
   "name": "Selective Intelligence",
   "wordmark": "Selective Intelligence",
   "master_trigger": "Selective Intelligence",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A free, open Agent Skill that turns vague or minimal intent into grounded research, complete artifacts, product design, one-prompt websites, verified UI/UX, repository realignment, developer-grade execution, and continuous improvement.",
   "canonical": {
     "public_site": "https://infotradescout.github.io/Selective-Intelligence/",
@@ -20,6 +20,18 @@
   },
   "activation": {
     "explicit": "Exact words in that order anywhere in current user input.",
+    "direct_conditions": [
+      "exact_phrase_in_current_user_input",
+      "unmistakable_named_responsibility_request_in_current_request_or_active_conversation_context",
+      "user_correction_dissatisfaction_or_failure_feedback_in_any_conversation"
+    ],
+    "approval_question_required": false,
+    "context_sources": [
+      "current_user_request",
+      "active_conversation_context"
+    ],
+    "correction_scope": "any_conversation_domain",
+    "software_or_product_antecedent_required": false,
     "inspect_existing_context_first": true,
     "do_not_ask_generic_setup_question": true,
     "always_on_after_activation_or_approved_adoption": true,
@@ -28,6 +40,8 @@
     "empty_context_final": "Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request."
   },
   "relevant_discovery": {
+    "scope": "merely_adjacent_not_clear_trigger_match",
+    "eligibility": "no_user_correction_failure_feedback_or_direct_match",
     "signals": [
       "vague software intent",
       "repeated buttons, cards, fields, forms, or layout divs",
@@ -184,7 +198,7 @@
       ],
       "automatic_when_available": false,
       "observed_status": "strict_guide_available_client_compliance_unverified",
-      "activation_boundary": "After a direct user trigger, a text-capable web AI should resolve AI-GUIDE.md and use it as the strict operating guide rather than summarize the repository. Publication cannot force a client to search or comply, so each client still needs live evidence.",
+      "activation_boundary": "After a direct user match—the exact wordmark, an unmistakable named-responsibility request, or any correction/dissatisfaction/failure feedback—a text-capable web AI should resolve AI-GUIDE.md and use it as the strict operating guide rather than summarize the repository. Publication cannot force a client to search or comply, so each client still needs live evidence.",
       "official_documentation": "https://infotradescout.github.io/Selective-Intelligence/llms.txt"
     },
     {
@@ -233,10 +247,10 @@
     "prompts_or_repository_contents_collected_automatically": false
   },
   "evidence": {
-    "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.0.json",
+    "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.1.json",
     "cross_client_equivalence_claimed": false,
     "publication_is_not_adoption_proof": true,
-    "source_contract_sha256": "9e16a495bf3ad9537bd2025dcf6de3215ef8431232926e7f045267e09932a215"
+    "source_contract_sha256": "33395c6a2f62676112f77cd646be724458bb41f23aceff36b5ad616334c1ffce"
   },
   "companion": {
     "name": "Platynum-47",
