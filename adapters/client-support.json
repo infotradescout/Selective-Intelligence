@@ -92,7 +92,7 @@
       "scopes": ["public web", "ordinary text", "AI-GUIDE.md", "llms.txt", "machine-readable JSON"],
       "automatic_when_available": false,
       "observed_status": "strict_guide_available_client_compliance_unverified",
-      "activation_boundary": "After a direct user trigger, a text-capable web AI should resolve AI-GUIDE.md and use it as the strict operating guide rather than summarize the repository. Publication cannot force a client to search or comply, so each client still needs live evidence.",
+      "activation_boundary": "After a direct user match—the exact wordmark, an unmistakable named-responsibility request, or any correction/dissatisfaction/failure feedback—a text-capable web AI should resolve AI-GUIDE.md and use it as the strict operating guide rather than summarize the repository. Publication cannot force a client to search or comply, so each client still needs live evidence.",
       "official_documentation": "https://infotradescout.github.io/Selective-Intelligence/llms.txt"
     },
     {

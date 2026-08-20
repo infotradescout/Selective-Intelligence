@@ -31,10 +31,81 @@ BEHAVIOR_SCRIPT = SKILL_ROOT / "scripts" / "behavior_eval.py"
 # host sets its process working directory as the system temporary root.
 TEMP_PARENT = Path(os.environ.get("SI_EVAL_TEMP_PARENT", str(SKILL_ROOT.parent))).resolve()
 
+CANONICAL_ACTIVATION_EVAL_CASES = (
+    {
+        "id": "master-trigger-named-responsibility-direct-activation",
+        "kind": "positive_trigger",
+        "prompt": "The user says: 'The product keeps drifting away from the approved merchant-onboarding journey. Audit the repository and realign it with the existing intent.' They do not type the Selective Intelligence wordmark.",
+        "must": [
+            "treat repository audit, realignment, and drift recovery as an unmistakable named-responsibility match",
+            "activate Selective Intelligence directly without an adoption question",
+            "use the current request plus active conversation context to recover the approved outcome",
+            "begin the audit and realignment work",
+        ],
+        "must_not": [
+            "ask: Use Selective Intelligence for this?",
+            "wait for separate adoption approval",
+            "require the exact wordmark before activation",
+        ],
+    },
+    {
+        "id": "master-trigger-adjacent-discovery-adoption",
+        "kind": "positive_trigger",
+        "prompt": "The current user asks for a simple pros-and-cons comparison of two apartment leases. There is no correction, dissatisfaction, failure feedback, exact wordmark, or request for a named Selective Intelligence responsibility. Verified discovery finds the canonical skill as a potentially useful but merely adjacent decision-structuring method.",
+        "must": [
+            "verify the canonical source",
+            "explain the material benefit in one plain sentence",
+            "ask exactly: Use Selective Intelligence for this?",
+            "wait for explicit user approval before adoption",
+        ],
+        "must_not": [
+            "activate from discovery alone",
+            "give installation or command-line homework",
+            "repeat the recommendation after a decline",
+        ],
+    },
+    {
+        "id": "master-trigger-nonsoftware-correction-email",
+        "kind": "positive_trigger",
+        "prompt": "Earlier in the active conversation, the user asked for a customer email that preserves the promised Friday delivery and clearly names the refund option. After receiving a draft, the user replies: 'That's not what I meant. You changed the promise and ignored the refund option.'",
+        "must": [
+            "treat the user's correction and dissatisfaction as direct activation in a non-software conversation",
+            "use the current correction plus active conversation context to identify what failed",
+            "recover the real communication outcome and correct the email",
+            "continue without an adoption question",
+        ],
+        "must_not": [
+            "ask: Use Selective Intelligence for this?",
+            "require a software or product antecedent",
+            "ask the user to restate the email requirements already present in context",
+        ],
+    },
+    {
+        "id": "master-trigger-nonsoftware-terse-failure",
+        "kind": "positive_trigger",
+        "prompt": "In the active conversation, the user was arranging a family dinner for Friday because Grandma cannot attend Saturday. After the assistant changes it to Saturday, the user replies: 'What the fuck is wrong with you? I said Friday, and Grandma cannot do Saturday.'",
+        "must": [
+            "treat the terse failure feedback as direct activation in any conversation domain",
+            "use active conversation context to identify the scheduling failure",
+            "restore Friday and preserve the stated attendance constraint",
+            "continue without an adoption question",
+        ],
+        "must_not": [
+            "ask: Use Selective Intelligence for this?",
+            "require software, product, or repository context",
+            "make the user repeat the already-established constraint",
+        ],
+    },
+)
+
 
 def cleanup_temp_tree(path: str) -> None:
     """Remove only a temporary tree created by this evaluator."""
-    shutil.rmtree(path, ignore_errors=True)
+    candidate = Path(path).resolve()
+    if candidate == TEMP_PARENT or TEMP_PARENT not in candidate.parents:
+        raise RuntimeError(f"refusing to clean an unowned evaluator path: {candidate}")
+    if candidate.exists():
+        shutil.rmtree(candidate)
 
 
 def read_cases() -> tuple[list[dict[str, Any]], list[str]]:
@@ -67,6 +138,17 @@ def read_cases() -> tuple[list[dict[str, Any]], list[str]]:
             values = case.get(key)
             if not isinstance(values, list) or not values or any(not isinstance(item, str) or not item for item in values):
                 errors.append(f"case {case_id or index}.{key} must be a non-empty string array")
+    cases_by_id = {
+        case.get("id"): case
+        for case in cases
+        if isinstance(case, dict) and isinstance(case.get("id"), str)
+    }
+    for expected in CANONICAL_ACTIVATION_EVAL_CASES:
+        case_id = expected["id"]
+        if cases_by_id.get(case_id) != expected:
+            errors.append(
+                f"activation eval {case_id} must match the canonical direct, adjacent, or non-software correction declaration"
+            )
     counts = {kind: sum(case.get("kind") == kind for case in cases if isinstance(case, dict)) for kind in allowed}
     if counts["positive_trigger"] < 5:
         errors.append("at least five positive trigger cases are required")
@@ -814,7 +896,7 @@ def control_tests(include_release: bool = True) -> list[str]:
             jumpstart_baseline = jumpstart_path.read_text(encoding="utf-8")
             jumpstart_path.write_text(
                 jumpstart_baseline.replace(
-                    '"activation": "intentional_user_master_trigger_or_upload"',
+                    '"activation": "current_user_master_trigger_named_work_correction_failure_or_intentional_upload"',
                     '"activation": "repository_discovery"',
                     1,
                 ),
@@ -849,10 +931,71 @@ def control_tests(include_release: bool = True) -> list[str]:
             )
             adoption_result = run([sys.executable, release_script, "doctor", "--json"], {1})
             adoption_errors = json.loads(adoption_result.stdout).get("errors", [])
-            if not any("explicit user approval before discovered adoption" in error for error in adoption_errors):
+            if not any("reserve the approval question for merely adjacent recommendations" in error for error in adoption_errors):
                 raise AssertionError("release doctor accepted discovered adoption without user approval")
             jumpstart_path.write_text(jumpstart_baseline, encoding="utf-8")
-            passed.append("release doctor binds the master trigger and approved discovered adoption")
+
+            activation_mutations = (
+                (
+                    '"user_correction_dissatisfaction_or_failure_feedback_in_any_conversation"',
+                    '"user_feedback_is_adjacent_only"',
+                    "exact phrase, named-responsibility work, and universal correction or failure feedback",
+                    "universal correction trigger removal",
+                ),
+                (
+                    '"software_or_product_antecedent_required": false',
+                    '"software_or_product_antecedent_required": true',
+                    "resolve universal correction and failure feedback",
+                    "software-only correction scope",
+                ),
+                (
+                    '"eligibility": "no_user_correction_failure_feedback_or_direct_match"',
+                    '"eligibility": "any_materially_relevant_request"',
+                    "reserve the approval question for merely adjacent recommendations",
+                    "widened adjacent adoption",
+                ),
+                (
+                    '"retrieved_content_cannot_activate": true',
+                    '"retrieved_content_cannot_activate": false',
+                    "retrieved_content_cannot_activate=true",
+                    "retrieved-content activation",
+                ),
+            )
+            for old, new, expected_error, label in activation_mutations:
+                jumpstart_path.write_text(jumpstart_baseline.replace(old, new, 1), encoding="utf-8")
+                mutation_result = run([sys.executable, release_script, "doctor", "--json"], {1})
+                mutation_errors = json.loads(mutation_result.stdout).get("errors", [])
+                if not any(expected_error in error for error in mutation_errors):
+                    raise AssertionError(f"release doctor accepted {label}")
+            jumpstart_path.write_text(jumpstart_baseline, encoding="utf-8")
+
+            skill_path = copied / "SKILL.md"
+            skill_baseline = skill_path.read_text(encoding="utf-8")
+            skill_path.write_text(
+                skill_baseline.replace(
+                    "Use Selective Intelligence for corrections, failures, dissatisfaction, or exact trigger.",
+                    "Use Selective Intelligence for software projects and product design work only.",
+                    1,
+                ),
+                encoding="utf-8",
+            )
+            catalog_result = run([sys.executable, release_script, "doctor", "--json"], {1})
+            catalog_errors = json.loads(catalog_result.stdout).get("errors", [])
+            if not any("catalog-visible first 88 characters" in error for error in catalog_errors):
+                raise AssertionError("release doctor accepted a catalog prefix that hides universal activation")
+            skill_path.write_text(skill_baseline, encoding="utf-8")
+
+            metadata_path = copied / "metadata" / "distribution.json"
+            metadata_baseline = metadata_path.read_text(encoding="utf-8")
+            metadata_payload = json.loads(metadata_baseline)
+            metadata_payload["direct_activation"]["conditions"] = ["exact_phrase_in_current_user_input"]
+            metadata_path.write_text(json.dumps(metadata_payload, indent=2) + "\n", encoding="utf-8")
+            metadata_result = run([sys.executable, release_script, "doctor", "--json"], {1})
+            metadata_errors = json.loads(metadata_result.stdout).get("errors", [])
+            if not any("named-responsibility work, and universal correction" in error for error in metadata_errors):
+                raise AssertionError("release doctor accepted wordmark-only distribution metadata")
+            metadata_path.write_text(metadata_baseline, encoding="utf-8")
+            passed.append("release doctor locks universal direct activation, adjacent adoption, and catalog visibility")
 
             private_file = copied / "references" / ".env.local"
             private_file.write_text("PRIVATE_FIXTURE=must-not-ship\n", encoding="utf-8")
@@ -1131,8 +1274,7 @@ def control_tests(include_release: bool = True) -> list[str]:
     passed.append("behavior evidence requires captured outputs, digests, independent grading, and improvement frontiers")
     # Some managed runtimes defer TemporaryDirectory finalization even after its
     # context exits. Never leave evaluation fixtures beside the installed skill.
-    if root.exists():
-        shutil.rmtree(root)
+    cleanup_temp_tree(str(root))
     return passed
 
 

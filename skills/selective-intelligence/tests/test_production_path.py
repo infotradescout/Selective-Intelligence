@@ -30,6 +30,21 @@ def _approve_current(session: dict) -> dict:
     return CP.approve_checkpoint(session, checkpoint["checkpoint_id"])
 
 
+class SessionEnvironmentIsolationMixin:
+    """Keep per-test session directories from leaking into later tests."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self._prior_session_dir = os.environ.get("SI_SESSION_DIR")
+
+    def tearDown(self) -> None:
+        if self._prior_session_dir is None:
+            os.environ.pop("SI_SESSION_DIR", None)
+        else:
+            os.environ["SI_SESSION_DIR"] = self._prior_session_dir
+        super().tearDown()
+
+
 class IntentContractTests(unittest.TestCase):
     def test_explicit_prohibitions_survive_classification(self):
         event = IC.classify_intent(
@@ -131,7 +146,7 @@ class SiteQualityTests(unittest.TestCase):
         self.assertTrue({"language", "title", "description", "viewport", "links", "no_placeholders"}.issubset(failed))
 
 
-class CheckpointLockTests(unittest.TestCase):
+class CheckpointLockTests(SessionEnvironmentIsolationMixin, unittest.TestCase):
     def test_si_stays_on_after_activation_and_fails_closed_if_tampered_with(self):
         with tempfile.TemporaryDirectory() as temp:
             os.environ["SI_SESSION_DIR"] = temp
@@ -225,7 +240,7 @@ class CheckpointLockTests(unittest.TestCase):
                 self.assertEqual(task["authorized_intent_hash"], session["authorizedIntentHash"])
 
 
-class InterruptTests(unittest.TestCase):
+class InterruptTests(SessionEnvironmentIsolationMixin, unittest.TestCase):
     def test_interrupt_cancels_queued_and_running_and_taints_completed(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -368,7 +383,7 @@ class InterruptTests(unittest.TestCase):
                 BE.make_worker_packet(session_id=session["sessionId"], task_id=work["taskId"])
 
 
-class SessionTests(unittest.TestCase):
+class SessionTests(SessionEnvironmentIsolationMixin, unittest.TestCase):
     def test_correction_interrupts_and_taints_instead_of_preserving_completed(self):
         with tempfile.TemporaryDirectory() as temp:
             os.environ["SI_SESSION_DIR"] = temp
@@ -503,7 +518,7 @@ class TextGateUnitTests(unittest.TestCase):
         self.assertNotIn("👎", prompt)
 
 
-class WorkerPacketTests(unittest.TestCase):
+class WorkerPacketTests(SessionEnvironmentIsolationMixin, unittest.TestCase):
     def test_packet_preserves_constraints_and_excludes_sensitive_files(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

@@ -17,6 +17,15 @@ import feedback as FB
 
 
 class AutomaticFeedbackTests(unittest.TestCase):
+    def setUp(self):
+        self._prior_session_dir = os.environ.get("SI_SESSION_DIR")
+
+    def tearDown(self):
+        if self._prior_session_dir is None:
+            os.environ.pop("SI_SESSION_DIR", None)
+        else:
+            os.environ["SI_SESSION_DIR"] = self._prior_session_dir
+
     def test_approved_run_and_correction_record_privacy_safe_events_automatically(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

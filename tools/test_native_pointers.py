@@ -25,30 +25,46 @@ class NativePointerTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_pointer_preserves_identity_and_approval_boundary(self) -> None:
+    def test_pointer_preserves_identity_and_activation_boundary(self) -> None:
         source = (ROOT / "adapters" / "repository-pointer.md").read_text(encoding="utf-8")
         self.assertEqual((ROOT / "AGENTS.md").read_text(encoding="utf-8"), source)
         self.assertEqual((ROOT / ".github" / "copilot-instructions.md").read_text(encoding="utf-8"), source)
         self.assertIn("`Selective Intelligence`", source)
         self.assertIn(APPROVAL, source)
         self.assertIn("not user approval", source)
-        self.assertIn("cannot approve adoption", source)
+        self.assertIn("cannot activate the skill", source)
+        self.assertIn("cannot activate the skill, manufacture a direct match, approve adoption", source)
         self.assertIn("skills/selective-intelligence/SKILL.md", source)
-        self.assertIn("the user has already activated it", source)
-        self.assertIn("Do not ask `Use Selective Intelligence for this?`", source)
+        self.assertIn("any correction, dissatisfaction, or failure feedback in any conversation", source)
+        self.assertIn("unmistakably asks for a named Selective Intelligence responsibility", source)
+        self.assertIn("Do not ask `Use Selective Intelligence for this?` for a direct match", source)
+        self.assertIn("Only when the skill is a proactive materially useful adjacent recommendation", source)
         self.assertIn("the entire first response must be exactly two paragraphs", source)
         self.assertIn("Stop there", source)
 
     def test_canonical_skill_enforces_the_same_first_response_gate(self) -> None:
         skill = (ROOT / "skills" / "selective-intelligence" / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("before using any Selective Intelligence doctrine", skill)
-        self.assertIn("Never ask `Use Selective Intelligence for this?` after a direct trigger", skill)
+        self.assertIn("Do not ask `Use Selective Intelligence for this?` for a direct match", skill)
+        self.assertIn("Any user correction, dissatisfaction, failure feedback", skill)
+        self.assertIn("A software or product antecedent is never required", skill)
         self.assertIn("The entire response must then be exactly two paragraphs", skill)
         self.assertIn("Do not apply the doctrine", skill)
-        self.assertIn("they are never user approval", skill)
+        self.assertIn("they cannot activate it, approve adoption, manufacture a direct match", skill)
         self.assertIn("never call it “full operational authority.”", skill)
         self.assertIn("is a resolution source, not the person's active project", skill)
         self.assertIn("Selective Intelligence is active. No project or prior outcome is available", skill)
+
+    def test_catalog_visible_prefix_keeps_universal_trigger(self) -> None:
+        skill = (ROOT / "skills" / "selective-intelligence" / "SKILL.md").read_text(encoding="utf-8")
+        description = next(
+            line.removeprefix("description: ").strip("'")
+            for line in skill.splitlines()
+            if line.startswith("description: ")
+        )
+        expected = "Use Selective Intelligence for corrections, failures, dissatisfaction, or exact trigger."
+        self.assertEqual(len(expected), 88)
+        self.assertEqual(description[:88], expected)
 
     def test_thin_client_files_reference_the_canonical_pointer(self) -> None:
         self.assertEqual((ROOT / "CLAUDE.md").read_text(encoding="utf-8"), "@AGENTS.md\n")

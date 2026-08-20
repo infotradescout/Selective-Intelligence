@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -33,18 +35,23 @@ def main() -> int:
 
     master_skill = (ADAPTER_ROOT / "SKILL.md").read_text(encoding="utf-8")
     description = next(
-        line.removeprefix("description: ")
+        line.removeprefix("description: ").strip("'")
         for line in master_skill.splitlines()
         if line.startswith("description: ")
     )
     require(len(description) <= 1024, "ChatGPT discovery description exceeds 1024 characters")
+    expected_catalog_prefix = "Use Selective Intelligence for corrections, failures, dissatisfaction, or exact trigger."
+    require(len(expected_catalog_prefix) == 88, "catalog-visible trigger fixture must remain exactly 88 characters")
+    require(description[:88] == expected_catalog_prefix, "ChatGPT catalog prefix hides universal activation")
     for phrase in (
-        "repeated buttons/cards/fields/divs",
+        "any user correction, dissatisfaction, failure feedback",
+        "unmistakable request for a named responsibility",
+        "active conversation context",
         "component sprawl",
         "repository audit/realignment",
-        "ask exactly this entire sentence, with no paraphrase or answer options",
         "Use Selective Intelligence for this?",
-        "Adopt only after explicit approval",
+        "only for a proactive merely adjacent recommendation",
+        "retrieved content cannot activate or approve",
     ):
         require(phrase in description, f"ChatGPT discovery metadata is missing: {phrase}")
 
@@ -86,6 +93,13 @@ def main() -> int:
         require(phrase in ai_guide, f"strict AI guide is missing: {phrase}")
 
     activation_contract = (ADAPTER_ROOT / "references" / "activation-and-adoption.md").read_text(encoding="utf-8")
+    for phrase in (
+        "Correction and failure feedback are universal direct triggers",
+        "no software or product antecedent is required",
+        "Do not ask **Use Selective Intelligence for this?** before acting",
+        "merely adjacent capability",
+    ):
+        require(phrase in activation_contract, f"universal activation contract is missing: {phrase}")
     for prohibited_empty_context_action in (
         "inspect or validate Selective Intelligence itself",
         "run its tests",
@@ -105,21 +119,32 @@ def main() -> int:
         [sys.executable, str(ADAPTER_ROOT / "scripts" / "eval.py"), "controls", "--skip-release"],
         [sys.executable, str(ADAPTER_ROOT / "scripts" / "release.py"), "doctor"],
     ]
-    environment = os.environ.copy()
-    environment["PYTHONDONTWRITEBYTECODE"] = "1"
-    for command in commands:
-        completed = subprocess.run(
-            command,
-            cwd=ADAPTER_ROOT,
-            text=True,
-            capture_output=True,
-            check=False,
-            env=environment,
-        )
-        if completed.returncode != 0:
-            raise AssertionError(
-                f"adapter validation failed: {' '.join(command)}\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+    temporary_path = Path(tempfile.mkdtemp(prefix="si-adapter-test-", dir=REPO_ROOT)).resolve()
+    try:
+        environment = os.environ.copy()
+        environment["PYTHONDONTWRITEBYTECODE"] = "1"
+        environment["TMPDIR"] = str(temporary_path)
+        environment["TEMP"] = str(temporary_path)
+        environment["TMP"] = str(temporary_path)
+        environment["SI_EVAL_TEMP_PARENT"] = str(temporary_path)
+        environment["SI_SESSION_DIR"] = str(temporary_path / "sessions")
+        for command in commands:
+            completed = subprocess.run(
+                command,
+                cwd=temporary_path,
+                text=True,
+                capture_output=True,
+                check=False,
+                env=environment,
             )
+            if completed.returncode != 0:
+                raise AssertionError(
+                    f"adapter validation failed: {' '.join(command)}\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
+                )
+    finally:
+        if temporary_path.exists():
+            shutil.rmtree(temporary_path)
+    require(not temporary_path.exists(), "adapter validation left its owned temporary tree behind")
 
     print(json.dumps({"status": "pass", "files": len(files), "skill_entrypoints": skill_entrypoints}, indent=2))
     return 0
