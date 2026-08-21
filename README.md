@@ -72,11 +72,15 @@ Human and machine entry points are kept at the repository root or linked directl
 
 The telemetry-free public discovery surface is [infotradescout.github.io/Selective-Intelligence](https://infotradescout.github.io/Selective-Intelligence/). Its [problem-first guides](https://infotradescout.github.io/Selective-Intelligence/problems/), [220-question discovery map](https://infotradescout.github.io/Selective-Intelligence/questions/), [machine-readable contract](https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json), [well-known endpoint](https://infotradescout.github.io/Selective-Intelligence/.well-known/selective-intelligence.json), crawler-visible HTML, concise and full model-readable maps, robots policy, sitemap, feed, and client-support registry are generated from this canonical repository and checked for drift. The query seeds are synthetic, privacy-safe evaluation inputs—not measured search volume or private prompts. These surfaces improve resolution for web-capable AIs; they do not claim that a client without web or installed-skill discovery can fetch the skill, and they do not prove indexing, activation, adoption, or successful use.
 
-## Use in ChatGPT
+## Use in ChatGPT and Codex
 
-[Open Selective Intelligence in ChatGPT](https://chatgpt.com/skills?skill_id=6a60f7ecb940819186be4dffa3094f85) when the skill is enabled for your account. Until a public listing is active, this route may return to the ChatGPT home page for other users.
+The public route is a skills-only Plugin Directory candidate shared by ChatGPT and Codex. [`plugin-submission/plugin.json`](plugin-submission/plugin.json) is the manifest source for review, and [`tools/public_plugin.py`](tools/public_plugin.py) deterministically projects the canonical skill into a submission ZIP with exactly one `SKILL.md`. The seven Council roles remain complete `ROLE.md` references inside that skill.
 
-ChatGPT stores one `SKILL.md` per personal-skill bundle, while the portable Agent Skills source keeps seven Council roles as independently runnable nested skills. The generated [`adapters/chatgpt/selective-intelligence/`](adapters/chatgpt/selective-intelligence/) package preserves those role instructions as references, includes the project-index and verification tools, and contains exactly one `SKILL.md`. People still use the same two-word trigger; the adapter is a client-format detail maintained by the project.
+A listing is public only after OpenAI review and the publisher's separate publication action, followed by installation verification from an outside account. Until those steps succeed, this repository and its generated ZIP are submission candidates—not a public directory listing.
+
+[Open Selective Intelligence in ChatGPT](https://chatgpt.com/skills?skill_id=6a60f7ecb940819186be4dffa3094f85) when the personal saved skill is enabled for your account. That account-specific route is useful for testing but is not evidence of a public listing.
+
+The generated [`adapters/chatgpt/selective-intelligence/`](adapters/chatgpt/selective-intelligence/) package remains the personal saved-skill adapter. It is separate from the public plugin package and preserves exactly the same canonical behavior. See the public [privacy policy](PRIVACY.md), [terms](TERMS.md), [website](https://infotradescout.github.io/Selective-Intelligence/), and [support](https://github.com/infotradescout/Selective-Intelligence/issues) routes.
 
 Example requests:
 
@@ -142,7 +146,7 @@ Use the canonical repository or versioned release archive as the source for ever
 
 Filesystem access is required for repository and Start modes. Python 3.10 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
 
-The current v1 release-candidate evidence is recorded in [evals/results-1.0.0.json](skills/selective-intelligence/evals/results-1.0.0.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
+The current v1 release-candidate evidence is recorded in [evals/results-1.0.2.json](skills/selective-intelligence/evals/results-1.0.2.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
 
 ### Update and uninstall
 

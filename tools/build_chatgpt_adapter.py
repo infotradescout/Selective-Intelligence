@@ -130,6 +130,7 @@ def build_adapter(destination: Path = ADAPTER_ROOT) -> dict[str, object]:
         text = rewrite_text(portable_relative, text, mapping)
         if portable_relative == "metadata/distribution.json":
             payload = json.loads(text)
+            payload.pop("public_plugin", None)
             payload["distribution_status"] = "public_chatgpt_adapter_release_candidate"
             payload["adapter_for"] = "chatgpt_personal_skills"
             payload["adapter_source_path"] = "skills/selective-intelligence"

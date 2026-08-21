@@ -28,7 +28,12 @@ Publish one authoritative public repository. Keep one behavioral copy of the ski
 selective-intelligence/
 ├── README.md
 ├── LICENSE
+├── PRIVACY.md
+├── TERMS.md
 ├── .github/                         # repository-only automation and templates
+├── plugin-submission/
+│   ├── plugin.json                  # canonical public-plugin manifest source
+│   └── directory-submission.json   # reviewer cases and listing inputs
 └── skills/
     └── selective-intelligence/
         ├── AI-GUIDE.md
@@ -45,7 +50,11 @@ selective-intelligence/
         └── scripts/
 ```
 
-The repository's `skills/selective-intelligence/` directory is the canonical portable source. The purpose-built release archive projects that same directory as one top-level `selective-intelligence/` folder. Vendor it into `.agents/skills/selective-intelligence/` where clients support the cross-client convention, or use the client's documented skill path. Do not duplicate it under repository-root or client-specific skill directories: adapters may point to or install the canonical directory but may not fork its behavioral contract.
+The repository's `skills/selective-intelligence/` directory is the canonical portable source. The repository tree is a build input, not the public-plugin submission tree. The purpose-built portable release archive projects the canonical directory as one top-level `selective-intelligence/` folder. Vendor it into `.agents/skills/selective-intelligence/` where clients support the cross-client convention, or use the client's documented skill path. Do not duplicate it under repository-root or client-specific skill directories: adapters may point to or install the canonical directory but may not fork its behavioral contract.
+
+The skills-only public-plugin packager reads `plugin-submission/plugin.json`, writes it to `.codex-plugin/plugin.json` inside the ZIP, and projects the canonical source to `skills/selective-intelligence/`. The public ZIP contains exactly one `SKILL.md`; the seven Council entrypoints become complete `subskills/*/ROLE.md` reference files inside that one skill. Do not place a second manifest under the repository-root `.codex-plugin/`, do not add an MCP server or app merely to obtain a listing, and do not hand-edit the generated ZIP.
+
+A locally valid ZIP is a submission candidate. Call the directory listing public only after OpenAI has approved the submitted revision, the verified publisher has taken the separate publication action, and installation has succeeded from an outside account. A personal saved-skill link, repository URL, portal draft, or review approval alone is not publication proof.
 
 **Local Claude / Codex skill sync:** when a developer keeps a working copy under `~/.claude/skills/selective-intelligence/` (or an equivalent client skill path), treat that copy as a mirror of `skills/selective-intelligence/` in this repository. After doctrine changes, overwrite the local mirror from the repo path; do not edit the local mirror first and treat it as authority.
 
@@ -97,7 +106,7 @@ Curated discovery questions are synthetic trigger and evaluation seeds unless pr
 
 The README must provide:
 
-1. a no-install ChatGPT route when the public skill link is active;
+1. a no-install ChatGPT and Codex route when the public Plugin Directory listing is active;
 2. a generic Agent Skills route using the canonical repository and skill name;
 3. a manual vendoring route that copies the skill directory intact;
 4. client-specific destination paths only when confirmed by current official documentation;

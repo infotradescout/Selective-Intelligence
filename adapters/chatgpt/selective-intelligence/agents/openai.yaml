@@ -2,11 +2,11 @@ interface:
   display_name: "Selective Intelligence"
   short_description: "Selective Intelligence"
   default_prompt: "Selective Intelligence"
-  icon_small: "assets/icon.svg"
-  icon_large: "assets/icon.svg"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  brand_color: "#A65F00"
 policy:
   products:
-  - "chatgpt"
-  - "codex"
-  - "atlas"
+  - "CHAT"
+  - "CODEX"
   allow_implicit_invocation: true

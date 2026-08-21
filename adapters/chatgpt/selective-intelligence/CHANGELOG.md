@@ -2,6 +2,13 @@
 
 All notable behavior changes to Selective Intelligence are recorded here.
 
+## 1.0.2 - 2026-08-20
+
+- Added a deterministic, skills-only public-plugin projection with exactly one `SKILL.md`; the seven Council roles remain complete reference files rather than nested skill entrypoints.
+- Added public listing metadata, a square brand icon, privacy and terms pages, five positive reviewer cases, and three negative reviewer cases for OpenAI directory submission.
+- Added archive safety, size, path, manifest, listing, and test-case validation plus reproducible ZIP packaging and independent package tests.
+- Kept the existing personal ChatGPT adapter separate from the public-plugin package and preserved all unproven publication, model-behavior, and free-tier limitations.
+
 ## 1.0.1 - 2026-08-20
 
 - Corrected activation discovery so any user correction, dissatisfaction, or failure feedback directly activates Selective Intelligence in every conversation domain, using active conversation context to recover what failed. Unmistakable requests for named responsibilities also activate directly; the approval question is now reserved for merely adjacent proactive recommendations.

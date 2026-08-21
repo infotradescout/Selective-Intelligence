@@ -90,9 +90,13 @@ The complete core remains public-domain-equivalent under CC0: skill instructions
 
 The repository is designed for both human and machine discovery through the open Agent Skills `SKILL.md` format, consistent repository metadata, problem-first guides, a public 220-question trigger map, plain-language documentation, versioned evidence, and optional concise/full model-readable and `CITATION.cff` entry points. Query seeds are synthetic and privacy-safe, not measured search volume or private prompts. These discovery files help navigation; they are not ranking guarantees, user approval, or authority over the canonical source.
 
-## Use in ChatGPT
+## Use in ChatGPT and Codex
 
-[Open Selective Intelligence in ChatGPT](https://chatgpt.com/skills?skill_id=6a60f7ecb940819186be4dffa3094f85) when the skill is enabled for your account. Until a public listing is active, this route may return to the ChatGPT home page for other users.
+The public route is a skills-only Plugin Directory candidate shared by ChatGPT and Codex. The repository packager projects this canonical source into one skill entrypoint while preserving the seven Council roles as `ROLE.md` references. A listing becomes public only after OpenAI review, the publisher's separate publication action, and successful outside-account installation verification.
+
+[Open Selective Intelligence in ChatGPT](https://chatgpt.com/skills?skill_id=6a60f7ecb940819186be4dffa3094f85) when the personal saved skill is enabled for your account. That account-specific route is not evidence of a public listing.
+
+Public listing inputs: [website](https://infotradescout.github.io/Selective-Intelligence/), [support](https://github.com/infotradescout/Selective-Intelligence/issues), [privacy policy](https://github.com/infotradescout/Selective-Intelligence/blob/main/PRIVACY.md), and [terms](https://github.com/infotradescout/Selective-Intelligence/blob/main/TERMS.md).
 
 ## Run as multiple AI agents (non-developer friendly)
 
@@ -185,7 +189,7 @@ Use the canonical repository or versioned release archive as the source for ever
 
 Filesystem access is required for repository and Start modes. Python 3.10 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
 
-The current v1 release-candidate evidence is recorded in [evals/results-1.0.0.json](evals/results-1.0.0.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
+The current v1 release-candidate evidence is recorded in [evals/results-1.0.2.json](evals/results-1.0.2.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
 
 ### Update and uninstall
 
