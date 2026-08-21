@@ -58,6 +58,8 @@ def main() -> int:
     adapter_metadata = json.loads((ADAPTER_ROOT / "metadata" / "chatgpt-adapter.json").read_text(encoding="utf-8"))
     require(adapter_metadata["behavioral_contract"] == "preserved", "adapter contract is not preserved")
     require(len(adapter_metadata["role_path_map"]) == 7, "not all Council roles were adapted")
+    distribution_metadata = json.loads((ADAPTER_ROOT / "metadata" / "distribution.json").read_text(encoding="utf-8"))
+    require("public_plugin" not in distribution_metadata, "personal adapter must not claim public-plugin status")
 
     combined = "\n".join(
         path.read_text(encoding="utf-8", errors="strict")

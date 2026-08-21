@@ -482,7 +482,7 @@ def skill_loader_metadata_errors(root: Path, files: list[Path]) -> list[str]:
                 continue
             if collecting and line.strip():
                 break
-        supported_products = {"chatgpt", "codex", "atlas"}
+        supported_products = {"CHAT", "CODEX"}
         unsupported = sorted(set(products) - supported_products)
         if unsupported:
             errors.append(

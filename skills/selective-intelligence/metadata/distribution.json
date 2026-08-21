@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "skill": "selective-intelligence",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "component_versions": {
-    "skill": "1.0.1",
+    "skill": "1.0.2",
     "start_pack_validator": "0.1.1",
     "start_pack_schema": "0.1.1",
     "council_protocol": "0.3.0"
@@ -113,7 +113,21 @@
   ],
   "portable_source_path": "skills/selective-intelligence",
   "recommended_vendored_path": ".agents/skills/selective-intelligence",
-  "archive_name": "selective-intelligence-1.0.1.zip",
+  "archive_name": "selective-intelligence-1.0.2.zip",
+  "public_plugin": {
+    "status": "submission_candidate",
+    "submission_type": "skills_only",
+    "manifest_source": "plugin-submission/plugin.json",
+    "archive_manifest_path": ".codex-plugin/plugin.json",
+    "archive_name": "selective-intelligence-plugin-1.0.2.zip",
+    "website_url": "https://infotradescout.github.io/Selective-Intelligence/",
+    "support_url": "https://github.com/infotradescout/Selective-Intelligence/issues",
+    "privacy_policy_url": "https://github.com/infotradescout/Selective-Intelligence/blob/main/PRIVACY.md",
+    "terms_of_service_url": "https://github.com/infotradescout/Selective-Intelligence/blob/main/TERMS.md",
+    "submission_manifest": "plugin-submission/directory-submission.json",
+    "required_positive_test_cases": 5,
+    "required_negative_test_cases": 3
+  },
   "owner_supplied_before_publication": [],
   "owner_supplied_before_donations": [
     "support_url"
@@ -148,6 +162,7 @@
     "evals/results-0.4.0.json",
     "evals/results-1.0.0.json",
     "evals/results-1.0.1.json",
+    "evals/results-1.0.2.json",
     "evals/one-prompt-website.json",
     "metadata/distribution.json",
     "metadata/no-paid-capabilities.json",

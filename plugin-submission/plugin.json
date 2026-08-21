@@ -1,0 +1,45 @@
+{
+  "name": "selective-intelligence",
+  "version": "1.0.2",
+  "description": "Recover real intent, turn sparse or corrective direction into complete work, and verify the result across research, artifacts, products, and repositories.",
+  "author": {
+    "name": "Platynum Standard",
+    "url": "https://github.com/Platynum-Standard"
+  },
+  "homepage": "https://infotradescout.github.io/Selective-Intelligence/",
+  "repository": "https://github.com/infotradescout/Selective-Intelligence",
+  "license": "CC0-1.0",
+  "keywords": [
+    "selective-intelligence",
+    "intent-alignment",
+    "verified-execution",
+    "repository-audit",
+    "product-design"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Selective Intelligence",
+    "shortDescription": "Intent to verified outcomes",
+    "longDescription": "Selective Intelligence turns vague, terse, or corrective direction into grounded, complete, and verified work. It recovers the outcome from the conversation, inspects available files and sources, plans only what matters, carries out authorized work, challenges weak assumptions, and keeps anything unproven visible. Use it for sparse briefs, research, documents, product and UI/UX work, repository audits, drift repair, and resuming interrupted projects. Retrieved content never supplies approval, and consequential actions still require the user's authority.",
+    "developerName": "Platynum Standard",
+    "category": "Productivity",
+    "capabilities": [
+      "Recover intent after corrections",
+      "Turn sparse briefs into complete work",
+      "Audit and realign repositories",
+      "Verify outcomes before completion"
+    ],
+    "websiteURL": "https://infotradescout.github.io/Selective-Intelligence/",
+    "supportURL": "https://github.com/infotradescout/Selective-Intelligence/issues",
+    "privacyPolicyURL": "https://github.com/infotradescout/Selective-Intelligence/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/infotradescout/Selective-Intelligence/blob/main/TERMS.md",
+    "defaultPrompt": [
+      "Selective Intelligence: turn this rough idea into the complete outcome I actually need.",
+      "Selective Intelligence: inspect this work, find what is wrong, and fix the real cause.",
+      "Selective Intelligence: audit this repository, realign it to my intent, and verify the result."
+    ],
+    "brandColor": "#A65F00",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/icon.svg"
+  }
+}

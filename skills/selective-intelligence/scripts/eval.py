@@ -1029,7 +1029,7 @@ def control_tests(include_release: bool = True) -> list[str]:
             agent_config_path = copied / "agents" / "openai.yaml"
             agent_config_baseline = agent_config_path.read_text(encoding="utf-8")
             agent_config_path.write_text(
-                agent_config_baseline.replace('  - "atlas"', '  - "api"\n  - "atlas"', 1),
+                agent_config_baseline.replace('  - "CODEX"', '  - "api"\n  - "CODEX"', 1),
                 encoding="utf-8",
             )
             product_result = run([sys.executable, release_script, "doctor", "--json"], {1})
