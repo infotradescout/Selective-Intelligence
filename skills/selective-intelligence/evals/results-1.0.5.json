@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "skill": "selective-intelligence",
-  "version": "1.0.3",
-  "observed_at": "2026-08-22T11:52:08Z",
+  "version": "1.0.5",
+  "observed_at": "2026-08-22T14:18:22Z",
   "status": "local_release_candidate_controls_pass_live_client_smokes_fail",
   "deterministic_controls": {
     "result": "pass",
@@ -11,10 +11,11 @@
     "executed_controls_sha256": "cb5d071350589298b870d5cccdec77aca63764bd9e6dd6c411bfd3fb0399e710",
     "scope": "Release-doctor-safe structural, state, authority, evidence, Council, intent-intake, project-index, prompt-budget, and behavior-artifact controls executed with --skip-release.",
     "coverage": [
-      "81 deterministic release controls passed against the 1.0.3 source",
-      "the canonical master prompt fits the enforced 3000-word and 24000-character limits and contains the Lean execution contract",
+      "81 deterministic release controls passed against the 1.0.5 source",
+      "the canonical master prompt fits the enforced 1500-word and 12000-character limits and contains the Lean execution contract",
       "activation metadata and canonical projections fail closed on narrowed correction, named-work, context, adjacent-adoption, retrieved-content, and catalog-prefix semantics",
-      "public-plugin packaging, directory publication, model behavior, and free-tier portability remain separate evidence boundaries"
+      "the public and personal runtime manifests exclude repository-only tests, historical result records, release machinery, READMEs, and changelogs",
+      "directory publication, model behavior, and free-tier portability remain separate evidence boundaries"
     ]
   },
   "prompt_budget_evaluation": {
@@ -22,10 +23,15 @@
     "baseline_version": "1.0.2",
     "baseline_core_words": 7102,
     "baseline_core_characters": 53150,
-    "current_core_words": 2090,
-    "current_core_characters": 15670,
-    "word_reduction_percent": 70.57,
-    "character_reduction_percent": 70.52,
+    "previous_version": "1.0.4",
+    "previous_core_words": 2062,
+    "previous_core_characters": 15432,
+    "current_core_words": 1268,
+    "current_core_characters": 9989,
+    "word_reduction_from_baseline_percent": 82.15,
+    "character_reduction_from_baseline_percent": 81.21,
+    "word_reduction_from_previous_percent": 38.51,
+    "character_reduction_from_previous_percent": 35.27,
     "lean_initial_reference_files": 0,
     "lean_pre_action_reference_files": 1,
     "automatic_council_default": false,
@@ -40,7 +46,7 @@
   },
   "model_behavior_evaluation": {
     "result": "not_run",
-    "reason": "The 1.0.3 lean-routing correction has deterministic, mutation, and fresh-context review coverage, but the complete evidence-bearing behavior suite still requires repeated captured model outputs and distinct per-invariant grading.",
+    "reason": "The 1.0.5 runtime and prompt reduction preserves the protected activation, authority, Lean execution, checkpoint, Council, and proof contracts, but the complete evidence-bearing behavior suite still requires repeated captured model outputs and distinct per-invariant grading.",
     "evidence": []
   },
   "free_tier_conformance": {
@@ -53,13 +59,13 @@
         "paid_subscription": false,
         "activation_result": "fail",
         "discovery_result": "partial",
-        "version_scope": "1.0.0 carry-forward evidence; 1.0.3 live retest pending",
+        "version_scope": "1.0.0 carry-forward evidence; 1.0.5 live retest pending",
         "reason": "The prior public run did not resolve the exact wordmark reliably and did not use the strict guide as the operating method. This historical failure is retained rather than upgraded by local source changes."
       }
     ]
   },
   "partial_smoke_observations": {
-    "status": "historical_failures_retained_1.0.3_retest_pending",
+    "status": "historical_failures_retained_1.0.5_retest_pending",
     "observed": [
       {
         "case_id": "master-trigger-exact-seedless",
@@ -69,12 +75,12 @@
             "verdicts": [
               "fail"
             ],
-            "reason": "The fresh exact-name session selected unrelated meanings instead of the canonical project. No 1.0.3 live rerun has replaced this evidence."
+            "reason": "The fresh exact-name session selected unrelated meanings instead of the canonical project. No 1.0.5 live rerun has replaced this evidence."
           }
         ]
       }
     ],
-    "limitations": "This record proves the local 1.0.3 prompt budget, contract, validators, and package controls only. It does not claim OpenAI review, publisher publication, outside-account installation, or reliable activation in an outside client."
+    "limitations": "This record proves the local 1.0.5 prompt budget, contract, and deterministic controls only. It does not claim OpenAI review, publisher publication, outside-account installation, or reliable activation in an outside client."
   },
   "deterministic_environment": {
     "runtime": "Python 3.12",
@@ -85,7 +91,7 @@
     "two or more fresh Worker runs for every hidden-oracle behavior case with distinct evidence-bearing grading",
     "passing non-OpenAI activation and adjacent-discovery evidence before claiming cross-provider or general cross-client equivalence",
     "passing no-paid exact-name, named-work, universal-correction, merely-adjacent discovery, and Lean-routing evidence from a genuine free-tier or local/no-cost client",
-    "fresh 1.0.3 catalog-prefix, strict-guide, and Lean-routing measurements before claiming outside-client discovery or token savings",
+    "fresh 1.0.5 catalog-prefix, strict-guide, and Lean-routing measurements before claiming outside-client discovery or token savings",
     "OpenAI publisher identity verification, security review, and submission approval",
     "publisher publication after OpenAI approval",
     "outside-account installation verification after publication"

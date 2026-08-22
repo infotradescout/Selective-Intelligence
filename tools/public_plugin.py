@@ -32,6 +32,8 @@ MAX_UNCOMPRESSED = 512 * 1024 * 1024
 MAX_ENTRY = 100 * 1024 * 1024
 MAX_SEGMENTS = 20
 MAX_PATH_BYTES = 1_024
+MAX_RUNTIME_ENTRIES = 55
+MAX_RUNTIME_UNCOMPRESSED = 1 * 1024 * 1024
 SUPPORTED_CATEGORIES = {
     "Productivity",
     "Creativity",
@@ -238,7 +240,14 @@ def projected_files() -> dict[str, bytes]:
     release_files = distribution.get("release_files")
     if not isinstance(release_files, list) or not all(isinstance(item, str) for item in release_files):
         raise ValueError("canonical release manifest is invalid")
-    mapping = role_path_map(release_files)
+    runtime_files = distribution.get("runtime_files")
+    if not isinstance(runtime_files, list) or not runtime_files or not all(isinstance(item, str) for item in runtime_files):
+        raise ValueError("runtime file manifest is invalid")
+    if len(runtime_files) != len(set(runtime_files)):
+        raise ValueError("runtime file manifest contains duplicates")
+    if not set(runtime_files).issubset(set(release_files)):
+        raise ValueError("runtime file manifest contains files outside the canonical release")
+    mapping = role_path_map(runtime_files)
     if len(mapping) != 7:
         raise ValueError(f"expected seven Council role skills, found {len(mapping)}")
 
@@ -246,17 +255,12 @@ def projected_files() -> dict[str, bytes]:
         ".codex-plugin/plugin.json": MANIFEST_PATH.read_bytes(),
         "assets/icon.svg": ICON_PATH.read_bytes(),
     }
-    projected_release = [mapping.get(relative, relative) for relative in release_files]
-    for relative in release_files:
+    for relative in runtime_files:
         source = SKILL_ROOT / relative
         if not source.is_file():
             raise FileNotFoundError(source)
         target_relative = mapping.get(relative, relative)
         text = rewrite_text(relative, source.read_text(encoding="utf-8"), mapping)
-        if relative == "metadata/distribution.json":
-            payload = json.loads(text)
-            payload["release_files"] = projected_release
-            text = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
         result[f"skills/selective-intelligence/{target_relative}"] = text.encode("utf-8")
     return result
 
@@ -296,6 +300,8 @@ def zip_errors(path: Path) -> list[str]:
             infos = archive.infolist()
             if len(infos) > MAX_ENTRIES:
                 errors.append("archive exceeds the 5,000-entry limit")
+            if len(infos) > MAX_RUNTIME_ENTRIES:
+                errors.append(f"public runtime archive exceeds the {MAX_RUNTIME_ENTRIES}-file lean limit")
             total = 0
             normalized: dict[str, str] = {}
             regular_paths: set[str] = set()
@@ -355,6 +361,8 @@ def zip_errors(path: Path) -> list[str]:
                         )
             if total > MAX_UNCOMPRESSED:
                 errors.append("archive exceeds the 512 MiB uncompressed limit")
+            if total > MAX_RUNTIME_UNCOMPRESSED:
+                errors.append("public runtime archive exceeds the 1 MiB lean limit")
 
             names = [info.filename for info in infos]
             skill_entries = [name for name in names if PurePosixPath(name).name == "SKILL.md"]
@@ -399,6 +407,28 @@ def zip_errors(path: Path) -> list[str]:
                 for name in names
             ):
                 errors.append("skills-only archive contains MCP, app, or screenshot content")
+            runtime_prefix = "skills/selective-intelligence/"
+            forbidden_runtime = {
+                f"{runtime_prefix}AI-GUIDE.md",
+                f"{runtime_prefix}CHANGELOG.md",
+                f"{runtime_prefix}JUMPSTART.md",
+                f"{runtime_prefix}LICENSE",
+                f"{runtime_prefix}README.md",
+                f"{runtime_prefix}scripts/behavior_eval.py",
+                f"{runtime_prefix}scripts/eval.py",
+                f"{runtime_prefix}scripts/eval_runner.py",
+                f"{runtime_prefix}scripts/quality_gate.py",
+                f"{runtime_prefix}scripts/release.py",
+                f"{runtime_prefix}scripts/site_quality.py",
+                f"{runtime_prefix}scripts/site_review_gate.py",
+            }
+            if any(
+                name in forbidden_runtime
+                or name.startswith(f"{runtime_prefix}tests/")
+                or name.startswith(f"{runtime_prefix}evals/results-")
+                for name in names
+            ):
+                errors.append("public runtime archive contains repository-only development files")
     except (OSError, zipfile.BadZipFile) as exc:
         errors.append(f"invalid plugin archive: {exc}")
     return errors
@@ -437,6 +467,20 @@ def manifest_errors() -> list[str]:
         errors.append("plugin name must meet the public directory format and length limit")
     if manifest.get("version") != distribution.get("version"):
         errors.append("plugin, skill, and distribution versions must agree")
+    runtime_files = distribution.get("runtime_files")
+    release_files = distribution.get("release_files")
+    if (
+        not isinstance(runtime_files, list)
+        or not runtime_files
+        or any(not isinstance(item, str) or not item for item in runtime_files)
+        or len(runtime_files) != len(set(runtime_files))
+    ):
+        errors.append("runtime_files must be a non-empty unique string array")
+        runtime_files = []
+    if not isinstance(release_files, list) or not set(runtime_files).issubset(set(release_files)):
+        errors.append("runtime_files must be a subset of release_files")
+    if len(runtime_files) + 2 > MAX_RUNTIME_ENTRIES:
+        errors.append(f"runtime_files exceed the {MAX_RUNTIME_ENTRIES}-file public package limit")
     if not re.fullmatch(r"(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?", str(manifest.get("version", ""))):
         errors.append("plugin version must be semantic versioning")
     if manifest.get("skills") != "./skills/":

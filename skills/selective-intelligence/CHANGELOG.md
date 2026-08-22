@@ -2,6 +2,13 @@
 
 All notable behavior changes to Selective Intelligence are recorded here.
 
+## 1.0.5 - 2026-08-22
+
+- Replaced the 101-file public upload with a bounded runtime bundle that contains only live instructions, routed references, required schemas, executable helpers, role references, interface metadata, and icons. Repository tests, historical results, release tools, READMEs, and changelogs no longer ship in public or personal runtime bundles.
+- Reduced the always-loaded `SKILL.md` from 2,062 words and 15,432 characters to 1,268 words and 9,989 characters while preserving direct activation, authority boundaries, Lean execution, consequence-based checkpoints, Council escalation, repository ownership, and proof requirements.
+- Tightened the permanent prompt gate from 3,000 words / 24,000 characters to 1,500 words / 12,000 characters.
+- Added runtime-manifest, file-count, uncompressed-size, and repository-only-file regressions so upload bloat cannot silently return.
+
 ## 1.0.4 - 2026-08-22
 
 - Corrected both packaged SVG icons so their numeric `viewBox`, `width`, and `height` all declare 256x256 dimensions accepted by the OpenAI plugin uploader.
