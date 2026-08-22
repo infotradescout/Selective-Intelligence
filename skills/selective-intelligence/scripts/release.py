@@ -371,12 +371,6 @@ def frontmatter_value(text: str, key: str) -> str | None:
     return match.group(1).strip() if match else None
 
 
-def frontmatter_version(text: str) -> str | None:
-    frontmatter = text.split("---", 2)[1] if text.startswith("---") and text.count("---") >= 2 else ""
-    match = re.search(r'(?ms)^metadata:\s*\n(?:^[ \t]+.*\n)*?^[ \t]+version:\s*["\']?([^"\'\n]+)', frontmatter)
-    return match.group(1).strip() if match else None
-
-
 def prompt_budget_errors(skill_text: str) -> tuple[dict[str, int], list[str]]:
     """Enforce progressive disclosure and reject automatic heavy-workflow drift."""
     metrics = {
@@ -533,13 +527,28 @@ def skill_loader_metadata_errors(root: Path, files: list[Path]) -> list[str]:
             errors.append(f"skill loader metadata has no closing YAML delimiter: {relative}")
             continue
         frontmatter = parts[1]
+        top_level_keys = re.findall(r"(?m)^([A-Za-z_][A-Za-z0-9_-]*):(?:\s|$)", frontmatter)
+        if len(top_level_keys) != len(set(top_level_keys)):
+            errors.append(f"skill loader metadata has duplicate top-level keys: {relative}")
+        if set(top_level_keys) != {"name", "description"}:
+            errors.append(
+                "skill loader metadata must contain only name and description: "
+                f"{relative} ({', '.join(top_level_keys) or 'no keys'})"
+            )
         for key in ("name", "description"):
             if not re.search(rf"(?m)^{key}:\s*\S", frontmatter):
                 errors.append(f"skill loader metadata is missing {key}: {relative}")
 
     agent_config = root / "agents" / "openai.yaml"
     if agent_config in files:
-        lines = agent_config.read_text(encoding="utf-8", errors="replace").splitlines()
+        agent_text = agent_config.read_text(encoding="utf-8", errors="replace")
+        lines = agent_text.splitlines()
+        for key in ("display_name", "short_description", "default_prompt"):
+            if not re.search(rf'(?m)^  {key}:\s+"[^"\n]+"\s*$', agent_text):
+                errors.append(f"OpenAI agent metadata is missing a quoted interface.{key}")
+        default_prompt = re.search(r'(?m)^  default_prompt:\s+"([^"\n]+)"\s*$', agent_text)
+        if default_prompt and "$selective-intelligence" not in default_prompt.group(1):
+            errors.append("OpenAI agent default_prompt must mention $selective-intelligence")
         products: list[str] = []
         collecting = False
         for line in lines:
@@ -1252,9 +1261,9 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
     skill_text = (root / "SKILL.md").read_text(encoding="utf-8") if (root / "SKILL.md").is_file() else ""
     prompt_budget_metrics, prompt_budget_validation_errors = prompt_budget_errors(skill_text)
     errors.extend(prompt_budget_validation_errors)
-    versions = {version, metadata.get("version"), frontmatter_version(skill_text)}
+    versions = {version, metadata.get("version")}
     if None in versions or len(versions) != 1:
-        errors.append(f"version mismatch: VERSION={version!r}, metadata={metadata.get('version')!r}, SKILL={frontmatter_version(skill_text)!r}")
+        errors.append(f"version mismatch: VERSION={version!r}, metadata={metadata.get('version')!r}")
     components = metadata.get("component_versions")
     required_components = {
         "skill",
@@ -1304,9 +1313,8 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
         executed_controls,
     )
     errors.extend(result_errors)
-    licenses = {metadata.get("license"), frontmatter_value(skill_text, "license")}
-    if None in licenses or len(licenses) != 1:
-        errors.append("license mismatch between SKILL.md and distribution metadata")
+    if not isinstance(metadata.get("license"), str) or not metadata.get("license", "").strip():
+        errors.append("distribution metadata must declare a non-empty license")
     if metadata.get("skill") != "selective-intelligence":
         errors.append("distribution metadata has the wrong skill name")
     expected_archive = f"selective-intelligence-{version}.zip" if version else None

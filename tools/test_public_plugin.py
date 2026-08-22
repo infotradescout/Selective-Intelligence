@@ -64,9 +64,53 @@ class PublicPluginTests(unittest.TestCase):
                 self.assertEqual(manifest["skills"], "./skills/")
                 master = archive.read("skills/selective-intelligence/SKILL.md").decode("utf-8")
                 self.assertIn("Public plugin rule:", master)
+                self.assertEqual(
+                    public_plugin.skill_frontmatter_errors(
+                        master,
+                        "skills/selective-intelligence/SKILL.md",
+                    ),
+                    [],
+                )
+                for icon_name in (
+                    "assets/icon.svg",
+                    "skills/selective-intelligence/assets/icon.svg",
+                ):
+                    self.assertEqual(
+                        public_plugin.svg_dimension_errors(archive.read(icon_name), icon_name),
+                        [],
+                    )
         finally:
             shutil.rmtree(first, ignore_errors=True)
             shutil.rmtree(second, ignore_errors=True)
+
+    def test_rejects_the_portal_reported_svg_and_skill_metadata_failures(self) -> None:
+        undersized_viewbox = (
+            b'<svg width="256" height="256" viewBox="0 0 24 24" '
+            b'xmlns="http://www.w3.org/2000/svg"/>'
+        )
+        icon_errors = public_plugin.svg_dimension_errors(undersized_viewbox, "assets/icon.svg")
+        self.assertTrue(any("viewBox" in error and "at least 48x48" in error for error in icon_errors))
+
+        invalid_skill = """---
+name: selective-intelligence
+description: Recover failed work.
+metadata:
+  version: 1.0.3
+---
+
+# Selective Intelligence
+"""
+        metadata_errors = public_plugin.skill_frontmatter_errors(invalid_skill, "SKILL.md")
+        self.assertTrue(any("only name and description" in error for error in metadata_errors))
+
+        valid_skill = """---
+name: selective-intelligence
+description: Recover failed work.
+---
+
+# Selective Intelligence
+"""
+        self.assertEqual(public_plugin.skill_frontmatter_errors(valid_skill, "SKILL.md"), [])
 
     def test_archive_rejects_normalization_collision_type_conflict_and_long_path(self) -> None:
         root = Path(tempfile.mkdtemp(prefix="si-plugin-adversarial-", dir=REPO_ROOT))

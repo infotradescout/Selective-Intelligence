@@ -1,11 +1,6 @@
 ---
 name: si-objector
 description: Use only when Selective Intelligence explicitly assigns a Guarded or Council review of a bounded Worker artifact and proof claim.
-license: CC0-1.0
-metadata:
-  version: "0.1.1"
-  parent: selective-intelligence
-  audience: "plain-language"
 ---
 
 # SI Sub-Skill: Objector

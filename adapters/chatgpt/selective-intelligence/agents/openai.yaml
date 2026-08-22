@@ -1,12 +1,12 @@
 interface:
   display_name: "Selective Intelligence"
-  short_description: "Selective Intelligence"
-  default_prompt: "Selective Intelligence"
+  short_description: "Recover failed work with lean, verified execution"
+  default_prompt: "Use $selective-intelligence to recover this task and complete the intended outcome."
   icon_small: "./assets/icon.svg"
   icon_large: "./assets/icon.svg"
   brand_color: "#A65F00"
 policy:
   products:
-  - "CHAT"
-  - "CODEX"
+    - "CHAT"
+    - "CODEX"
   allow_implicit_invocation: true

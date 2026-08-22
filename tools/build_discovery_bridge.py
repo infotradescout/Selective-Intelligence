@@ -25,7 +25,7 @@ SUGGESTION_URL = f"{REPOSITORY}/issues/new?template=suggestion.yml"
 SECURITY_URL = f"{REPOSITORY}/security/advisories/new"
 TRIGGER = "Selective Intelligence"
 APPROVAL = "Use Selective Intelligence for this?"
-PUBLISHED_DATE = "2026-08-20"
+PUBLISHED_DATE = "2026-08-22"
 EMPTY_CONTEXT = (
     "Selective Intelligence is active. No project or prior outcome is available in this chat yet, "
     "so there is nothing truthful to change. I’ll apply it automatically to your next request."

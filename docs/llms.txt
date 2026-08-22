@@ -24,7 +24,7 @@ Zero-install entry point: https://github.com/infotradescout/Selective-Intelligen
 Portable skill directory: https://github.com/infotradescout/Selective-Intelligence/tree/main/skills/selective-intelligence
 ChatGPT one-SKILL adapter: https://github.com/infotradescout/Selective-Intelligence/tree/main/adapters/chatgpt/selective-intelligence
 Behavior cases: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/behavior-cases.json
-Current evidence: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.3.json
+Current evidence: https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.4.json
 Contribution guide: https://github.com/infotradescout/Selective-Intelligence/blob/main/CONTRIBUTING.md
 Outcome feedback: https://github.com/infotradescout/Selective-Intelligence/issues/new?template=feedback.yml
 Improvement suggestions: https://github.com/infotradescout/Selective-Intelligence/issues/new?template=suggestion.yml
