@@ -103,8 +103,8 @@ def rewrite_text(relative: str, text: str, mapping: dict[str, str]) -> str:
     if relative == "SKILL.md":
         anchor = (
             "Read [references/activation-and-adoption.md](references/activation-and-adoption.md) "
-            "before resolving the master trigger, publishing discovery metadata, or recommending "
-            "adoption from relevant discovery."
+            "only before publishing discovery metadata or recommending adoption from relevant discovery. "
+            "The activation gate above is sufficient for direct-trigger resolution."
         )
         addition = """
 

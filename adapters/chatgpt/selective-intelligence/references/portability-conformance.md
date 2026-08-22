@@ -185,7 +185,7 @@ Use these scenarios to evaluate Selective Intelligence across different LLMs and
 - both runs receive the same canonical intent, constraints, context, checkpoints, and acceptance tests;
 - understood intent, approved scope, product truth, required workflow, quality threshold, and final user outcome match across runs;
 - prose and non-semantic implementation details may differ;
-- the first live steering checkpoint is **“What I understand you want”** and appears before any side effect;
+- when ambiguity or consequence triggers live steering, the first checkpoint is **“What I understand you want”** and appears before the gated action; clear reversible work proceeds without a ceremonial checkpoint;
 - dislike / hard interrupt cancels pending mutations, accepts correction, revises understanding, and re-gates before continuing;
 - a runtime that cannot meet the bar is corrected, retried, or blocked—not silently accepted;
 - the user is not required to know or care which model/runtime is active;
@@ -239,6 +239,6 @@ For meaningful revisions, run representative cases in clean contexts across at l
 
 ## Guided Council conformance
 
-A v0.2-capable client must demonstrate from fresh context that intentional JumpStart activation works with and without a seed; detected ongoing work is routed to one Project per product or brand; safe Project-source promotion checks ownership, shared status, permitted data, and data-use settings; built-in agent spawning is used when actually available; the sequential fallback remains usable when it is not; and another AI service is optional.
+A conforming client must demonstrate from fresh context that ordinary direct activation stays Lean; intentional JumpStart or Guided Council activation works when explicitly selected; safe Project-source promotion checks ownership, shared status, permitted data, and data-use settings; built-in agent spawning is used only for selected Council roles; the sequential fallback remains usable when it is not; and another AI service is optional.
 
 It must also show that role runs remain distinct, an imported Objector response cannot widen intent or permissions, findings target exact evidence, every finding is dispositioned, blocking findings prevent pass, material corrections invalidate and rerun proof, consequential external actions pause for exact authority, and a fresh Reserve can resume without chat history or repeating an unknown external effect. Incidental discovery of `JUMPSTART.md` during a crawl must not activate it. If validators are absent, affected outputs must say `manual_unverified`.

@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
   "plugin": "selective-intelligence",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "submission_type": "skills_only",
   "availability": {
     "audience": "public",
     "regions": "global"
   },
-  "release_notes": "Packages the canonical Selective Intelligence method as one public skill entrypoint while preserving the seven Council roles as references. Adds public policies, listing metadata, deterministic packaging checks, and reviewer-ready positive and negative cases without claiming publication or outside-client behavior that has not been verified.",
+  "release_notes": "Makes lean single-context execution the default, limits initial reference loading, removes automatic Council and checkpoint ceremony from ordinary work, and adds a release-enforced prompt budget. Council roles remain available as conditional references for explicit or high-consequence review. This package does not claim public-directory behavior that has not been verified.",
   "positive_test_cases": [
     {
       "id": "trigger-start-plain-language",
       "user_prompt": "I have an idea for a neighborhood repair marketplace. Start the project and lock the full MVP, architecture, database, APIs, UI, build order, and proof before coding.",
       "expected_behavior": [
         "Recognizes this as a direct named Selective Intelligence responsibility without asking whether to adopt the skill.",
-        "Recovers the whole intended product and presents an information-complete first checkpoint before project code or external side effects.",
+        "Recovers the whole intended product and presents a concise checkpoint before locking the requested architecture or taking consequential action, while allowing safe reversible inspection.",
         "Separates safe AI work from genuinely human-only authority and avoids developer setup homework."
       ],
       "expected_result_shape": "A concise intent checkpoint with the complete MVP outcome, user journeys, architecture and data/API scope, UI states, build sequence, proof plan, constraints, and only material human decisions; no implementation is falsely reported as complete.",

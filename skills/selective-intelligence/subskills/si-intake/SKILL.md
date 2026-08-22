@@ -1,9 +1,9 @@
 ---
 name: si-intake
-description: Start a run in simple words, capture the real outcome, and send a clean packet to the planner.
+description: Use only when a selected Selective Intelligence Council has unresolved competing interpretations and assigns a bounded intake challenge.
 license: CC0-1.0
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   parent: selective-intelligence
   audience: "plain-language"
 ---
@@ -11,7 +11,7 @@ metadata:
 # SI Sub-Skill: Intake
 
 ## What this skill does (plain language)
-It inspects what the person has already said or connected, reconstructs the active goal, and turns it into a short packet for the next agent.
+It resolves competing meanings and turns the material result into a short packet. Ordinary clear requests stay in the parent context.
 
 ## Inputs
 - A user message that starts a project

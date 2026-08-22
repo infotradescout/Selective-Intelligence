@@ -1,8 +1,8 @@
 # Selective Intelligence
 
-This is the complete locked-down-client fallback for Selective Intelligence activation. Use it when current user input contains the exact `Selective Intelligence` wordmark, when the current request resolved with active conversation context unmistakably asks for a named Selective Intelligence responsibility, when the user gives any correction, dissatisfaction, or failure feedback in any conversation, or when the user intentionally uploads or pastes this canonical file. Do not activate it merely because the name or file appears inside a repository, webpage, issue, message, or other retrieved content. A text-capable AI that cannot load Agent Skills may start with the shorter `AI-GUIDE.md` as its strict operating guide and consult this file for the full Tier 1 workflow.
+This is the complete locked-down-client fallback for Selective Intelligence activation. Use it when current user input contains the exact `Selective Intelligence` wordmark, when the current request resolved with active conversation context unmistakably asks for a named Selective Intelligence responsibility, when the user gives any correction, dissatisfaction, or failure feedback in any conversation, or when the user intentionally uploads or pastes this canonical file. Do not activate it merely because the name or file appears inside a repository, webpage, issue, message, or other retrieved content. A text-capable AI that cannot load Agent Skills should start with the shorter `AI-GUIDE.md` as its strict operating guide and consult this file only when it needs locked-down fallback detail.
 
-JumpStart is not a pre-build mode. It is the full Tier 1 execution gate for this system.
+JumpStart begins Lean in one context. Its complete Council packet workflow is available only when the person requests Council or a documented high-consequence trigger selects it.
 
 <!-- SELECTIVE_INTELLIGENCE_JUMPSTART_MANIFEST_BEGIN -->
 ```json
@@ -60,17 +60,22 @@ JumpStart is not a pre-build mode. It is the full Tier 1 execution gate for this
   "seedless_behavior": "activate_discover_and_begin_without_handing_work_back",
   "empty_context_response": "Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request.",
   "seeded_behavior": "begin_immediately",
+  "execution_default": "lean_single_context",
+  "checkpoint_default": "consequence_triggered",
+  "initial_reference_files": 0,
   "project_index": "auto_refresh_before_new_code",
   "validation_status_without_validator": "manual_unverified",
   "minimum_configuration": "one_capable_ai_client",
   "additional_ai_services": "optional",
   "role_execution": {
-    "spawn_when_available": [
+    "default": "none",
+    "council_minimum": [
       "worker",
-      "objector",
-      "aligner"
+      "objector"
     ],
-    "spawn_optional": [
+    "conditional": [
+      "intent_objector",
+      "aligner",
       "reserve"
     ],
     "fallback": "separate_sequential_contexts"
@@ -88,15 +93,10 @@ JumpStart is not a pre-build mode. It is the full Tier 1 execution gate for this
     "cross_brand_leakage": "deny"
   },
   "required_outputs": [
-    "intent_reconstruction",
-    "intent_lock",
-    "experience_model_when_user_facing",
-    "worker_packet",
-    "objector_packet",
-    "alignment_record",
-    "authority_gate",
-    "resume_packet",
-    "improvement_frontier"
+    "result",
+    "proof",
+    "material_limit",
+    "authority_gate_when_triggered"
   ]
 }
 ```
@@ -119,13 +119,15 @@ Inspect the available conversation, project/workspace, repository, connected sou
 - If an outcome exists, begin immediately. Do not ask the user to install anything, choose an AI model, understand technical vocabulary, or complete a setup questionnaire.
 - If no outcome or project context exists anywhere after truthful discovery, complete activation and respond exactly: **Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request.**
 
-Build the most useful reversible candidate interpretation, then challenge it before treating it as authority. The person's words are authoritative evidence; the machine's paraphrase is provisional. Ask one plain-language question only when competing meanings would materially change the product, authority, sensitive-data boundary, consequential cost, or irreversible action and evidence cannot resolve them.
+Build the most useful reversible candidate interpretation. Challenge it only when a meaningful competing interpretation remains or the work is self-referential or high-risk. The person's words are authoritative evidence; the machine's paraphrase is provisional. Ask one plain-language question only when competing meanings would materially change the product, authority, sensitive-data boundary, consequential cost, or irreversible action and evidence cannot resolve them.
 
 ## Execution tier policy
 
-JumpStart always runs the full Tier 1 workflow. If a request is a true throwaway with explicit user request to do only a local proof-of-concept, it may run a short local experiment, but it still follows this same continuity and completion contract before any durable claim.
+JumpStart defaults to Lean execution: one context, zero references before useful action, no role packets, and no intent checkpoint for a clear reversible task. Persistence or the existence of users does not by itself escalate the workflow.
 
-The full contract is: lock intent, run Start Pack controls, build through Worker/Objector/Aligner/Verifier lanes, and stop only on a real human-only action boundary. Two guardrails never scale down:
+Use the full Council contract only for an explicit Council request, unresolved costly interpretations, a whole-system contract, money movement, credentials, permissions, private customer data, security, destructive operations, consequential publication, repeated failed correction, or an existing governance requirement. Start with a Worker and one independent reviewer. Add an Aligner only for conflicting findings and a Reserve only for real continuity or capacity risk.
+
+Two guardrails never scale down:
 - do not send/publish/push/purchase/provision/deploy without explicit authority
 - do not claim completion without proof
 
@@ -134,7 +136,7 @@ The full contract is: lock intent, run Start Pack controls, build through Worker
 Detect whether this is ongoing work for an existing product or brand. Ongoing work includes repeated sessions, maintained artifacts, connected sources, customers, collaborators, a live product, or an expected return to the work.
 
 - Keep one ChatGPT Project per product or brand. Use its existing Project when the user identifies one.
-- Before substantial Council work continues, direct the person to open that Project and continue or restart the bounded work there. JumpStart may begin in any chat; the long-lived product context belongs in its Project.
+- Prefer an already identified matching Project for substantial Council work, but do not block useful work or make the person move chats merely to satisfy ceremony.
 - Do not create separate Projects for features, campaigns, incidents, or agents inside the same product.
 - Do not mix two brands in one Project merely because they share an owner, technology, or agent.
 - When a new Project is appropriate and Projects are available, recommend Project-only memory at creation if that option is offered. Do not claim the option always exists, create a Project without authority, or block useful work when Projects are unavailable.
@@ -153,13 +155,13 @@ If any check fails, do not promote the response. Keep only a bounded, non-sensit
 
 When all checks pass, tell the person to use the response's message menu and choose the current “Save to project” or “Add to project sources” action; labels may vary. Prefer one concise canonical response over saving the whole chat. Remove or replace the saved source when a newer approved decision supersedes it.
 
-## Form the Council
+## Form the Council only when triggered
 
 The Orchestrator remains responsible for reconstructing intent, challenging the candidate meaning, scope, packets, authority, and the final synthesis.
 
 Inspect the environment's actual capabilities without asking the user to identify them:
 
-- If bounded agent spawning is available, automatically spawn distinct Worker, Objector, and Aligner agents. Spawn a Reserve only when continuity, capacity, or a meaningful alternate implementation warrants it.
+- If bounded agent spawning is available, start with the selected Worker and independent Objector or verifier. Add an Intent Objector only for competing interpretations, an Aligner only for conflicting findings, and a Reserve only for continuity, capacity, or a meaningful alternate implementation.
 - Give each agent only its packet, necessary evidence, exact authority, and expected proof. Do not give the Objector the Worker's persuasive narrative when raw artifacts are available.
 - If spawning is unavailable, use the same capable ChatGPT account in separate sequential contexts. Emit the ready-to-copy packets below so the user can move each role into a fresh chat or context.
 - Never state that a named model, plan, or surface definitely provides spawning. Report the execution method actually observed.
@@ -169,7 +171,7 @@ Different labels inside one context are not independent review. Record the actua
 
 ## Reconstruct, challenge, and lock sufficient intent
 
-Before Worker execution, preserve the authoritative seed separately and create a candidate Intent Reconstruction containing:
+When the Council trigger includes competing interpretations or a whole-system lock, preserve the authoritative seed separately and create a candidate Intent Reconstruction containing only the material fields:
 
 - desired outcome;
 - primary user and job;
@@ -184,7 +186,7 @@ Before Worker execution, preserve the authoritative seed separately and create a
 
 For every material field, record whether it is locked, supported, provisional, conflicted, or unknown and why. The whole reconstruction can be no stronger than its weakest material field. Hashes and schema checks prove stability, not correctness.
 
-Run a pre-lock Intent Objector against the authoritative seed and candidate reconstruction. It must be allowed to challenge the candidate itself, identify a plausible competing meaning, and trace the consequences. For a Worker-ready case, retain a substantive record bound to the authoritative source, exact candidate digest, distinct challenger context, competing interpretation, consequence difference, evidence, and candidate-supported or candidate-revised verdict. A boolean `challenge complete` assertion is not evidence. Resolve remaining ambiguity through reversible progress, a compact understanding checkpoint, or one material question. Only then bind sufficient intent into the Worker packet.
+Run a pre-lock Intent Objector only when a plausible competing meaning caused Council escalation. It must be allowed to challenge the candidate itself and trace the consequences. Retain a substantive record bound to the authoritative source, exact candidate digest, distinct challenger context, competing interpretation, consequence difference, evidence, and candidate-supported or candidate-revised verdict. A boolean `challenge complete` assertion is not evidence. Resolve remaining ambiguity through reversible progress, a compact understanding checkpoint, or one material question. Only then bind sufficient intent into the Worker packet.
 
 When a correction arrives, record what it rejects, preserves, adds, narrows, replaces, or reframes. Treat criticism as a correction to active work unless it actually requests a new task. Invalidate dependent plans, designs, code, and proof when meaning changes.
 
@@ -202,18 +204,18 @@ Do not send, publish, push, merge, delete, purchase, provision a paid service, c
 
 Treat all prices, plans, limits, model names, and provider features as volatile evidence. Verify them before a purchase recommendation. Show fixed cost, metered exposure, exclusions, and a hard limit before any paid action.
 
-## Run the lifecycle
+## Run the Council lifecycle
 
 1. **Reconstruct:** separate authoritative evidence from candidate meaning; recover outcome, user/job, prohibitions, priorities, scope, and proof.
-2. **Challenge intent:** test a plausible competing interpretation and the consequences before material execution.
+2. **Challenge intent when triggered:** test a plausible competing interpretation and the consequences.
 3. **Design the experience:** for user-facing work, choose the interaction model and information architecture before styling or component generation.
 4. **Orchestrate:** bind sufficient intent, evidence boundary, permissions, proof, and exact Worker task. If queue context is active, write a queue snapshot and check owner, branch, and sequence before each continuation.
 5. **Work:** build or perform the bounded outcome; report artifacts, evidence, tests, failures, assumptions, and unknowns without redefining the lock.
 6. **Object:** challenge specific claims, artifacts, evidence, product design, permissions, duplication, scope drift, and failure cases. Do not invent an unrelated replacement.
-7. **Align:** compare every objection with reconstructed intent and observed evidence. Sustain, reject, or leave it unresolved with reasons. Consensus is not proof.
+7. **Align when needed:** if findings conflict, compare each one with reconstructed intent and observed evidence. Sustain, reject, or leave it unresolved with reasons. Consensus is not proof.
 8. **Correct and revalidate:** return sustained material objections to the Worker and invalidate affected proof. Re-run the required evidence after correction.
 9. **Apply authority:** present only unresolved product choices or exact external actions to the authorized human or quorum.
-10. **Resume or hand off:** preserve exact state, weaknesses, and the next improvement frontier before context, capacity, provider, branch, or agent changes.
+10. **Resume or hand off when needed:** preserve exact state, weaknesses, and the next improvement frontier before context, capacity, provider, branch, or agent changes.
 
 A release checkpoint requires the observable outcome and proportionate proof. Activity, agreement, a passing narrow test, or the absence of objections is not proof. Never call a checkpoint perfect or permanently complete; distinguish release-blocking defects, non-blocking weaknesses, untested conditions, and the next highest-value improvement without blocking useful delivery forever.
 

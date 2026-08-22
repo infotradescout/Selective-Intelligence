@@ -1,9 +1,9 @@
 ---
 name: si-planner
-description: Create the first-checkpoint plan in plain language, then hand exact tasks to the build agent.
+description: Use only when a selected Selective Intelligence Council is locking a whole product, architecture, migration, or other consequential plan.
 license: CC0-1.0
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   parent: selective-intelligence
   audience: "plain-language"
 ---
@@ -11,7 +11,7 @@ metadata:
 # SI Sub-Skill: Planner
 
 ## What this skill does (plain language)
-It locks the plan before any building.
+It locks a consequential Council plan. Clear bounded work does not invoke this role or wait for a plan lock.
 
 ## Inputs
 - `si-intake` output packet

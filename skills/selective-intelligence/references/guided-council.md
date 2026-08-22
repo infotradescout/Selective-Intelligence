@@ -1,6 +1,6 @@
 # Guided Council
 
-Use this reference when Selective Intelligence coordinates more than one role, fresh context, agent, model, provider, or execution surface. The Council is a controlled workflow, not a required set of subscriptions.
+Use this reference only after the Council lane is selected because the person requested it or a documented high-consequence trigger applies. The Council is a controlled exception, not the default Selective Intelligence runtime and not a required set of subscriptions.
 
 ## Contents
 
@@ -18,7 +18,7 @@ Use this reference when Selective Intelligence coordinates more than one role, f
 
 ## Required outcome
 
-Turn one plain-language outcome into a bounded, evidence-grounded result through distinct orchestration, work, objection, alignment, authority, and continuity stages. One capable ChatGPT account may perform every AI role in separate contexts. Additional models or providers are optional.
+Turn one plain-language outcome into a bounded, evidence-grounded result using the minimum distinct work and review needed for the risk. A Worker plus one independent reviewer is normally sufficient. Add an Aligner only when findings conflict and a Reserve only for genuine continuity or capacity risk. Additional models or providers are optional.
 
 The Council must reduce user burden rather than expose its internal terminology. Ask the user about product outcomes, authority, sensitive-data boundaries, consequential cost, and irreversible choices. Discover routine technical and execution details from the environment.
 
@@ -48,7 +48,7 @@ When the checks pass, direct the person to the response message menu and the cur
 - Keep the user or existing human quorum as final authority.
 - Synthesize the result without hiding objections or uncertainty.
 
-### Intent Objector
+### Intent Objector — only for competing interpretations
 
 - Run before the Worker in a context distinct from the Orchestrator.
 - Challenge the candidate interpretation itself against the authoritative seed.
@@ -73,7 +73,7 @@ When the checks pass, direct the person to the response message menu and the cur
 - Return attributable findings and recommended corrections.
 - Remain read-only and avoid building an unrelated replacement.
 
-### Aligner
+### Aligner — only for conflicting findings
 
 - Compare each finding with the Intent Lock, evidence, actual artifacts, and permission policy.
 - Sustain valid objections and reject unsupported ones with evidence.
@@ -81,7 +81,7 @@ When the checks pass, direct the person to the response message menu and the cur
 - Name invalidated proof and required revalidation after material corrections.
 - Never use consensus, provider reputation, or majority vote as a correctness rule.
 
-### Reserve
+### Reserve — only for continuity or capacity risk
 
 - Resume only from a current portable Resume Packet and actual state inspection.
 - Preserve the same intent, permissions, prohibitions, evidence meanings, and proof standard.
@@ -109,11 +109,13 @@ High-risk or self-referential work should use the strongest practical grade prop
 
 Inspect capabilities rather than assuming a named plan or model exposes them.
 
-1. If bounded agent spawning is available, keep the Orchestrator in the parent context and automatically spawn a pre-lock Intent Objector followed by separate Worker, implementation Objector, and Aligner agents. Add Reserve only when justified.
-2. Give each agent one role, one packet, a bounded evidence set, and a return contract.
-3. Do not allow Worker and Objector to share an execution context or mutate the same artifact concurrently.
-4. If spawning is unavailable, emit portable packets and use fresh sequential chats or contexts under the same account.
-5. If no fresh context is possible, run a visibly degraded Grade 0 counterexample pass and do not label it independent.
+1. State the Council trigger and the exact risk the review must reduce.
+2. Start with a Worker and one independent Objector or verifier. Add an Intent Objector only when competing interpretations caused the escalation.
+3. Give each selected role one packet, a bounded evidence set, and a return contract. Do not load role files for roles that are not selected.
+4. Do not allow Worker and Objector to mutate the same artifact concurrently.
+5. Add an Aligner only when findings genuinely conflict. Add Reserve only for real continuity or capacity risk.
+6. If bounded agent spawning is available, use it only for the selected roles. If it is unavailable, use fresh sequential contexts under the same account.
+7. If no fresh context is possible, run a visibly degraded Grade 0 counterexample pass and do not label it independent.
 
 Do not force extra subscriptions. Route to an additional provider only when the user has it, its data boundary permits the packet, and independent perspective or capacity materially helps.
 
@@ -121,37 +123,37 @@ Provider or model identity never changes the Intent Lock, proof standard, or fin
 
 ## Pre-action intent steering
 
-Before any Worker side effect (file mutation, build, publish, merge, spend, or other project-changing action), the run must surface a user-visible intent-understanding checkpoint.
+Use a user-visible intent-understanding checkpoint when material ambiguity remains, the Council is locking a whole product or architecture, or the next action is public, irreversible, expensive, destructive, permission-changing, or exposes sensitive data. A harmless local file mutation does not trigger approval by itself.
 
 - First checkpoint title: **“What I understand you want.”**
-- Side effects stay queued/blocked until the checkpoint is approved.
+- The exact gated action stays blocked until the checkpoint is approved; unrelated reversible inspection may continue.
 - **Platynum:** clickable Approve / Correct (wired to SI `approve` / `interrupt` with current checkpoint id + intent hash).
 - **Outside Platynum (this skill, Cursor, IDE agents):** never render decorative Approve/Correct or emoji controls. Ask for the text gate only:
   - `APPROVE`
   - `CORRECT: <instruction>`
 - Correct / `CORRECT:` interrupts, cancels pending mutating work, classifies `RETRACT` or `REPLACE`, emits a new checkpoint, and re-gates before continuing.
 
-This is the Council/product **pre-action drift catch** for model interchangeability: drifted interpretation is corrected before it becomes an action. SI owns interpretation authority via approved checkpoints and `interrupt` (see [step1-intent-control-status.md](step1-intent-control-status.md)). Do not invent halt-all, restart-project, or new-branch policies from a dislike or correction—only apply this documented requirement and existing checkpoint contracts.
+This is the Council/product **pre-action drift catch** for consequential or disputed meaning: drifted interpretation is corrected before it becomes the gated action. SI owns interpretation authority via approved checkpoints and `interrupt` (see [step1-intent-control-status.md](step1-intent-control-status.md)). Do not invent halt-all, restart-project, or new-branch policies from a dislike or correction—only apply this documented requirement and existing checkpoint contracts.
 
-The full-scope build artifact in [first-checkpoint.md](first-checkpoint.md) remains mandatory for build-shaped Tier 1 work; live steering is the continuous pre-action check that keeps execution aligned to that lock across models.
+Read [first-checkpoint.md](first-checkpoint.md) only when its whole-product, ambiguity, or consequential-action trigger applies. Do not repeat approval before every Worker step once the boundary is settled.
 
 ## Packet lifecycle
 
-Use this order:
+Use only the stages selected for the risk. The full form is:
 
 ```text
 user outcome
   → candidate Intent Reconstruction
-  → bound Intent Challenge
+  → bound Intent Challenge when competing readings triggered Council
   → sufficient Intent Lock
   → Worker Packet
   → Worker result and proof
   → Objector Packet
   → Objector findings
-  → Aligner dispositions and gate
+  → Aligner dispositions when findings conflict
   → correction and revalidation when required
   → human or quorum authority when required
-  → final result or Resume Packet
+  → final result or Resume Packet when continuity requires one
 ```
 
 Every packet carries:
@@ -159,7 +161,7 @@ Every packet carries:
 - stable packet and parent-result identifiers;
 - project or brand boundary;
 - Intent Lock or exact reference and revision;
-- the exact bound Intent Challenge for every post-reconstruction role packet;
+- the exact bound Intent Challenge when one was required;
 - source and evidence references with sensitivity;
 - permitted and approval-required actions;
 - exact task or review targets;

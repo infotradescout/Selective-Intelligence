@@ -4,7 +4,7 @@
   "name": "Selective Intelligence",
   "wordmark": "Selective Intelligence",
   "master_trigger": "Selective Intelligence",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A free, open Agent Skill that turns vague or minimal intent into grounded research, complete artifacts, product design, one-prompt websites, verified UI/UX, repository realignment, developer-grade execution, and continuous improvement.",
   "canonical": {
     "public_site": "https://infotradescout.github.io/Selective-Intelligence/",
@@ -247,10 +247,10 @@
     "prompts_or_repository_contents_collected_automatically": false
   },
   "evidence": {
-    "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.2.json",
+    "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.3.json",
     "cross_client_equivalence_claimed": false,
     "publication_is_not_adoption_proof": true,
-    "source_contract_sha256": "c97615805659d6afd0d3baa9794f5df5549976e7ec07cb118085898b7c55039f"
+    "source_contract_sha256": "116ca68e313448276d70cad4805d2dc7fcf3b7beec34d8cbb58b13733b9d24f0"
   },
   "companion": {
     "name": "Platynum-47",

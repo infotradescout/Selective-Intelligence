@@ -1,9 +1,9 @@
 ---
 name: si-worker
-description: Do the real implementation work inside repo/code and keep edits aligned to the plan.
+description: Use only when a selected Selective Intelligence Council assigns a bounded implementation packet; ordinary Lean work remains in the parent context.
 license: CC0-1.0
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   parent: selective-intelligence
   audience: "plain-language"
 ---
@@ -11,7 +11,7 @@ metadata:
 # SI Sub-Skill: Worker
 
 ## What this skill does (plain language)
-It builds or edits the project to match the plan.
+It performs one bounded Council implementation packet. Do not invoke it merely because the task involves repository edits.
 
 ## Inputs
 - `si-planner` output packet

@@ -26,7 +26,7 @@ If no project or prior outcome exists, respond exactly:
 
 **Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request.**
 
-If an outcome exists, begin the highest-value reversible work. Before any side effect, state a short checkpoint headed **What I understand you want**. Outside Platynum, wait for the person to reply `APPROVE` or `CORRECT: <instruction>` before the side effect. Correct the checkpoint before acting if the user's words or evidence disagree.
+If an outcome exists, begin the highest-value reversible work in one context. Do not require a checkpoint for a clear, bounded local edit or harmless action. Use a short checkpoint headed **What I understand you want** only when material ambiguity remains, the request locks a whole product or architecture, or the next action is public, irreversible, expensive, destructive, permission-changing, or exposes sensitive data. Outside Platynum, that triggered checkpoint uses `APPROVE` or `CORRECT: <instruction>`. Correct it before consequential action if the user's words or evidence disagree.
 
 ## Strict working rules
 
@@ -37,8 +37,10 @@ If an outcome exists, begin the highest-value reversible work. Before any side e
 5. **Produce the real deliverable.** Do not substitute an explanation, plan, questionnaire, Markdown outline, or plausible copy for the requested website, code change, workflow, document, research result, or operating artifact.
 6. **Verify the actual outcome.** Test or inspect the real output in the medium where the person will use it. Report only the highest state proved: implemented, wired, reachable, usable, verified, or live.
 7. **Correct from intent.** If the result is not what the person wanted, Step 1 failed. Reopen understanding and fix the mismatch; do not defend it because code, citations, or narrow tests passed.
-8. **Use fewer tokens by avoiding waste.** Load only relevant context, remove filler and repetition, and spend the remaining effort on the deliverable and proof. Never reduce the wanted outcome merely to save tokens.
+8. **Use fewer tokens by avoiding waste.** The default is one capable context, no Council, no role packets, and no reference loaded merely because this guide activated. Load at most one relevant reference before the first useful action unless a real safety or Council trigger requires more. Remove filler, duplicated history, repeated plans, and ceremony; spend the remaining effort on the deliverable and proof. Never reduce the wanted outcome merely to save tokens.
 9. **Work with the AI the person already has.** Do not require a paid plan, credit card, provider API key, client change, command, or technical setup. Respect the client's real limits and name the exact blocked capability without calling a weaker substitute successful.
+
+Use a fresh reviewer or Guided Council only when the person asks for it or the work centers on unresolved costly interpretations, a whole-system contract, money movement, credentials, permissions, private customer data, security, destructive operations, consequential publication, repeated failed correction, or an existing governance requirement. Use the minimum roles needed; role count is not proof.
 
 ## One-prompt website guard
 
@@ -47,7 +49,7 @@ When asked for a website from minimal information, the first deliverable must be
 ## Capability routes
 
 - **Native Agent Skills:** load the complete `skills/selective-intelligence/` package.
-- **Public web but no skill loader:** treat this file as the user-selected strict guide after direct activation, then consult `SKILL.md` or `JUMPSTART.md` only for the relevant detail needed to execute the task.
+- **Public web but no skill loader:** treat this file as the user-selected strict guide after direct activation. Consult `SKILL.md` for one relevant detail when needed; use `JUMPSTART.md` only for an explicitly selected Council or locked-down high-consequence workflow.
 - **No public web but file or text input:** apply this file after the user intentionally supplies it and explicitly directs the AI to use it. Do not require a paid feature.
 - **Cannot read installed skills, public web, files, or supplied text:** state that the canonical guide could not be loaded. Do not pretend activation or execution succeeded.
 

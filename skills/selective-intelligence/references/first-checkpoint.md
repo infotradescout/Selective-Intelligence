@@ -1,144 +1,70 @@
-# First Checkpoint
+# First checkpoint
 
-The first response to any build-shaped request is a locked, full-scope intent checkpoint —
-recovered from minimal input — not code, not a trimmed deliverable, not a permission request.
-No part of the build begins until this checkpoint is complete **and every input needed to
-perform the entire outcome is in hand.** This is the gate that makes minimal input produce
-complete outcomes. The skill's readiness is measured by how few correction rounds a user needs
-to reach a correct checkpoint; the target is zero.
-
-## Contents
-
-- [When it fires](#when-it-fires)
-- [The checkpoint artifact](#the-checkpoint-artifact)
-- [Information sufficiency before execution](#information-sufficiency-before-execution)
-- [Enforcement](#enforcement)
-- [Failure classes this gate refuses](#failure-classes-this-gate-refuses)
-- [The measure](#the-measure)
-- [Relationship to the modes](#relationship-to-the-modes)
+The first checkpoint prevents expensive drift when meaning or consequence justifies a lock. It is not the default first response to every request that creates or changes something.
 
 ## When it fires
 
-Any request to build, create, complete, design, ship, integrate, or "finish" a product,
-feature, system, or campaign — anything beyond a Tier 0 scratch throwaway (see
-[friction-ladder.md](friction-ladder.md)). If it is unclear whether the work is Tier 0, it is
-not; fire the checkpoint.
+Use a checkpoint headed **What I understand you want** before action only when at least one condition applies:
+
+- material ambiguity remains and plausible readings lead to meaningfully different outcomes;
+- the request locks a new whole product, system architecture, migration, or cross-system contract;
+- the next action is public, irreversible, expensive, destructive, permission-changing, or exposes sensitive data; or
+- the person explicitly asks to lock intent before execution.
+
+A clear correction, focused document change, reversible local edit, bounded feature repair, routine repository continuation, or ordinary research task stays Lean. The existence of a user, persistent file, or durable result does not by itself fire this checkpoint.
 
 ## The checkpoint artifact
 
-Emit all of the following from the minimal input, inferring aggressively from the seed, existing
-artifacts, and evidence, and naming each material assumption. Do not ask the user for what can be
-recovered.
+Include only the fields needed to prevent the identified drift:
 
-1. **Recovered full intent** — the largest truthful outcome the seed supports, not the literal
-   minimal ask. Treat the prompt as a seed, never as the output size. Scoping the deliverable
-   down to fit available effort or time is forbidden here.
-2. **Whole-product decomposition** — the complete system as bounded slices (tiers), each with
-   inputs, outputs, an owner, and its proof. No slice is dropped for being hard or large.
-3. **Canonical reuse map** — for each slice, what already exists to reuse or extend
-   (repositories, patterns, prior art, this skill's own machinery). Rebuilding what exists is
-   forbidden: reuse → extend → extract → only then add.
-4. **Build sequence** — the slices ordered by dependency, marking which are parallelizable
-   (council fan-out) and which are serial.
-5. **Proof plan** — the observable success criteria for each slice and for the whole outcome;
-   what "done" means, gated on evidence, never on activity or agreement.
-6. **Authority split** — the genuine human decisions (irreversible actions, consequential cost,
-   sensitive-data boundaries, brand, external mutation) separated from everything the model
-   infers and executes without asking.
-7. **Constraint reconciliation** — check the stated constraints against each other and flag any
-   contradiction *before* building. Constraints often conflict silently: "non-developer" and
-   "no backend" cannot both hold for one-click auth; "runs on the device" and "heavy build"
-   cannot both hold without offload. Surface the conflict and resolve it in the checkpoint, not
-   mid-build after committing to the wrong architecture.
-8. **Human-layer activation steps** — enumerate every action *only the human can take* to make
-   the outcome live (obtain a key, register an OAuth app, deploy, approve, connect a source), up
-   front. These are discovered at checkpoint time, never mid-build. Everything else is the AI's
-   to build; the human-layer list is the exact, minimal set of steps left for the person.
+1. **Outcome and user** — the real-world result and who must be able to use it.
+2. **Non-negotiables and prohibitions** — what must be preserved and what must not happen.
+3. **Scope and boundaries** — the complete affected surface, including explicitly excluded areas.
+4. **Outcome slices and proof** — for a whole-product lock, the bounded parts and observable evidence that make each part real.
+5. **Canonical reuse map** — existing owners to reuse or change before creating another one.
+6. **Build or action sequence** — the dependency order that avoids partial or contradictory work.
+7. **Authority split** — reversible work the AI may perform and exact consequential actions reserved for the person.
+8. **Constraint reconciliation** — material conflicts among requirements, capabilities, privacy, time, and cost.
+9. **Human-only activation steps** — only actions the person truly must take, expressed in plain language without technical setup homework.
 
-Stamp the checkpoint with a UTC timestamp and carry it forward (see
-[time-awareness.md](time-awareness.md)).
+Do not inflate a narrow consequential action into a whole-product essay. For example, a publish checkpoint may need the target, artifact, visibility, and rollback implication—not nine repeated sections.
 
-## Information sufficiency before execution
+## Information sufficiency
 
-No part of the build starts until every input needed to perform the entire outcome is in hand.
+Infer from active conversation, existing artifacts, authoritative evidence, and established decisions before asking. Ask one compact question only when the missing answer changes the outcome, authority, sensitive-data boundary, consequential cost, or irreversible choice and cannot be resolved safely.
 
-- **Recover first.** Fill the information by inference from the seed, the repository, connected
-  evidence, and established constraints before considering a question.
-- **Resolve genuine unknowns in one consolidated, up-front pass** — only the few answers that
-  would materially change the product, authority, sensitive-data boundary, consequential cost,
-  or an irreversible choice. Ask them together, once, in plain language, with recommended
-  defaults.
-- **Never trickle-ask mid-build, and never begin a slice while a later slice's blocking inputs
-  are still unknown.** Partial starts on partial information are drift.
+Whole-product locks should resolve their genuinely blocking inputs together. Later unknowns that do not block the next reversible slice stay visible; they do not prevent useful local progress. Do not trickle-ask questions that inspection can answer, and do not claim that an unverified inference is approved intent.
 
-## Enforcement
+## Approval surface
 
-- No application code, no trimmed deliverable, and no permission-per-step before the checkpoint
-  exists and is information-complete.
-- Present the checkpoint, then execute under the authority split — confirming only the genuine
-  decisions, once, not each step.
-- Scope-reduction and single-threading are drift, not prudence. "Smallest viable release"
-  sequences the full outcome; it never shrinks it.
-- A deadline is not authority to cut scope, skip the checkpoint, or claim completion without
-  evidence.
-- If the delivered result is not what the person wanted, Step 1 failed and reopens. Do not
-  downgrade the wanted outcome to match a free-tier quota, unavailable tool, external company
-  boundary, implementation shortcut, or technically successful substitute. Record the
-  constraint, recover the missed meaning or path, and correct it. Only an explicit user-approved
-  amendment made after the difference is clear can change the target.
+Present the checkpoint in short human language. Keep the complete machine-checkable record internally when the runtime needs it.
 
-## Failure classes this gate refuses
+- **Platynum:** the product may provide wired Approve and Correct controls bound to the current checkpoint identifier and intent hash.
+- **Outside Platynum:** use the text gate `APPROVE` or `CORRECT: <instruction>`. Do not render decorative buttons or emoji controls.
 
-Mined from real correction sessions; each is a named guard:
+Approval unlocks only the described action and scope. A correction reopens affected meaning, invalidates dependent work and proof, and creates a revised checkpoint where the trigger still applies.
 
-- **scope-reduction-as-completion** — trimming the deliverable to fit one thread or one day and
-  calling it done.
-- **single-thread default** — building one file at a time instead of decomposing for parallel or
-  council execution.
-- **ask-instead-of-recover** — asking the user for understanding the system should infer from the
-  seed and existing artifacts.
-- **vibe-sprint-under-deadline** — "pick one, go fast" energy that manufactures drift and false
-  completion.
-- **literal-ask-over-full-intent** — treating the minimal prompt as the requested output size.
-- **trim-without-authority** — deferring or cutting features and labeling them done or closed
-  without the user's scope decision.
-- **partial-start-before-info-complete** — beginning any slice before the information to perform
-  all of it is in hand.
-- **false-choice-when-both-required** — offering the user an either/or between options that are
-  all needed. If both (or all) are required, do them all; a non-decision is not a question. Only
-  a genuine, mutually exclusive, outcome-changing fork is worth asking.
+## Enforcement boundary
 
-## The measure
+- Do not perform the gated consequential action before valid approval.
+- Reversible inspection and preparation may continue when they do not pre-commit the disputed choice or create an external effect.
+- Do not require approval again for every harmless step under the same approved boundary.
+- A deadline never authorizes a consequential action or false completion claim.
+- If the delivered result does not match what the person wanted, reopen understanding even when narrow tests pass.
 
-Track **correction-rounds-to-correct-checkpoint**: how many user corrections were needed before
-the checkpoint matched intent. Zero is the goal. A session that needs many corrections to reach
-correct scope is the failure this gate exists to erase — record it through
-[feedback-and-learning-loop.md](feedback-and-learning-loop.md) and harvest the corrections into
-new guards via [correction-harvesting.md](correction-harvesting.md).
+The SI checkpoint runtime can bind and interrupt governed session work. Do not claim it stopped arbitrary third-party model streams, tools, or workers unless product wiring proves that effect.
 
-Track **wanted-result match** at every handoff. If the person says or the acceptance evidence
-shows that the result is not what they wanted, the value is failed and Step 1 reopens regardless
-of code quality, test status, quota limits, or how reasonable the substitute appears. An external
-constraint may make completion blocked; it cannot make the mismatched result aligned.
+## Relationship to execution lanes
 
-## Relationship to the modes
+Lean work normally has no checkpoint. Guarded work uses one only when a trigger above is present. Council work commonly includes one because its selection conditions often involve ambiguity or consequence, but Council status alone is not a reason to repeat already settled approval.
 
-The checkpoint is the mandatory front door for build-shaped work; it is not a new mode. Start
-mode then executes it (Before-build locked), the friction ladder sets how much ceremony each
-slice earns, the council runs the slices, and the Resume Packet carries state across contexts.
+The checkpoint locks meaning or authority; it does not require seven roles, a Start Pack, a queue, or a Resume Packet. Those artifacts are separate tools used only when the selected workflow genuinely needs them.
 
-## Relationship to live steering and model interchangeability
+## Measure
 
-The full-scope first-checkpoint artifact locks recovered intent, decomposition, proof, and
-authority before a build. **Live steering** keeps that lock interchangeable across models:
-the first run-loop checkpoint is always **“What I understand you want,”** side effects stay
-blocked until approval, and Correct / `CORRECT:` forces interrupt → `RETRACT`/`REPLACE` →
-new checkpoint → re-approve before any drifted action runs.
+Track two outcomes:
 
-**Surface rule:** Platynum may show clickable Approve/Correct. Outside Platynum (skill prompts,
-Cursor, IDE agents), do **not** display decorative Approve/Correct controls—use the text gate
-`APPROVE` or `CORRECT: <instruction>` only. SI runtime enforcement is in
-[step1-intent-control-status.md](step1-intent-control-status.md). Read
-[model-neutral-execution.md](model-neutral-execution.md#governing-requirement-model-interchangeability)
-and [guided-council.md](guided-council.md#pre-action-intent-steering). Do not invent halt-all,
-restart-project, or new-branch policies from a correction.
+- **avoidable checkpoint rate** — clear reversible tasks stopped for approval without a trigger; target zero;
+- **correction rounds to correct consequential checkpoint** — user corrections needed before a triggered lock matches intent; target zero.
+
+Both matter. A gate that catches costly drift is useful; a gate placed before every harmless edit is token and interaction waste.
