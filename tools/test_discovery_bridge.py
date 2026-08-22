@@ -87,6 +87,8 @@ class DiscoveryBridgeTests(unittest.TestCase):
         publication = self.manifest["publication"]
         self.assertEqual(publication["status"], "public")
         self.assertEqual(publication["version"], "1.0.5")
+        self.assertEqual(publication["source_release_status"], "update_candidate")
+        self.assertEqual(publication["candidate_version"], "1.0.6")
         self.assertEqual(publication["directory_url"], PLUGIN_DIRECTORY_URL)
         self.assertEqual(self.manifest["canonical"]["public_plugin_directory"], PLUGIN_DIRECTORY_URL)
         self.assertIn(PLUGIN_DIRECTORY_URL, self.html)

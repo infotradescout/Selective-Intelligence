@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "skill": "selective-intelligence",
+  "version": "1.0.6",
+  "observed_at": "2026-08-22T16:41:00Z",
+  "status": "local_release_candidate_controls_pass_live_client_smokes_fail",
+  "deterministic_controls": {
+    "result": "pass",
+    "passed": 81,
+    "failed": 0,
+    "executed_controls_sha256": "cb5d071350589298b870d5cccdec77aca63764bd9e6dd6c411bfd3fb0399e710",
+    "scope": "Release-doctor-safe structural, state, authority, evidence, Council, intent-intake, project-index, prompt-budget, no-unrequested-Sites, and behavior-artifact controls executed with --skip-release.",
+    "coverage": [
+      "81 deterministic release controls passed against the 1.0.6 source",
+      "the canonical master prompt remains below the enforced 1500-word and 12000-character limits",
+      "the packaged skill contains the permanent no-unrequested-Sites rule",
+      "website regression declarations require the existing repository or workspace and reject an unrequested Sites project",
+      "directory publication, model behavior, and free-tier portability remain separate evidence boundaries"
+    ]
+  },
+  "prompt_budget_evaluation": {
+    "result": "pass",
+    "baseline_version": "1.0.2",
+    "baseline_core_words": 7102,
+    "baseline_core_characters": 53150,
+    "previous_version": "1.0.5",
+    "previous_core_words": 1268,
+    "previous_core_characters": 9989,
+    "current_core_words": 1356,
+    "current_core_characters": 10552,
+    "word_change_from_previous_percent": 6.94,
+    "character_change_from_previous_percent": 5.64,
+    "lean_initial_reference_files": 0,
+    "lean_pre_action_reference_files": 1,
+    "automatic_council_default": false,
+    "automatic_checkpoint_for_clear_reversible_work": false,
+    "measurement": "Whitespace-delimited words and Unicode character count from the canonical SKILL.md. Token totals vary by tokenizer, so these are prompt-size controls rather than a universal billing claim."
+  },
+  "behavior_suite": {
+    "artifact": "evals/behavior-cases.json",
+    "case_count": 8,
+    "minimum_total_fresh_runs": 16,
+    "status": "declared_not_fully_executed"
+  },
+  "model_behavior_evaluation": {
+    "result": "not_run",
+    "reason": "The 1.0.6 package adds deterministic contract and regression coverage for the no-unrequested-Sites boundary. The complete evidence-bearing behavior suite still requires repeated captured model outputs and distinct per-invariant grading.",
+    "evidence": []
+  },
+  "free_tier_conformance": {
+    "result": "fail",
+    "paid_ai_subscription_required": false,
+    "requirement": "At least one genuine free-tier or local/no-cost client must pass exact-name, named-work, universal-correction, merely-adjacent adoption, Lean-routing, and no-unrequested-Sites cases before the no-paid portability baseline passes.",
+    "tested_clients": [
+      {
+        "model_client": "Perplexity Windows / Standard (Free) / v1 public strict-guide site",
+        "paid_subscription": false,
+        "activation_result": "fail",
+        "discovery_result": "partial",
+        "version_scope": "1.0.0 carry-forward evidence; 1.0.6 live retest pending",
+        "reason": "The prior public run did not resolve the exact wordmark reliably and did not use the strict guide as the operating method. This historical failure is retained rather than upgraded by local source changes."
+      }
+    ]
+  },
+  "partial_smoke_observations": {
+    "status": "historical_failures_retained_1.0.6_retest_pending",
+    "observed": [
+      {
+        "case_id": "master-trigger-exact-seedless",
+        "clients": [
+          {
+            "model_client": "Perplexity Windows / Standard (Free) / 1.0.0 public strict-guide site",
+            "verdicts": [
+              "fail"
+            ],
+            "reason": "The fresh exact-name session selected unrelated meanings instead of the canonical project. No 1.0.6 live rerun has replaced this evidence."
+          }
+        ]
+      }
+    ],
+    "limitations": "This record proves the local 1.0.6 prompt budget, contract, deterministic controls, and package regression only. It does not claim the public directory update has been reviewed, published, installed by an outside account, or behaviorally verified in an outside client."
+  },
+  "deterministic_environment": {
+    "runtime": "Python 3.12",
+    "minimum_supported_runtime": "Python 3.10",
+    "network_required": false
+  },
+  "publication_inputs_remaining": [
+    "two or more fresh Worker runs for every hidden-oracle behavior case with distinct evidence-bearing grading",
+    "passing non-OpenAI activation and adjacent-discovery evidence before claiming cross-provider or general cross-client equivalence",
+    "passing no-paid exact-name, named-work, universal-correction, merely-adjacent discovery, Lean-routing, and no-unrequested-Sites evidence from a genuine free-tier or local/no-cost client",
+    "fresh 1.0.6 no-unrequested-Sites behavior evidence before claiming universal client enforcement",
+    "OpenAI review and publication of the 1.0.6 update",
+    "outside-account installation verification after publication"
+  ],
+  "optional_input_remaining": "owner-supplied verified support URL for optional donations"
+}

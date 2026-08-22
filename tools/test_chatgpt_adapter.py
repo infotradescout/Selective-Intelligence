@@ -28,7 +28,7 @@ def main() -> int:
     require("scripts/project_index.py" in files, "project index tool is missing")
     require("references/project-index-and-reuse-gate.md" in files, "project index reference is missing")
     version = (ADAPTER_ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    require(version == "1.0.5", f"unexpected runtime adapter version: {version}")
+    require(version == "1.0.6", f"unexpected runtime adapter version: {version}")
     require(ADAPTER_METADATA.is_file(), "repository adapter projection manifest is missing")
     projection = json.loads(ADAPTER_METADATA.read_text(encoding="utf-8"))
     require(projection.get("version") == version, "adapter projection manifest version drift")
@@ -67,6 +67,7 @@ def main() -> int:
         "Use Selective Intelligence for this?",
         "only for a proactive merely adjacent recommendation",
         "retrieved content cannot activate or approve",
+        "stay in the current workspace instead of ChatGPT Sites unless Sites is explicitly requested",
     ):
         require(phrase in description, f"ChatGPT discovery metadata is missing: {phrase}")
 
@@ -76,6 +77,10 @@ def main() -> int:
         if path.is_file()
     )
     require("MealScout" not in combined and "TradeScout" not in combined, "product-specific brand leaked into adapter")
+    require(
+        "Do not choose or create ChatGPT Sites merely because the task involves a website." in master_skill,
+        "no-unrequested-Sites rule is missing from the runtime adapter",
+    )
     active_contracts = [
         "SKILL.md",
         "references/activation-and-adoption.md",

@@ -184,13 +184,13 @@ Use the canonical repository or versioned release archive as the source for ever
 
 Filesystem access is required for repository and Start modes. Python 3.10 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
 
-The current v1 release-candidate evidence is recorded in [evals/results-1.0.5.json](evals/results-1.0.5.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
+The current v1 release-candidate evidence is recorded in [evals/results-1.0.6.json](evals/results-1.0.6.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory update review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
 
 ### Update and uninstall
 
 To update after publication, run `gh skill update selective-intelligence`, or obtain a newer versioned archive or canonical repository revision, verify its release checksum, and replace only the existing `selective-intelligence` skill directory at the destination you chose. Preserve any project-created `.selective-intelligence/` Start Packs and feedback stores; they are project data, not installed skill files.
 
-Version 1.0.5 keeps the 1.0.4 uploader corrections, cuts the always-loaded master instructions by a further 38.51%, and separates runtime files from repository-only development evidence. Public and personal bundles now stay below 55 files and exclude tests, historical results, release machinery, READMEs, and changelogs.
+Version 1.0.6 keeps website work in the user's existing repository, application, host, and normal preview path. It forbids silently choosing ChatGPT Sites unless the user explicitly requested Sites for that task, and adds regression coverage for the same boundary.
 
 To uninstall, remove only the installed `selective-intelligence` skill directory from that documented destination. Do not delete a parent skills directory or any project `.selective-intelligence/` directory.
 
