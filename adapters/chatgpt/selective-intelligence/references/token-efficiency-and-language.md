@@ -6,7 +6,7 @@ wanted outcome or dropping proof.
 
 ## Prompt budget
 
-- Keep the canonical `SKILL.md` under 3,000 words and 24,000 characters. Release validation fails above either limit.
+- Keep the canonical `SKILL.md` under 1,500 words and 12,000 characters. Release validation fails above either limit.
 - Start Lean work with the master skill only: zero reference files, zero role packets, and one active execution context.
 - Load at most one reference before the first useful action. More is justified only by a documented safety trigger or an explicitly selected Council lane.
 - Do not copy the full doctrine, conversation history, or implementation narrative into a reviewer packet. Send only the outcome, prohibitions, relevant evidence, authority boundary, artifact, and proof question.

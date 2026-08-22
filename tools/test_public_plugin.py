@@ -52,16 +52,22 @@ class PublicPluginTests(unittest.TestCase):
             self.assertEqual(public_plugin.zip_errors(first_path), [])
             with zipfile.ZipFile(first_path) as archive:
                 names = archive.namelist()
+                self.assertLessEqual(len(names), public_plugin.MAX_RUNTIME_ENTRIES)
                 self.assertIn(".codex-plugin/plugin.json", names)
                 self.assertIn("assets/icon.svg", names)
                 self.assertIn("skills/selective-intelligence/subskills/si-worker/ROLE.md", names)
                 self.assertNotIn("skills/selective-intelligence/subskills/si-worker/SKILL.md", names)
+                self.assertFalse(any("/tests/" in name for name in names))
+                self.assertFalse(any("/evals/results-" in name for name in names))
+                self.assertFalse(any(name.endswith(("README.md", "CHANGELOG.md", "JUMPSTART.md")) for name in names))
+                self.assertNotIn("skills/selective-intelligence/scripts/release.py", names)
                 skill_files = [name for name in names if Path(name).name == "SKILL.md"]
                 self.assertEqual(skill_files, ["skills/selective-intelligence/SKILL.md"])
                 self.assertFalse(any(name.startswith(("mcp/", "apps/", "screenshots/")) for name in names))
                 manifest = json.loads(archive.read(".codex-plugin/plugin.json"))
                 self.assertEqual(manifest["name"], "selective-intelligence")
                 self.assertEqual(manifest["skills"], "./skills/")
+                self.assertEqual(manifest["version"], "1.0.5")
                 master = archive.read("skills/selective-intelligence/SKILL.md").decode("utf-8")
                 self.assertIn("Public plugin rule:", master)
                 self.assertEqual(

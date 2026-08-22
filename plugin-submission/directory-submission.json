@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "plugin": "selective-intelligence",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "submission_type": "skills_only",
   "availability": {
     "audience": "public",
     "regions": "global"
   },
-  "release_notes": "Fixes OpenAI directory upload validation by using 256x256 SVG dimensions in both declared icon viewBoxes and moving skill interface settings exclusively to agents/openai.yaml. Adds regression checks for the exact uploader failures while preserving the lean execution behavior introduced in 1.0.3. This package does not claim public-directory behavior that has not been verified.",
+  "release_notes": "Rebuilds the public and installed runtime bundles around only the files the skill can actually load or execute. Removes repository-only tests, historical results, release machinery, READMEs, and changelogs from the upload, reducing the public package from 101 files to fewer than 55. Cuts the always-loaded SKILL.md from about 2,000 words to under 1,500 while preserving activation, authority, Lean execution, checkpoint, Council, and proof rules. Retains the corrected 256x256 icons and agents/openai.yaml interface from 1.0.4. This package does not claim public-directory behavior that has not been verified.",
   "positive_test_cases": [
     {
       "id": "trigger-start-plain-language",

@@ -3,17 +3,16 @@
 
 from __future__ import annotations
 
+import ast
 import json
-import os
-import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ADAPTER_ROOT = REPO_ROOT / "adapters" / "chatgpt" / "selective-intelligence"
+ADAPTER_METADATA = REPO_ROOT / "adapters" / "chatgpt" / "metadata" / "chatgpt-adapter.json"
 
 
 def require(condition: bool, message: str) -> None:
@@ -25,13 +24,29 @@ def main() -> int:
     files = sorted(path.relative_to(ADAPTER_ROOT).as_posix() for path in ADAPTER_ROOT.rglob("*") if path.is_file())
     skill_entrypoints = [path for path in files if Path(path).name == "SKILL.md"]
     require(skill_entrypoints == ["SKILL.md"], f"expected one SKILL.md, found {skill_entrypoints}")
+    require(len(files) <= 50, f"runtime adapter is bloated: {len(files)} files")
     require("scripts/project_index.py" in files, "project index tool is missing")
-    require("AI-GUIDE.md" in files, "strict AI guide is missing")
     require("references/project-index-and-reuse-gate.md" in files, "project index reference is missing")
     version = (ADAPTER_ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    require(f"evals/results-{version}.json" in files, f"{version} evidence is missing")
+    require(version == "1.0.5", f"unexpected runtime adapter version: {version}")
+    require(ADAPTER_METADATA.is_file(), "repository adapter projection manifest is missing")
+    projection = json.loads(ADAPTER_METADATA.read_text(encoding="utf-8"))
+    require(projection.get("version") == version, "adapter projection manifest version drift")
+    require(projection.get("runtime_file_count") == len(files), "adapter projection file count drift")
+    require(
+        projection.get("portable_source_path") == "skills/selective-intelligence"
+        and projection.get("adapter_path") == "adapters/chatgpt/selective-intelligence",
+        "adapter projection roots are invalid",
+    )
+    require("evals/evals.json" in files, "runtime behavior declarations are missing")
     require("subskills/si-worker/ROLE.md" in files, "Worker role reference is missing")
     require(not any("subskills/" in path and path.endswith("/SKILL.md") for path in files), "nested SKILL.md remains")
+    role_refs = [path for path in files if path.startswith("subskills/") and path.endswith("/ROLE.md")]
+    require(len(role_refs) == 7, f"expected seven Council role references, found {len(role_refs)}")
+    require(not any(path.startswith("tests/") for path in files), "repository tests leaked into runtime adapter")
+    require(not any(path.startswith("evals/results-") for path in files), "historical results leaked into runtime adapter")
+    for excluded in ("AI-GUIDE.md", "CHANGELOG.md", "JUMPSTART.md", "LICENSE", "README.md", "scripts/release.py"):
+        require(excluded not in files, f"repository-only file leaked into runtime adapter: {excluded}")
 
     master_skill = (ADAPTER_ROOT / "SKILL.md").read_text(encoding="utf-8")
     description = next(
@@ -55,12 +70,6 @@ def main() -> int:
     ):
         require(phrase in description, f"ChatGPT discovery metadata is missing: {phrase}")
 
-    adapter_metadata = json.loads((ADAPTER_ROOT / "metadata" / "chatgpt-adapter.json").read_text(encoding="utf-8"))
-    require(adapter_metadata["behavioral_contract"] == "preserved", "adapter contract is not preserved")
-    require(len(adapter_metadata["role_path_map"]) == 7, "not all Council roles were adapted")
-    distribution_metadata = json.loads((ADAPTER_ROOT / "metadata" / "distribution.json").read_text(encoding="utf-8"))
-    require("public_plugin" not in distribution_metadata, "personal adapter must not claim public-plugin status")
-
     combined = "\n".join(
         path.read_text(encoding="utf-8", errors="strict")
         for path in ADAPTER_ROOT.rglob("*")
@@ -69,9 +78,6 @@ def main() -> int:
     require("MealScout" not in combined and "TradeScout" not in combined, "product-specific brand leaked into adapter")
     active_contracts = [
         "SKILL.md",
-        "AI-GUIDE.md",
-        "JUMPSTART.md",
-        "README.md",
         "references/activation-and-adoption.md",
         "subskills/si-intake/ROLE.md",
     ]
@@ -81,18 +87,6 @@ def main() -> int:
             "What outcome do you want to create or complete?" not in content,
             f"obsolete trigger handoff leaked into active adapter contract: {relative}",
         )
-
-    ai_guide = (ADAPTER_ROOT / "AI-GUIDE.md").read_text(encoding="utf-8")
-    for phrase in (
-        "strict operating guide",
-        "Do not answer with a definition or a summary of the repository",
-        "What I understand you want",
-        "APPROVE",
-        "CORRECT: <instruction>",
-        "Produce the real deliverable",
-        "Do not require a paid feature",
-    ):
-        require(phrase in ai_guide, f"strict AI guide is missing: {phrase}")
 
     activation_contract = (ADAPTER_ROOT / "references" / "activation-and-adoption.md").read_text(encoding="utf-8")
     for phrase in (
@@ -114,39 +108,13 @@ def main() -> int:
             f"empty-context terminal rule is missing: {prohibited_empty_context_action}",
         )
 
-    commands = [
-        [sys.executable, str(ADAPTER_ROOT / "scripts" / "project_index.py"), "self-test"],
-        [sys.executable, str(ADAPTER_ROOT / "scripts" / "behavior_eval.py"), "self-test"],
-        [sys.executable, "-m", "unittest", "discover", "-s", str(ADAPTER_ROOT / "tests"), "-p", "test_*.py"],
-        [sys.executable, str(ADAPTER_ROOT / "scripts" / "eval.py"), "controls", "--skip-release"],
-        [sys.executable, str(ADAPTER_ROOT / "scripts" / "release.py"), "doctor"],
-    ]
-    temporary_path = Path(tempfile.mkdtemp(prefix="si-adapter-test-", dir=REPO_ROOT)).resolve()
-    try:
-        environment = os.environ.copy()
-        environment["PYTHONDONTWRITEBYTECODE"] = "1"
-        environment["TMPDIR"] = str(temporary_path)
-        environment["TEMP"] = str(temporary_path)
-        environment["TMP"] = str(temporary_path)
-        environment["SI_EVAL_TEMP_PARENT"] = str(temporary_path)
-        environment["SI_SESSION_DIR"] = str(temporary_path / "sessions")
-        for command in commands:
-            completed = subprocess.run(
-                command,
-                cwd=temporary_path,
-                text=True,
-                capture_output=True,
-                check=False,
-                env=environment,
-            )
-            if completed.returncode != 0:
-                raise AssertionError(
-                    f"adapter validation failed: {' '.join(command)}\nstdout:\n{completed.stdout}\nstderr:\n{completed.stderr}"
-                )
-    finally:
-        if temporary_path.exists():
-            shutil.rmtree(temporary_path)
-    require(not temporary_path.exists(), "adapter validation left its owned temporary tree behind")
+    for relative in files:
+        if relative.endswith(".py"):
+            ast.parse((ADAPTER_ROOT / relative).read_text(encoding="utf-8"), filename=relative)
+
+    command = [sys.executable, str(ADAPTER_ROOT / "scripts" / "project_index.py"), "self-test"]
+    completed = subprocess.run(command, cwd=REPO_ROOT, text=True, capture_output=True, check=False)
+    require(completed.returncode == 0, completed.stdout + completed.stderr)
 
     print(json.dumps({"status": "pass", "files": len(files), "skill_entrypoints": skill_entrypoints}, indent=2))
     return 0

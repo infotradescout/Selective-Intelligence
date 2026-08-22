@@ -3,8 +3,8 @@
 
 The portable Agent Skills package intentionally contains separately runnable
 role skills. ChatGPT personal-skill bundles accept exactly one ``SKILL.md``.
-This deterministic adapter keeps the master ``SKILL.md`` and converts each
-nested role entrypoint to a normal reference file without changing its text.
+This deterministic adapter keeps only runtime instructions and tools, then
+converts each nested role entrypoint to a normal reference file.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PORTABLE_ROOT = REPO_ROOT / "skills" / "selective-intelligence"
 ADAPTER_ROOT = REPO_ROOT / "adapters" / "chatgpt" / "selective-intelligence"
+ADAPTER_METADATA = REPO_ROOT / "adapters" / "chatgpt" / "metadata" / "chatgpt-adapter.json"
 DIST_ROOT = REPO_ROOT / "dist"
 
 
@@ -103,8 +104,15 @@ def build_adapter(destination: Path = ADAPTER_ROOT) -> dict[str, object]:
     release_files = metadata.get("release_files")
     if not isinstance(release_files, list) or not all(isinstance(item, str) for item in release_files):
         raise ValueError("portable release manifest is invalid")
+    runtime_files = metadata.get("runtime_files")
+    if not isinstance(runtime_files, list) or not runtime_files or not all(isinstance(item, str) for item in runtime_files):
+        raise ValueError("runtime file manifest is invalid")
+    if len(runtime_files) != len(set(runtime_files)):
+        raise ValueError("runtime file manifest contains duplicates")
+    if not set(runtime_files).issubset(set(release_files)):
+        raise ValueError("runtime file manifest contains files outside the portable release")
 
-    mapping = role_path_map(release_files)
+    mapping = role_path_map(runtime_files)
     if len(mapping) != 7:
         raise ValueError(f"expected seven nested role skills, found {len(mapping)}")
 
@@ -116,11 +124,9 @@ def build_adapter(destination: Path = ADAPTER_ROOT) -> dict[str, object]:
         shutil.rmtree(destination)
     destination.mkdir(parents=True)
 
-    adapted_release_files = [mapping.get(relative, relative) for relative in release_files]
-    adapter_metadata_path = "metadata/chatgpt-adapter.json"
-    adapted_release_files.append(adapter_metadata_path)
+    adapted_runtime_files = [mapping.get(relative, relative) for relative in runtime_files]
 
-    for portable_relative in release_files:
+    for portable_relative in runtime_files:
         source = PORTABLE_ROOT / portable_relative
         if not source.is_file():
             raise FileNotFoundError(source)
@@ -128,55 +134,47 @@ def build_adapter(destination: Path = ADAPTER_ROOT) -> dict[str, object]:
         target = destination / adapted_relative
         text = source.read_text(encoding="utf-8")
         text = rewrite_text(portable_relative, text, mapping)
-        if portable_relative == "metadata/distribution.json":
-            payload = json.loads(text)
-            payload.pop("public_plugin", None)
-            payload["distribution_status"] = "public_chatgpt_adapter_release_candidate"
-            payload["adapter_for"] = "chatgpt_personal_skills"
-            payload["adapter_source_path"] = "skills/selective-intelligence"
-            payload["chatgpt_adapter_path"] = "adapters/chatgpt/selective-intelligence"
-            payload["archive_name"] = f"selective-intelligence-chatgpt-{payload['version']}.zip"
-            payload["release_files"] = adapted_release_files
-            text = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
         mode = stat.S_IMODE(source.stat().st_mode)
         write_text(target, text, mode)
 
-    adapter_metadata = {
+    actual_files = sorted(path.relative_to(destination).as_posix() for path in destination.rglob("*") if path.is_file())
+    skill_entrypoints = [path for path in actual_files if Path(path).name == "SKILL.md"]
+    if actual_files != sorted(adapted_runtime_files):
+        raise ValueError("generated adapter files do not equal the adapted runtime manifest")
+    if skill_entrypoints != ["SKILL.md"]:
+        raise ValueError(f"ChatGPT adapter must contain exactly one SKILL.md: {skill_entrypoints}")
+
+    projection_manifest = {
         "schema_version": 1,
         "adapter": "chatgpt_personal_skills",
-        "skill": metadata["skill"],
+        "skill": "selective-intelligence",
         "version": metadata["version"],
         "portable_source_path": "skills/selective-intelligence",
         "adapter_path": "adapters/chatgpt/selective-intelligence",
-        "transformation": "nested_role_skill_entrypoints_to_role_references",
+        "transformation": "runtime_only_with_nested_role_entrypoints_as_role_references",
         "single_skill_entrypoint": "SKILL.md",
+        "runtime_file_count": len(actual_files),
         "role_path_map": mapping,
         "behavioral_contract": "preserved",
     }
     write_text(
-        destination / adapter_metadata_path,
-        json.dumps(adapter_metadata, ensure_ascii=False, indent=2) + "\n",
+        ADAPTER_METADATA,
+        json.dumps(projection_manifest, ensure_ascii=False, indent=2) + "\n",
         0o644,
     )
-
-    actual_files = sorted(path.relative_to(destination).as_posix() for path in destination.rglob("*") if path.is_file())
-    skill_entrypoints = [path for path in actual_files if Path(path).name == "SKILL.md"]
-    if actual_files != sorted(adapted_release_files):
-        raise ValueError("generated adapter files do not equal the adapted release manifest")
-    if skill_entrypoints != ["SKILL.md"]:
-        raise ValueError(f"ChatGPT adapter must contain exactly one SKILL.md: {skill_entrypoints}")
 
     return {
         "destination": str(destination),
         "files": len(actual_files),
+        "version": metadata["version"],
         "skill_entrypoints": skill_entrypoints,
         "role_path_map": mapping,
     }
 
 
 def build_archive(adapter_root: Path = ADAPTER_ROOT, dist_root: Path = DIST_ROOT) -> dict[str, object]:
-    metadata = json.loads((adapter_root / "metadata" / "distribution.json").read_text(encoding="utf-8"))
-    archive_path = dist_root / str(metadata["archive_name"])
+    version = (adapter_root / "VERSION").read_text(encoding="utf-8").strip()
+    archive_path = dist_root / f"selective-intelligence-chatgpt-{version}.zip"
     dist_root.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for path in sorted(item for item in adapter_root.rglob("*") if item.is_file()):

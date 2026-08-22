@@ -163,8 +163,8 @@ PRODUCT_SPECIFIC_BRANDS = tuple(
     for prefix, suffix in (("Meal", "Scout"), ("Trade", "Scout"))
 )
 FORBIDDEN_HANDOFF_QUESTION = "What outcome do you want to create or complete?"
-CORE_SKILL_MAX_WORDS = 3_000
-CORE_SKILL_MAX_CHARACTERS = 24_000
+CORE_SKILL_MAX_WORDS = 1_500
+CORE_SKILL_MAX_CHARACTERS = 12_000
 LEAN_EXECUTION_CONTRACT = (
     "Lean execution is the default",
     "No reference is mandatory merely because the skill activated.",
