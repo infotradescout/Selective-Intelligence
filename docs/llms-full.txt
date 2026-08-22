@@ -9,6 +9,8 @@
 - Canonical skill: https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/SKILL.md
 - Strict guide for text-capable AI: https://infotradescout.github.io/Selective-Intelligence/AI-GUIDE.md
 - Machine contract: https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json
+- Public Plugins Directory listing: https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence
+- Five pass/fail proof tests: https://infotradescout.github.io/Selective-Intelligence/try/
 - License: CC0-1.0
 - Current version: 1.0.5
 - Selective Intelligence fee: 0

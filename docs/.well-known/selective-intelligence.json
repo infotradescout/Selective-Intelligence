@@ -8,6 +8,7 @@
   "description": "A free, open Agent Skill that turns vague or minimal intent into grounded research, complete artifacts, product design, one-prompt websites, verified UI/UX, repository realignment, developer-grade execution, and continuous improvement.",
   "canonical": {
     "public_site": "https://infotradescout.github.io/Selective-Intelligence/",
+    "public_plugin_directory": "https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence",
     "repository": "https://github.com/infotradescout/Selective-Intelligence",
     "skill": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md",
     "skill_raw": "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/SKILL.md",
@@ -78,6 +79,15 @@
       "respect_external_client_constraints": true,
       "redefine_intent_to_fit_constraints": false
     }
+  },
+  "publication": {
+    "status": "public",
+    "directory": "OpenAI Plugins Directory",
+    "directory_url": "https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence",
+    "verified_on": "2026-08-22",
+    "verified_by": "public exact-name directory search",
+    "version": "1.0.5",
+    "publication_is_not_adoption_proof": true
   },
   "clients": [
     {
@@ -227,6 +237,7 @@
   "search_discovery": {
     "sitemap": "https://infotradescout.github.io/Selective-Intelligence/sitemap.xml",
     "problem_hub": "https://infotradescout.github.io/Selective-Intelligence/problems/",
+    "proof_tests": "https://infotradescout.github.io/Selective-Intelligence/try/",
     "question_library": "https://infotradescout.github.io/Selective-Intelligence/questions/",
     "question_map": "https://infotradescout.github.io/Selective-Intelligence/discovery-queries.json",
     "question_count": 220,
