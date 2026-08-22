@@ -1,11 +1,6 @@
 ---
 name: si-worker
 description: Use only when a selected Selective Intelligence Council assigns a bounded implementation packet; ordinary Lean work remains in the parent context.
-license: CC0-1.0
-metadata:
-  version: "0.1.1"
-  parent: selective-intelligence
-  audience: "plain-language"
 ---
 
 # SI Sub-Skill: Worker

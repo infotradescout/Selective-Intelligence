@@ -10,7 +10,7 @@
 - Strict guide for text-capable AI: https://infotradescout.github.io/Selective-Intelligence/AI-GUIDE.md
 - Machine contract: https://infotradescout.github.io/Selective-Intelligence/selective-intelligence.json
 - License: CC0-1.0
-- Current version: 1.0.3
+- Current version: 1.0.4
 - Selective Intelligence fee: 0
 - Paid AI subscription, credit card, provider API key, and telemetry: not required by Selective Intelligence
 

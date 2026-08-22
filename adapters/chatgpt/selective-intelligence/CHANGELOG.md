@@ -2,6 +2,13 @@
 
 All notable behavior changes to Selective Intelligence are recorded here.
 
+## 1.0.4 - 2026-08-22
+
+- Corrected both packaged SVG icons so their numeric `viewBox`, `width`, and `height` all declare 256x256 dimensions accepted by the OpenAI plugin uploader.
+- Removed unsupported `license` and `metadata` keys from every `SKILL.md` frontmatter block. Version and license remain in the release metadata, `VERSION`, and `LICENSE`; supported user-facing settings now live only in `agents/openai.yaml`.
+- Added exact-package validation and regression tests for undersized SVG viewBoxes, unsupported skill frontmatter keys, and missing OpenAI interface fields so the two reported uploader failures cannot pass the release doctor again.
+- Matched the package author and developer name to the verified individual developer identity selected in the OpenAI submission portal. The lean execution behavior from 1.0.3 is unchanged.
+
 ## 1.0.3 - 2026-08-22
 
 - Replaced the automatic full-workflow default with Lean single-context execution for clear, bounded, reversible work. Direct activation no longer starts seven role passes, a Start Pack, a queue, a Resume Packet, or a full intent checkpoint merely because work persists or has users.

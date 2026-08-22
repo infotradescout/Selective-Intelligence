@@ -1,11 +1,6 @@
 ---
 name: si-aligner
 description: Use only when a selected Selective Intelligence Council has conflicting Worker and reviewer findings that require an independent disposition.
-license: CC0-1.0
-metadata:
-  version: "0.1.1"
-  parent: selective-intelligence
-  audience: "plain-language"
 ---
 
 # SI Sub-Skill: Aligner

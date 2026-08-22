@@ -1,11 +1,6 @@
 ---
 name: si-verifier
 description: Use only when Selective Intelligence explicitly assigns fresh-context verification for high-risk, self-referential, or repeatedly failed work.
-license: CC0-1.0
-metadata:
-  version: "0.1.1"
-  parent: selective-intelligence
-  audience: "plain-language"
 ---
 
 # SI Sub-Skill: Verifier

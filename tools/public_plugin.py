@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import re
 import shutil
 import stat
@@ -78,6 +79,91 @@ def supported_text(value: object, *, multiline: bool = False) -> bool:
 
 def normalized_text(value: str) -> str:
     return unicodedata.normalize("NFKC", " ".join(value.split())).casefold()
+
+
+def svg_dimension_errors(content: bytes | str, label: str) -> list[str]:
+    """Match the portal's SVG checks, including its viewBox dimension choice."""
+    errors: list[str] = []
+    try:
+        root = ElementTree.fromstring(content)
+    except (ElementTree.ParseError, UnicodeError) as exc:
+        return [f"{label}: SVG XML is invalid: {exc}"]
+    if root.tag.rsplit("}", 1)[-1] != "svg":
+        return [f"{label}: SVG root element must be svg"]
+
+    numeric = re.compile(r"^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$")
+
+    def validate_pair(width_text: str, height_text: str, source: str) -> None:
+        if not numeric.fullmatch(width_text) or not numeric.fullmatch(height_text):
+            errors.append(f"{label}: {source} dimensions must be numeric and omit units")
+            return
+        width = float(width_text)
+        height = float(height_text)
+        if not math.isfinite(width) or not math.isfinite(height) or width <= 0 or height <= 0:
+            errors.append(f"{label}: {source} dimensions must be positive finite numbers")
+        elif width != height:
+            errors.append(f"{label}: {source} dimensions must be square")
+        elif width < 48 or height < 48:
+            errors.append(f"{label}: {source} dimensions must be at least 48x48; found {width:g}x{height:g}")
+        elif width > 4_096 or height > 4_096:
+            errors.append(f"{label}: {source} dimensions must not exceed 4096x4096")
+
+    view_box = root.attrib.get("viewBox")
+    width = root.attrib.get("width")
+    height = root.attrib.get("height")
+    if view_box is not None:
+        values = view_box.split()
+        if len(values) != 4 or any(not numeric.fullmatch(value) for value in values):
+            errors.append(f"{label}: viewBox must contain four numeric values")
+        else:
+            validate_pair(values[2], values[3], "viewBox")
+    if width is not None or height is not None:
+        if width is None or height is None:
+            errors.append(f"{label}: SVG width and height must be declared together")
+        else:
+            validate_pair(width, height, "width/height")
+    if view_box is None and width is None and height is None:
+        errors.append(f"{label}: SVG must define a numeric viewBox or width and height")
+    return errors
+
+
+def skill_frontmatter_errors(text: str, label: str) -> list[str]:
+    """Reject interface metadata that the portal ignores in SKILL.md."""
+    if not text.startswith("---\n") and not text.startswith("---\r\n"):
+        return [f"{label}: SKILL.md must start with YAML frontmatter"]
+    parts = text.split("---", 2)
+    if len(parts) < 3:
+        return [f"{label}: SKILL.md frontmatter is not closed"]
+    keys = re.findall(r"(?m)^([A-Za-z_][A-Za-z0-9_-]*):(?:\s|$)", parts[1])
+    errors: list[str] = []
+    if len(keys) != len(set(keys)):
+        errors.append(f"{label}: SKILL.md frontmatter has duplicate top-level keys")
+    if set(keys) != {"name", "description"}:
+        errors.append(
+            f"{label}: SKILL.md frontmatter must contain only name and description; found {', '.join(keys) or 'none'}"
+        )
+    return errors
+
+
+def openai_agent_errors(text: str, label: str) -> list[str]:
+    """Validate the supported skill interface fields used by the portal."""
+    errors: list[str] = []
+    if not re.search(r"(?m)^interface:\s*$", text):
+        return [f"{label}: agents/openai.yaml must contain interface"]
+    values: dict[str, str] = {}
+    for key in ("display_name", "short_description", "default_prompt"):
+        match = re.search(rf'(?m)^  {key}:\s+"([^"\n]+)"\s*$', text)
+        if not match:
+            errors.append(f"{label}: interface.{key} must be a quoted, non-empty string")
+        else:
+            values[key] = match.group(1)
+    short_description = values.get("short_description")
+    if short_description is not None and not 25 <= len(short_description) <= 64:
+        errors.append(f"{label}: interface.short_description must contain 25 to 64 characters")
+    default_prompt = values.get("default_prompt")
+    if default_prompt is not None and "$selective-intelligence" not in default_prompt:
+        errors.append(f"{label}: interface.default_prompt must mention $selective-intelligence")
+    return errors
 
 
 def contrast_against_white(color: str) -> float:
@@ -277,11 +363,36 @@ def zip_errors(path: Path) -> list[str]:
             required = {
                 ".codex-plugin/plugin.json",
                 "assets/icon.svg",
+                "skills/selective-intelligence/agents/openai.yaml",
+                "skills/selective-intelligence/assets/icon.svg",
+                "skills/selective-intelligence/SKILL.md",
                 "skills/selective-intelligence/subskills/si-worker/ROLE.md",
             }
             missing = sorted(required - set(names))
             if missing:
                 errors.append("archive is missing required files: " + ", ".join(missing))
+            for icon_name in (
+                "assets/icon.svg",
+                "skills/selective-intelligence/assets/icon.svg",
+            ):
+                if icon_name in names:
+                    errors.extend(svg_dimension_errors(archive.read(icon_name), icon_name))
+            skill_name = "skills/selective-intelligence/SKILL.md"
+            if skill_name in names:
+                try:
+                    skill_text = archive.read(skill_name).decode("utf-8")
+                except UnicodeDecodeError as exc:
+                    errors.append(f"{skill_name}: invalid UTF-8: {exc}")
+                else:
+                    errors.extend(skill_frontmatter_errors(skill_text, skill_name))
+            agent_name = "skills/selective-intelligence/agents/openai.yaml"
+            if agent_name in names:
+                try:
+                    agent_text = archive.read(agent_name).decode("utf-8")
+                except UnicodeDecodeError as exc:
+                    errors.append(f"{agent_name}: invalid UTF-8: {exc}")
+                else:
+                    errors.extend(openai_agent_errors(agent_text, agent_name))
             if any(
                 name in {".mcp.json", ".app.json"}
                 or name.startswith(("mcp/", "apps/", "screenshots/"))
@@ -337,7 +448,11 @@ def manifest_errors() -> list[str]:
     author = manifest.get("author")
     if not isinstance(author, dict) or not supported_text(author.get("name")) or len(str(author.get("name", ""))) > 120:
         errors.append("plugin author name is missing, unsupported, or too long")
-    if isinstance(author, dict) and (not https_url(author.get("url")) or len(str(author.get("url", ""))) > 2_048):
+    if (
+        isinstance(author, dict)
+        and author.get("url") is not None
+        and (not https_url(author.get("url")) or len(str(author.get("url", ""))) > 2_048)
+    ):
         errors.append("plugin author URL is invalid or too long")
 
     interface = manifest.get("interface")
@@ -460,17 +575,27 @@ def manifest_errors() -> list[str]:
                 seen.add(identifier)
 
     try:
-        svg = ElementTree.fromstring(ICON_PATH.read_text(encoding="utf-8"))
-        width = float(svg.attrib.get("width", "0"))
-        height = float(svg.attrib.get("height", "0"))
-        if width != height or not (48 <= width <= 4_096):
-            errors.append("public icon must be square and between 48 and 4,096 pixels")
-        if svg.tag.rsplit("}", 1)[-1] != "svg" or svg.attrib.get("viewBox") is None:
-            errors.append("public icon must be an SVG root with a viewBox")
-    except (OSError, ElementTree.ParseError) as exc:
-        errors.append(f"public icon is invalid: {exc}")
-    except ValueError as exc:
-        errors.append(f"public icon dimensions are invalid: {exc}")
+        errors.extend(svg_dimension_errors(ICON_PATH.read_bytes(), "assets/icon.svg"))
+        errors.extend(
+            svg_dimension_errors(
+                (SKILL_ROOT / "assets" / "icon.svg").read_bytes(),
+                "skills/selective-intelligence/assets/icon.svg",
+            )
+        )
+        errors.extend(
+            skill_frontmatter_errors(
+                (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8"),
+                "skills/selective-intelligence/SKILL.md",
+            )
+        )
+        errors.extend(
+            openai_agent_errors(
+                (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8"),
+                "skills/selective-intelligence/agents/openai.yaml",
+            )
+        )
+    except OSError as exc:
+        errors.append(f"public skill branding or interface file is unreadable: {exc}")
     if ICON_PATH.stat().st_size > 5 * 1024 * 1024:
         errors.append("public icon exceeds 5 MiB")
     if ICON_PATH.read_bytes() != (SKILL_ROOT / "assets" / "icon.svg").read_bytes():

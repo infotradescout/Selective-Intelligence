@@ -1,11 +1,6 @@
 ---
 name: si-planner
 description: Use only when a selected Selective Intelligence Council is locking a whole product, architecture, migration, or other consequential plan.
-license: CC0-1.0
-metadata:
-  version: "0.1.1"
-  parent: selective-intelligence
-  audience: "plain-language"
 ---
 
 # SI Sub-Skill: Planner

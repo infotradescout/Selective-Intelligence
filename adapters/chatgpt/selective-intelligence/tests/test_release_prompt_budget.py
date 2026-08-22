@@ -13,6 +13,14 @@ import release  # noqa: E402
 
 
 class ReleasePromptBudgetTests(unittest.TestCase):
+    def test_all_skill_frontmatter_uses_supported_loader_fields_only(self):
+        metadata, metadata_errors = release.read_distribution_metadata(SKILL_ROOT)
+        self.assertEqual(metadata_errors, [])
+        self.assertIsNotNone(metadata)
+        files, file_errors = release.release_files(SKILL_ROOT, metadata)
+        self.assertEqual(file_errors, [])
+        self.assertEqual(release.skill_loader_metadata_errors(SKILL_ROOT, files), [])
+
     def test_canonical_skill_fits_lean_budget(self):
         skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
         metrics, errors = release.prompt_budget_errors(skill_text)

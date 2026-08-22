@@ -1,7 +1,7 @@
 # Selective Intelligence
 
 
-> **ChatGPT adapter.** This generated bundle preserves the canonical 1.0.3 behavior while satisfying ChatGPT's one-`SKILL.md` bundle rule. The portable source remains `skills/selective-intelligence/`; nested Council roles are reference files here so ChatGPT can store and load the complete package.
+> **ChatGPT adapter.** This generated bundle preserves the canonical 1.0.4 behavior while satisfying ChatGPT's one-`SKILL.md` bundle rule. The portable source remains `skills/selective-intelligence/`; nested Council roles are reference files here so ChatGPT can store and load the complete package.
 
 Selective Intelligence—formerly Selective Inheritance—is a free, open-source Agent Skill for people who know what they want a product to do but do not want to translate that goal into developer instructions. Give it a plain-language goal, URL, file, screenshot, or repository. It recovers intent, designs the product and UI/UX, finds missing or conflicting code, carries out the work, tests the real outcome, and keeps unfinished work visible instead of pretending it is done.
 
@@ -187,13 +187,13 @@ Use the canonical repository or versioned release archive as the source for ever
 
 Filesystem access is required for repository and Start modes. Python 3.10 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
 
-The current v1 release-candidate evidence is recorded in [evals/results-1.0.3.json](evals/results-1.0.3.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
+The current v1 release-candidate evidence is recorded in [evals/results-1.0.4.json](evals/results-1.0.4.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
 
 ### Update and uninstall
 
 To update after publication, run `gh skill update selective-intelligence`, or obtain a newer versioned archive or canonical repository revision, verify its release checksum, and replace only the existing `selective-intelligence` skill directory at the destination you chose. Preserve any project-created `.selective-intelligence/` Start Packs and feedback stores; they are project data, not installed skill files.
 
-Version 1.0.3 makes Lean single-context execution the default, limits initial reference loading, gates checkpoints by consequence, and reserves Guided Council for explicit or high-consequence work. A release test prevents the master skill from exceeding its prompt budget or restoring the automatic seven-role default.
+Version 1.0.4 preserves the Lean single-context behavior from 1.0.3 and corrects OpenAI plugin upload validation for SVG dimensions and skill interface metadata. Release tests now reproduce those uploader checks in addition to enforcing the prompt budget and preventing restoration of the automatic seven-role default.
 
 To uninstall, remove only the installed `selective-intelligence` skill directory from that documented destination. Do not delete a parent skills directory or any project `.selective-intelligence/` directory.
 

@@ -38,3 +38,9 @@ jobs:
 
       - name: Verify repository-native client pointers
         run: python -B tools/test_native_pointers.py
+
+      - name: Verify ChatGPT skill adapter
+        run: python -B tools/test_chatgpt_adapter.py
+
+      - name: Verify public plugin archive
+        run: python -B -m unittest tools.test_public_plugin
