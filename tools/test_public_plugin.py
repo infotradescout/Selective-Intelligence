@@ -67,9 +67,13 @@ class PublicPluginTests(unittest.TestCase):
                 manifest = json.loads(archive.read(".codex-plugin/plugin.json"))
                 self.assertEqual(manifest["name"], "selective-intelligence")
                 self.assertEqual(manifest["skills"], "./skills/")
-                self.assertEqual(manifest["version"], "1.0.5")
+                self.assertEqual(manifest["version"], "1.0.6")
                 master = archive.read("skills/selective-intelligence/SKILL.md").decode("utf-8")
                 self.assertIn("Public plugin rule:", master)
+                self.assertIn(
+                    "Do not choose or create ChatGPT Sites merely because the task involves a website.",
+                    master,
+                )
                 self.assertEqual(
                     public_plugin.skill_frontmatter_errors(
                         master,
@@ -134,6 +138,9 @@ description: Recover failed work.
 
     def test_listing_uses_final_directory_limits(self) -> None:
         manifest = json.loads(public_plugin.MANIFEST_PATH.read_text(encoding="utf-8"))
+        submission = json.loads(
+            public_plugin.SUBMISSION_PATH.read_text(encoding="utf-8")
+        )
         interface = manifest["interface"]
         self.assertLessEqual(len(interface["displayName"]), 30)
         self.assertLessEqual(len(interface["shortDescription"]), 30)
@@ -142,6 +149,15 @@ description: Recover failed work.
         self.assertLessEqual(len(interface["defaultPrompt"]), 3)
         self.assertTrue(all(len(prompt) <= 128 for prompt in interface["defaultPrompt"]))
         self.assertEqual(public_plugin.manifest_errors(), [])
+        website_case = next(
+            case
+            for case in submission["positive_test_cases"]
+            if case["id"] == "one-prompt-website-useful-first-deliverable"
+        )
+        self.assertIn(
+            "Does not invoke ChatGPT Sites",
+            " ".join(website_case["expected_behavior"]),
+        )
 
 
 if __name__ == "__main__":

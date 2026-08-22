@@ -40,6 +40,7 @@
       "produce an openable website artifact, not only a plan or prompt",
       "state and preserve unsupported-fact boundaries",
       "provide a clear user outcome and usable action",
+      "build in the existing repository or workspace and use its normal preview path when one exists",
       "work on a free tier when the chosen client supports the work",
       "pass the deterministic package gate and rendered inspection",
       "complete the primary journey in the rendered surface",
@@ -47,6 +48,7 @@
     ],
     "must_not": [
       "require a paid service, provider key, pasted token, or new sign-in",
+      "invoke ChatGPT Sites, create a hosted Sites project, change hosts, or copy the work into a parallel site unless the user explicitly requested Sites for that task",
       "invent testimonials, awards, licenses, prices, addresses, or availability",
       "claim client support without an observed run",
       "treat a static or accessibility pass as visual-quality approval",

@@ -11,6 +11,7 @@ hand the task to the user.
 - [Present plans as 1-2-3, not doctrine](#present-plans-as-1-2-3-not-doctrine)
 - [The rule](#the-rule)
 - [The architecture principle](#the-architecture-principle)
+- [Website workspace and preview choice](#website-workspace-and-preview-choice)
 - [Language](#language)
 - [Enforcement](#enforcement)
 - [Failure harvested](#failure-harvested)
@@ -70,6 +71,15 @@ If a capability cannot be delivered without exposing developer mechanics, that i
 that forces the user to paste a token has chosen developer burden over user experience; add the
 minimal broker or one-click flow instead. Never ship the developer wall as the user path — and
 never disguise it as the "advanced" path while leaving it as the only path.
+
+## Website workspace and preview choice
+
+A website request is not permission to create a new ChatGPT Sites project, change hosts, or copy
+the work into a parallel project. Reuse the person's existing repository, application, host, and
+normal preview path. Use ChatGPT Sites only when the person explicitly asks for Sites for that
+task. Tool availability, convenience, or the word "website" does not count as that request. If a
+higher-level platform rule makes Sites mandatory, state the conflict before acting and preserve
+the requested work instead of silently rerouting it.
 
 ## Language
 

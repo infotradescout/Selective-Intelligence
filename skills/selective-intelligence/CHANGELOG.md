@@ -2,6 +2,12 @@
 
 All notable behavior changes to Selective Intelligence are recorded here.
 
+## 1.0.6 - 2026-08-22
+
+- Stopped website requests from being silently rerouted into ChatGPT Sites. The existing repository, application, host, and normal preview path remain canonical unless the user explicitly requests Sites for that task.
+- Added the same opt-in-only Sites boundary to discovery metadata, the strict text guide, the non-developer reference, and the one-prompt website regression cases.
+- Added permanent release checks so the no-unrequested-Sites contract cannot disappear from the packaged skill unnoticed.
+
 ## 1.0.5 - 2026-08-22
 
 - Replaced the 101-file public upload with a bounded runtime bundle that contains only live instructions, routed references, required schemas, executable helpers, role references, interface metadata, and icons. Repository tests, historical results, release tools, READMEs, and changelogs no longer ship in public or personal runtime bundles.

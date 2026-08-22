@@ -395,18 +395,31 @@ def contract_digest() -> str:
 
 def build_manifest() -> dict:
     distribution = load_json(ROOT / "skills" / "selective-intelligence" / "metadata" / "distribution.json")
+    submission = load_json(ROOT / "plugin-submission" / "directory-submission.json")
     no_paid = load_json(ROOT / "skills" / "selective-intelligence" / "metadata" / "no-paid-capabilities.json")
     client_support = load_json(ROOT / "adapters" / "client-support.json")
     indexnow = load_json(ROOT / "adapters" / "indexnow.json")
     query_map = load_json(ROOT / "adapters" / "discovery-queries.json")
     query_count = sum(len(cluster["queries"]) for cluster in query_map["clusters"])
+    submission_publication = submission["publication"]
+    release_status = submission_publication["status"]
+    if release_status == "update_candidate":
+        published_version = submission_publication["currently_published_version"]
+        candidate_version = submission_publication["candidate_version"]
+        if candidate_version != distribution["version"]:
+            raise ValueError(
+                "directory candidate_version must match the source distribution version"
+            )
+    else:
+        published_version = distribution["version"]
+        candidate_version = None
     return {
         "schema_version": 1,
         "id": "selective-intelligence",
         "name": TRIGGER,
         "wordmark": TRIGGER,
         "master_trigger": TRIGGER,
-        "version": distribution["version"],
+        "version": published_version,
         "description": (
             "A free, open Agent Skill that turns vague or minimal intent into grounded research, complete artifacts, "
             "product design, one-prompt websites, verified UI/UX, repository realignment, developer-grade execution, "
@@ -477,7 +490,9 @@ def build_manifest() -> dict:
             "directory_url": PLUGIN_DIRECTORY_URL,
             "verified_on": PUBLISHED_DATE,
             "verified_by": "public exact-name directory search",
-            "version": distribution["version"],
+            "version": published_version,
+            "source_release_status": release_status,
+            "candidate_version": candidate_version,
             "publication_is_not_adoption_proof": True,
         },
         "clients": client_support["clients"],
@@ -511,7 +526,7 @@ def build_manifest() -> dict:
             "prompts_or_repository_contents_collected_automatically": False,
         },
         "evidence": {
-            "current": f"{REPOSITORY}/blob/main/skills/selective-intelligence/evals/results-{distribution['version']}.json",
+            "current": f"{REPOSITORY}/blob/main/skills/selective-intelligence/evals/results-{published_version}.json",
             "cross_client_equivalence_claimed": False,
             "publication_is_not_adoption_proof": True,
             "source_contract_sha256": contract_digest(),

@@ -1,19 +1,21 @@
 {
   "schema_version": 1,
   "plugin": "selective-intelligence",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "submission_type": "skills_only",
   "availability": {
     "audience": "public",
     "regions": "global"
   },
   "publication": {
-    "status": "published",
+    "status": "update_candidate",
+    "currently_published_version": "1.0.5",
+    "candidate_version": "1.0.6",
     "verified_on": "2026-08-22",
     "directory_url": "https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence",
     "verification": "Visible under Public through exact-name Plugins Directory search"
   },
-  "release_notes": "Rebuilds the public and installed runtime bundles around only the files the skill can actually load or execute. Removes repository-only tests, historical results, release machinery, READMEs, and changelogs from the upload, reducing the public package from 101 files to fewer than 55. Cuts the always-loaded SKILL.md from about 2,000 words to under 1,500 while preserving activation, authority, Lean execution, checkpoint, Council, and proof rules. Retains the corrected 256x256 icons and agents/openai.yaml interface from 1.0.4. Public directory publication is verified; installation, adoption, activation, and real-task outcomes remain separate evidence gates.",
+  "release_notes": "Stops website work from being silently rerouted into ChatGPT Sites. Selective Intelligence now keeps the user's existing repository, application, host, and normal preview path as the canonical owner. Sites may be used only when the user explicitly requests Sites for that task; a website request, tool availability, or convenience is not permission. Adds the same rule to discovery metadata, the strict text guide, the non-developer boundary, and website regression cases. The current public directory version remains 1.0.5 until this 1.0.6 update completes review and publication.",
   "positive_test_cases": [
     {
       "id": "trigger-start-plain-language",
@@ -60,15 +62,15 @@
       "fixture_data": "The original requirements, failed draft behavior, and correction are fully embedded in the prompt. No customer data, account, external service, or separate document is required."
     },
     {
-      "id": "result-mismatch-reopens-step1",
-      "user_prompt": "The implementation passes its tests, but this is not what I wanted. The AI client's free tier also prevents one of the original capabilities.",
+      "id": "one-prompt-website-useful-first-deliverable",
+      "user_prompt": "Finish the landing page in this existing repository and open the normal development preview so I can review it. Do not move the project or change its hosting setup.",
       "expected_behavior": [
-        "Treats the user's mismatch as evidence that intent alignment must be reopened even though technical tests pass.",
-        "Separates product mismatch from the free-tier capability limit and does not shrink the intended outcome to fit the tool.",
-        "Pursues an equivalent no-paid route when legitimate, or names the exact remaining blocker without a false completion claim."
+        "Uses the existing repository as the canonical project and edits the landing page there.",
+        "Uses the repository's normal development-server or existing preview path for review.",
+        "Does not invoke ChatGPT Sites, create a Sites project, copy the work into a parallel site, or change hosts unless the user explicitly asks for Sites."
       ],
-      "expected_result_shape": "A concise mismatch diagnosis that restates the intended outcome, identifies how the tested implementation diverged, distinguishes the client limitation, proposes the safest corrective route, and marks verified, unverified, and blocked states separately.",
-      "fixture_data": "This is a reasoning-only correction case. No repository, paid account, API key, external URL, or additional fixture is required."
+      "expected_result_shape": "A completed landing-page change in the existing repository with verification evidence and the normal local or existing-host preview path; no ChatGPT Sites project or parallel website is created.",
+      "fixture_data": "Use a hypothetical existing repository with a working development command and landing-page source file. No account, credentials, paid service, external host, or Sites workspace is required."
     }
   ],
   "negative_test_cases": [
