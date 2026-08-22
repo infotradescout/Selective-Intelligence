@@ -1,9 +1,9 @@
 ---
 name: si-objector
-description: Stress-test the Worker output for missed scope, wrong claims, and missing proof.
+description: Use only when Selective Intelligence explicitly assigns a Guarded or Council review of a bounded Worker artifact and proof claim.
 license: CC0-1.0
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   parent: selective-intelligence
   audience: "plain-language"
 ---
@@ -11,7 +11,7 @@ metadata:
 # SI Sub-Skill: Objector
 
 ## What this skill does (plain language)
-It checks the worker's work like a careful safety inspector.
+It checks one bounded Worker result like a careful safety inspector. Do not invoke it merely because work is persistent or agents are available.
 
 ## Inputs
 - `si-worker` result packet

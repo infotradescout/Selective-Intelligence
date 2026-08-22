@@ -2,7 +2,7 @@ cff-version: 1.2.0
 message: "If Selective Intelligence helps your work, cite this software and preserve the canonical repository link."
 title: "Selective Intelligence"
 type: software
-version: 1.0.2
+version: 1.0.3
 authors:
   - name: "Platynum Standard"
 repository-code: "https://github.com/infotradescout/Selective-Intelligence"

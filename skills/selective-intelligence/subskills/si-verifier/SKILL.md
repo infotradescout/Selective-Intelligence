@@ -1,9 +1,9 @@
 ---
 name: si-verifier
-description: Final-check the result and produce a short, plain-language handoff for the person.
+description: Use only when Selective Intelligence explicitly assigns fresh-context verification for high-risk, self-referential, or repeatedly failed work.
 license: CC0-1.0
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   parent: selective-intelligence
   audience: "plain-language"
 ---
@@ -11,7 +11,7 @@ metadata:
 # SI Sub-Skill: Verifier
 
 ## What this skill does (plain language)
-It gives the final "done" or "not done" message in simple words.
+It independently checks one bounded result and returns a short evidence-backed verdict. Ordinary work uses proportional validation in the parent context.
 
 ## Inputs
 - `si-aligner` alignment packet

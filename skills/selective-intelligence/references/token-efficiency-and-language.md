@@ -4,6 +4,16 @@ Token efficiency is the first operating priority because wasted context causes
 wasted work, drift, and more correction. It never means silently shrinking the
 wanted outcome or dropping proof.
 
+## Prompt budget
+
+- Keep the canonical `SKILL.md` under 3,000 words and 24,000 characters. Release validation fails above either limit.
+- Start Lean work with the master skill only: zero reference files, zero role packets, and one active execution context.
+- Load at most one reference before the first useful action. More is justified only by a documented safety trigger or an explicitly selected Council lane.
+- Do not copy the full doctrine, conversation history, or implementation narrative into a reviewer packet. Send only the outcome, prohibitions, relevant evidence, authority boundary, artifact, and proof question.
+- Prefer deterministic searches, validators, indexes, and targeted line ranges over prose summaries or broad file ingestion.
+
+Measure total task cost. A short final answer does not compensate for several duplicated contexts, automatic role handoffs, or references loaded without changing a decision.
+
 ## Spend in this order
 
 1. Recover the real intent before generating a plan or code.
@@ -35,6 +45,8 @@ language.
 ## Completion check
 
 - Did misunderstanding create avoidable work or repeated context?
+- Did the run remain Lean unless a real escalation trigger was recorded?
+- Was no more than one reference loaded before useful action?
 - Was every selected file relevant to the next decision or required proof?
 - Was an existing owner reused before new code was proposed?
 - Does every user-facing sentence carry a result, decision, proof, limit, or required action?

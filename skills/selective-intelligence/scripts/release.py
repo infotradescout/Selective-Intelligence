@@ -163,6 +163,44 @@ PRODUCT_SPECIFIC_BRANDS = tuple(
     for prefix, suffix in (("Meal", "Scout"), ("Trade", "Scout"))
 )
 FORBIDDEN_HANDOFF_QUESTION = "What outcome do you want to create or complete?"
+CORE_SKILL_MAX_WORDS = 3_000
+CORE_SKILL_MAX_CHARACTERS = 24_000
+LEAN_EXECUTION_CONTRACT = (
+    "Lean execution is the default",
+    "No reference is mandatory merely because the skill activated.",
+    "Do not make the person approve a paraphrase before every local edit or harmless action.",
+    "Use Guided Council only when the person explicitly requests it or when at least one condition is present",
+)
+FORBIDDEN_HEAVY_DEFAULTS = (
+    "Use these seven small passes in sequence",
+    "This gate is unconditional",
+    "JumpStart is the complete default path for real work",
+)
+FORBIDDEN_HEAVY_DEFAULT_PATTERNS = (
+    (
+        "automatic multi-role execution",
+        re.compile(
+            r"\b(?:automatically|always)\s+(?:spawn|run|use)\b[^\n]{0,120}"
+            r"\b(?:worker|objector|aligner|council)\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "approval checkpoint before every harmless mutation",
+        re.compile(
+            r"\bbefore\s+(?:any|every)\s+(?:side effect|file mutation|local edit|file edit)\b"
+            r"[^\n]{0,120}\b(?:checkpoint|approve|approval)\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "Tier 1 as the default for all real work",
+        re.compile(
+            r"\bTier\s+1\b[^\n]{0,120}\bdefault\s+for\s+(?:anything|all)\s+real\b",
+            re.IGNORECASE,
+        ),
+    ),
+)
 
 
 def sha256(path: Path) -> str:
@@ -337,6 +375,37 @@ def frontmatter_version(text: str) -> str | None:
     frontmatter = text.split("---", 2)[1] if text.startswith("---") and text.count("---") >= 2 else ""
     match = re.search(r'(?ms)^metadata:\s*\n(?:^[ \t]+.*\n)*?^[ \t]+version:\s*["\']?([^"\'\n]+)', frontmatter)
     return match.group(1).strip() if match else None
+
+
+def prompt_budget_errors(skill_text: str) -> tuple[dict[str, int], list[str]]:
+    """Enforce progressive disclosure and reject automatic heavy-workflow drift."""
+    metrics = {
+        "core_words": len(skill_text.split()),
+        "core_characters": len(skill_text),
+        "max_core_words": CORE_SKILL_MAX_WORDS,
+        "max_core_characters": CORE_SKILL_MAX_CHARACTERS,
+    }
+    errors: list[str] = []
+    if metrics["core_words"] > CORE_SKILL_MAX_WORDS:
+        errors.append(
+            "SKILL.md exceeds the core prompt budget: "
+            f"{metrics['core_words']} words > {CORE_SKILL_MAX_WORDS}"
+        )
+    if metrics["core_characters"] > CORE_SKILL_MAX_CHARACTERS:
+        errors.append(
+            "SKILL.md exceeds the core character budget: "
+            f"{metrics['core_characters']} characters > {CORE_SKILL_MAX_CHARACTERS}"
+        )
+    for phrase in LEAN_EXECUTION_CONTRACT:
+        if phrase not in skill_text:
+            errors.append(f"SKILL.md is missing lean execution contract text: {phrase}")
+    for phrase in FORBIDDEN_HEAVY_DEFAULTS:
+        if phrase in skill_text:
+            errors.append(f"SKILL.md restores a forbidden heavy default: {phrase}")
+    for name, pattern in FORBIDDEN_HEAVY_DEFAULT_PATTERNS:
+        if pattern.search(skill_text):
+            errors.append(f"SKILL.md restores a forbidden heavy default pattern: {name}")
+    return metrics, errors
 
 
 def read_distribution_metadata(root: Path) -> tuple[dict[str, object] | None, list[str]]:
@@ -583,6 +652,9 @@ def jumpstart_errors(root: Path, council_version: str | None) -> list[str]:
         "seedless_behavior": "activate_discover_and_begin_without_handing_work_back",
         "empty_context_response": "Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request.",
         "seeded_behavior": "begin_immediately",
+        "execution_default": "lean_single_context",
+        "checkpoint_default": "consequence_triggered",
+        "initial_reference_files": 0,
         "project_index": "auto_refresh_before_new_code",
         "validation_status_without_validator": "manual_unverified",
         "minimum_configuration": "one_capable_ai_client",
@@ -602,14 +674,16 @@ def jumpstart_errors(root: Path, council_version: str | None) -> list[str]:
         )
     )
     roles = payload.get("role_execution")
-    required_roles = {"worker", "objector", "aligner"}
     if (
         not isinstance(roles, dict)
-        or not isinstance(roles.get("spawn_when_available"), list)
-        or set(roles["spawn_when_available"]) != required_roles
+        or roles.get("default") != "none"
+        or not isinstance(roles.get("council_minimum"), list)
+        or set(roles["council_minimum"]) != {"worker", "objector"}
+        or not isinstance(roles.get("conditional"), list)
+        or set(roles["conditional"]) != {"intent_objector", "aligner", "reserve"}
         or roles.get("fallback") != "separate_sequential_contexts"
     ):
-        errors.append("JUMPSTART.md must declare distinct spawned roles and sequential fallback")
+        errors.append("JUMPSTART.md must default to no roles and declare a minimal conditional Council fallback")
     authority = payload.get("authority")
     if (
         not isinstance(authority, dict)
@@ -619,12 +693,10 @@ def jumpstart_errors(root: Path, council_version: str | None) -> list[str]:
         errors.append("JUMPSTART.md must preserve human or governed-quorum authority")
     outputs = payload.get("required_outputs")
     required_outputs = {
-        "intent_lock",
-        "worker_packet",
-        "objector_packet",
-        "alignment_record",
-        "authority_gate",
-        "resume_packet",
+        "result",
+        "proof",
+        "material_limit",
+        "authority_gate_when_triggered",
     }
     if not isinstance(outputs, list) or not required_outputs.issubset(set(outputs)):
         errors.append("JUMPSTART.md bootstrap is missing required portable outputs")
@@ -1178,6 +1250,8 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
 
     version = (root / "VERSION").read_text(encoding="utf-8").strip() if (root / "VERSION").is_file() else None
     skill_text = (root / "SKILL.md").read_text(encoding="utf-8") if (root / "SKILL.md").is_file() else ""
+    prompt_budget_metrics, prompt_budget_validation_errors = prompt_budget_errors(skill_text)
+    errors.extend(prompt_budget_validation_errors)
     versions = {version, metadata.get("version"), frontmatter_version(skill_text)}
     if None in versions or len(versions) != 1:
         errors.append(f"version mismatch: VERSION={version!r}, metadata={metadata.get('version')!r}, SKILL={frontmatter_version(skill_text)!r}")
@@ -1372,6 +1446,7 @@ def doctor(root: Path, require_public: bool, require_support: bool) -> tuple[dic
         and isinstance(result_record.get("model_behavior_evaluation"), dict)
         and result_record["model_behavior_evaluation"].get("result") == "pass"
     )
+    metadata["prompt_budget_metrics"] = prompt_budget_metrics
     return metadata, errors, files
 
 
@@ -1385,6 +1460,7 @@ def command_doctor(args: argparse.Namespace) -> int:
         "canonical_repository": metadata.get("canonical_repository") if metadata else None,
         "support_url_configured": bool(metadata and metadata.get("support_url")),
         "model_behavior_ready": bool(metadata and metadata.get("model_behavior_ready")),
+        "prompt_budget": metadata.get("prompt_budget_metrics") if metadata else None,
         "errors": errors,
     }
     if args.json:

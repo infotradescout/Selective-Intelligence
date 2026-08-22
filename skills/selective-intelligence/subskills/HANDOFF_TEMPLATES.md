@@ -1,6 +1,6 @@
 # AI Handoff Templates (for non-developer teams)
 
-Use these when you want each AI to run separately.
+Use only the templates for Council roles that were actually selected. Ordinary Lean work needs none of them.
 
 ## 1) Intake -> Planner handoff
 

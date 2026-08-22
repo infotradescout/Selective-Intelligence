@@ -1,91 +1,55 @@
-# Friction Ladder
+# Friction ladder
 
-Use this when deciding how much process a piece of software work deserves. The ladder
-scales ceremony to consequence instead of choosing a mode up front, so scratch
-prototyping stays fast while durable work keeps its full guardrails. It complements the
-operating modes; it does not replace [references/start-mode.md](start-mode.md) or
-[references/operational-safety-gates.md](operational-safety-gates.md).
+Use this reference only when the correct execution lane is unclear. Friction follows consequence, not the mere existence of persistent files, real users, or a named project. A durable task can still be clear, bounded, reversible Lean work.
 
-The governing rule: **friction is proportional to what the work can affect, and work is
-allowed to graduate.** Reduce ceremony, never the two non-negotiable guardrails.
+## Guardrails at every lane
 
-For Selective Intelligence, if work is not a genuine throwaway local sketch, it runs as **Tier 1** through JumpStart and all related lanes.
+1. **No unauthorized external effect.** Do not send, publish, push, merge, delete, purchase, provision, deploy, disclose sensitive data, or change access without exact authority.
+2. **No unproven completion claim.** Do not call work tested, deployed, live, verified, or complete without corresponding evidence.
 
-## Contents
+These never scale down. Everything else is proportional ceremony.
 
-- [The two non-negotiable guardrails](#the-two-non-negotiable-guardrails)
-- [Tier 0 — Scratch](#tier-0--scratch)
-- [Promotion gate: Tier 0 to Tier 1](#promotion-gate-tier-0-to-tier-1)
-- [Tier 1 — Product](#tier-1--product)
-- [Choosing the tier](#choosing-the-tier)
+## Lean — default
 
-## The two non-negotiable guardrails
+Use Lean when the outcome is clear, the work is bounded, and the next actions are reversible. Examples include a correction, focused research, a document edit, a local code repair, a routine repository continuation, or a small feature with an existing owner.
 
-These hold at every tier, including a throwaway one-file script:
+- Use one context and the minimum relevant evidence.
+- Begin useful reversible work without an intent checkpoint.
+- Do not create a Start Pack, queue, Resume Packet, or Council packet merely because the result will persist or has users.
+- Validate the actual result proportionately and report only meaningful proof or limits.
 
-1. **No unauthorized external effect.** Never send, publish, push, merge, delete,
-   purchase, provision a paid service, change permissions, accept terms, or disclose
-   sensitive data outside its approved boundary without explicit, comprehensible
-   authority for that exact action and target. A tool's availability is not permission.
-2. **No unproven completion claim.** Never state that something was tested, sent, saved,
-   approved, published, pushed, deployed, live, or complete without corresponding
-   evidence. Label unverified structural claims `manual_unverified`.
+Persistence changes what must be checked; it does not by itself require multiple agents.
 
-Everything else on this page is ceremony, and ceremony is what scales.
+## Guarded — material but reversible
 
-## Tier 0 — Scratch
+Promote to Guarded when the work crosses several owners or surfaces, changes a durable contract, or could create broad drift while remaining reversible and outside a high-stakes boundary.
 
-**When:** a single file or session, local only, no persistence, no shared state, no real
-users, and no money — or the user explicitly asks to prototype, sketch, or throw ideas
-at the wall.
+- Keep a concise outcome, scope, prohibition, and proof record.
+- Inspect affected dependencies and competing owners.
+- Use one fresh Objector or verifier only when it can catch a material failure that deterministic checks cannot.
+- Reconcile the finding in the working context. Do not automatically add Planner, Queue Manager, Aligner, or Reserve roles.
 
-**Do:** build immediately. Skip the Intent Lock, the Worker/Objector/Aligner Council,
-the Start Pack, and the seal. Leave exactly one artifact of process: a one-line
-assumption note stating the reversible interpretation you chose.
+Guarded is a bounded review step, not a complete Council workflow.
 
-**Do not:** demand a questionnaire, a mode selection, a schema, or an installation step
-before writing code. Do not manufacture drift by locking architecture the work has not
-earned.
+## Council — exceptional
 
-## Promotion gate: Tier 0 to Tier 1
+Promote to Council only when the person explicitly asks for it or at least one condition applies:
 
-Escalate the moment **any** of these first appears:
+- competing interpretations lead to materially different costly outcomes;
+- a whole product, system architecture, migration, or cross-system contract is being locked;
+- money movement, credentials, permissions, private customer data, security, regulated claims, or destructive operations are central;
+- a public or hard-to-reverse action carries meaningful harm;
+- a repeated failure survived Lean and Guarded correction; or
+- an existing human governance rule requires independent review.
 
-- persistence (a database, a file the work will re-read, saved state);
-- shared mutable state or more than one caller/tenant;
-- a real user other than the author;
-- money movement, credits, entitlements, or a payment path;
-- an external deployment, publish, push, or send;
-- an explicit intent to keep, maintain, or return to the code.
+Council uses the minimum sufficient roles. A Worker and one independent reviewer are the normal starting pair. Add an Aligner only for conflicting findings and a Reserve only for genuine capacity or continuity risk.
 
-On promotion, run the minimum reconciliation before scaling:
+## Checkpoint trigger
 
-1. Write a brief **retroactive Intent Lock**: desired outcome, primary user/job,
-   non-negotiables, prohibited outcomes, scope boundary, success proof, authority, and
-   the sensitive-data and spending boundaries.
-2. Run **one Objector pass** over the scratch code: unrouted surfaces, broken or unmet
-   APIs, logical drift, mismatched dependencies, and any false-completion claim.
-3. Dispose each finding against the lock, correct sustained ones, and only then treat
-   the work as Tier 1.
+A user-visible **What I understand you want** checkpoint is separate from the lane choice. Use it only for unresolved material ambiguity, a whole-product or architecture lock, an exact consequential action, or explicit user request. Outside Platynum use `APPROVE` or `CORRECT: <instruction>` for that triggered gate.
 
-Promotion is a checkpoint, not a rewrite. Preserve what already works; add the
-governance the higher stakes now require.
+A clear bounded local action does not become risky merely because it mutates a file. Consequence, reversibility, authority, and scope determine the gate.
 
-## Tier 1 — Product
+## Choosing under uncertainty
 
-**When:** new products and durable work — anything past the promotion gate.
-
-**Do:** use the full Start-mode contract. Create or adopt the proportional Start Pack,
-validate its machine-readable control graph, obtain a **Before-build locked** verdict
-before creating project code, run the Council, apply the risk-triggered operational
-safety gates, and seal the state. Reconcile planned versus actual behavior after each
-build and establish the next truthful baseline.
-
-## Choosing the tier
-
-- Default a genuinely exploratory, local, single-session request to **Tier 0**.
-- Default anything with users, persistence, money, or an external effect to **Tier 1**.
-- When the tier is unclear, name the assumption and choose the **lighter** tier that
-  still protects the two non-negotiable guardrails, then promote as soon as a trigger
-  appears. Under-ceremony on a throwaway is cheap; a missed guardrail is not, which is
-  why the guardrails never scale down.
+Choose the lightest lane that preserves the two guardrails. Record the trigger when promoting. If inspection resolves the concern, return to Lean rather than carrying higher-lane ceremony through the rest of the task.

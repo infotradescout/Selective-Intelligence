@@ -1,9 +1,9 @@
 ---
 name: si-aligner
-description: Merge planner intent, worker work, and objector findings into one truthful aligned result.
+description: Use only when a selected Selective Intelligence Council has conflicting Worker and reviewer findings that require an independent disposition.
 license: CC0-1.0
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   parent: selective-intelligence
   audience: "plain-language"
 ---
@@ -11,7 +11,7 @@ metadata:
 # SI Sub-Skill: Aligner
 
 ## What this skill does (plain language)
-It decides: Is the work true, complete, and still following the original goal?
+It resolves a real conflict between Council findings. Do not invoke it for ordinary work or findings the parent context can reconcile directly.
 
 ## Inputs
 - `si-planner` packet

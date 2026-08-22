@@ -1,9 +1,9 @@
 ---
 name: si-queue-manager
-description: Watch queue snapshots and only stop current work when there is a real mismatch.
+description: Use only when a selected Selective Intelligence Council has a real multi-item queue whose ownership or sequence needs checking.
 license: CC0-1.0
 metadata:
-  version: "0.1.0"
+  version: "0.1.1"
   parent: selective-intelligence
   audience: "plain-language"
 ---

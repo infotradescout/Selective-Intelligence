@@ -2,6 +2,15 @@
 
 All notable behavior changes to Selective Intelligence are recorded here.
 
+## 1.0.3 - 2026-08-22
+
+- Replaced the automatic full-workflow default with Lean single-context execution for clear, bounded, reversible work. Direct activation no longer starts seven role passes, a Start Pack, a queue, a Resume Packet, or a full intent checkpoint merely because work persists or has users.
+- Added consequence-based Guarded and Council escalation. Guided Council now requires an explicit request or a documented high-consequence trigger, starts with the minimum useful roles, and adds an Aligner or Reserve only for a real conflict or continuity risk.
+- Limited Lean startup to zero reference files and at most one reference before useful action. Reduced the canonical master skill from 7,102 to 2,085 words while preserving activation, authority, safety, correction, proof, and no-paid boundaries.
+- Added a deterministic release gate that fails when the master skill exceeds 3,000 words or 24,000 characters, loses the Lean contract, or restores known automatic heavy defaults.
+- Narrowed intent checkpoints to material ambiguity, whole-product or architecture locks, consequential actions, or explicit request. Clear local edits and harmless reversible actions no longer require approval of a paraphrase.
+- Updated the strict guide, JumpStart fallback, execution references, public listing metadata, reviewer cases, and release evidence to the same token-efficient behavior without claiming unverified public-directory or cross-client behavior.
+
 ## 1.0.2 - 2026-08-20
 
 - Added a deterministic, skills-only public-plugin projection with exactly one `SKILL.md`; the seven Council roles remain complete reference files rather than nested skill entrypoints.

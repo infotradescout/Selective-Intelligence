@@ -26,13 +26,13 @@ The exact wordmark, any unmistakable request for a named Selective Intelligence 
 
 After a direct trigger or that explicit yes, Selective Intelligence stays active for the entire task. The person can explicitly change or cancel the wanted outcome, but an accidental instruction to skip the checks cannot silently disable the intent, reuse, safety, token, correction, or proof gates.
 
-Token efficiency is the first operating priority. Selective Intelligence understands before generating, selects only context that can change the next decision, reuses existing owners, and reports results in direct human language without repeated plans or generic AI filler. It never saves tokens by shrinking the wanted result or dropping proof.
+Token efficiency is the first operating priority. Selective Intelligence now defaults to one context, zero extra references before useful action, no Council, and no intent checkpoint for clear reversible work. It selects only context that can change the next decision, reuses existing owners, and reports results without repeated plans or filler. It never saves tokens by shrinking the wanted result or dropping proof.
 
-An AI that can read ordinary text but cannot load Agent Skills should use [AI-GUIDE.md](skills/selective-intelligence/AI-GUIDE.md) as the strict operating guide after any direct match or approved merely adjacent adoption. It must perform the task rather than merely defining Selective Intelligence or summarizing this repository. [JUMPSTART.md](skills/selective-intelligence/JUMPSTART.md) remains the complete intentional-upload fallback when more of the full workflow is needed.
+An AI that can read ordinary text but cannot load Agent Skills should use [AI-GUIDE.md](skills/selective-intelligence/AI-GUIDE.md) as the strict operating guide after any direct match or approved merely adjacent adoption. It must perform the task rather than merely defining Selective Intelligence or summarizing this repository. [JUMPSTART.md](skills/selective-intelligence/JUMPSTART.md) remains the complete intentional-upload fallback; its multi-role workflow runs only for an explicit Council request or a documented high-consequence trigger.
 
 An AI with neither public-web access, installed-skill discovery, file input, nor supplied-text access cannot fetch any external guide from a name alone. It must say which capability is unavailable without inventing an installation, pretending it loaded the guide, or transferring technical setup to the person.
 
-When the active ChatGPT environment can spawn distinct agents, JumpStart uses that capability automatically; another AI subscription is not required. When it cannot, the same roles run in separate sequential contexts. A second model remains an optional manual Objector, not a prerequisite.
+Agent spawning is never a trigger by itself. For exceptional Council work, use the minimum selected roles—normally a Worker and one independent reviewer—and fall back to sequential contexts when spawning is unavailable. Another AI subscription is optional.
 
 Along the way, save an approved durable decision, reusable output, or hard-won correction as a Project source so later chats inherit the understanding. Before saving, check ownership and permission to retain it, whether the Project is shared, what data is permitted, and the applicable data-use setting. Do not save secrets, brainstorming, stale prices, false completion claims, or cross-project material.
 
@@ -53,7 +53,7 @@ Use it when you want an agent to:
 
 - understand terse, corrective, or evolving intent without turning criticism into a new task or invented halt;
 - bridge a non-developer's product direction into exact journeys, design, architecture, implementation, operations, and proof without technical homework;
-- match effort to the stakes: build a throwaway, local prototype immediately with no ceremony, then graduate to full locking, review, and proof once the work gains persistence, real users, money, or a deployment;
+- match effort to consequence: keep clear reversible work Lean even when durable, then add a bounded reviewer or full Council only for broad drift, ambiguity, money, security, sensitive data, destructive operations, or consequential release;
 - define a new product, smallest complete MVP, architecture, data, APIs, UI/UX, build order, and proof before coding;
 - resume a project across models, agents, branches, or interrupted sessions without losing the governing truth;
 - crawl a repository and reconcile intended behavior with routes, components, services, schemas, permissions, tests, deployment, and live surfaces;
@@ -89,23 +89,9 @@ Example requests:
 - “Pick this project back up from its current lock without repeating work or trusting stale evidence.”
 - “Use Selective Intelligence to audit and improve Selective Intelligence.”
 
-### Non-developer delegation (for AI teams)
+### Optional Council roles
 
-If your team is not developers, run this in order:
-
-1. `si-intake`
-2. `si-planner`
-3. `si-worker`
-4. `si-queue-manager`
-5. `si-objector`
-6. `si-aligner`
-7. `si-verifier`
-
-Each pass gets a short packet and passes it to the next pass. Every output is plain language
-by design.
-
-If you have multi-context agent capability, these passes can run in separate AI contexts/agents. If not, run
-them in sequence in the same context and keep passing packets.
+Non-developers do not need to run a seven-pass workflow. Ordinary work stays in one AI context. When consequence or an explicit request justifies Council, start with `si-worker` and one independent `si-objector` or `si-verifier`. Use `si-intake` for unresolved competing interpretations, `si-aligner` only when findings conflict, `si-queue-manager` only for a real queue, and a reserve context only for continuity or capacity risk.
 
 ## Keep queued prompts from getting lost
 
@@ -146,13 +132,13 @@ Use the canonical repository or versioned release archive as the source for ever
 
 Filesystem access is required for repository and Start modes. Python 3.10 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
 
-The current v1 release-candidate evidence is recorded in [evals/results-1.0.2.json](skills/selective-intelligence/evals/results-1.0.2.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
+The current v1 release-candidate evidence is recorded in [evals/results-1.0.3.json](skills/selective-intelligence/evals/results-1.0.3.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
 
 ### Update and uninstall
 
 To update after publication, run `gh skill update selective-intelligence`, or obtain a newer versioned archive or canonical repository revision, verify its release checksum, and replace only the existing `selective-intelligence` skill directory at the destination you chose. Preserve any project-created `.selective-intelligence/` Start Packs and feedback stores; they are project data, not installed skill files.
 
-Version 1.0.0 makes token efficiency the first operating priority, keeps SI governance active after invocation or consent, automatically records privacy-safe outcome signals, adds task-aware context budgets, no-paid website checks, interruptible SI-owned verification, and a local quality gate. It preserves the Start Pack schema and validator at component version 0.1.1 and the Council packet protocol at 0.3.0. Existing packs do not gain semantic proof merely by changing a version field; refresh the project index and reconstruct material intent before the next build lock.
+Version 1.0.3 makes Lean single-context execution the default, limits initial reference loading, gates checkpoints by consequence, and reserves Guided Council for explicit or high-consequence work. A release test prevents the master skill from exceeding its prompt budget or restoring the automatic seven-role default.
 
 To uninstall, remove only the installed `selective-intelligence` skill directory from that documented destination. Do not delete a parent skills directory or any project `.selective-intelligence/` directory.
 
