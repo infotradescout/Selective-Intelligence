@@ -16,6 +16,10 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 TRIGGER = "Selective Intelligence"
 APPROVAL = "Use Selective Intelligence for this?"
+PLUGIN_DIRECTORY_URL = (
+    "https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7"
+    "?q=Selective+Intelligence"
+)
 EMPTY_CONTEXT = (
     "Selective Intelligence is active. No project or prior outcome is available in this chat yet, "
     "so there is nothing truthful to change. I’ll apply it automatically to your next request."
@@ -79,6 +83,19 @@ class DiscoveryBridgeTests(unittest.TestCase):
             self.assertIn(phrase, guide)
         self.assertIn(APPROVAL, self.html)
 
+    def test_public_plugin_install_path_is_canonical(self) -> None:
+        publication = self.manifest["publication"]
+        self.assertEqual(publication["status"], "public")
+        self.assertEqual(publication["version"], "1.0.5")
+        self.assertEqual(publication["directory_url"], PLUGIN_DIRECTORY_URL)
+        self.assertEqual(self.manifest["canonical"]["public_plugin_directory"], PLUGIN_DIRECTORY_URL)
+        self.assertIn(PLUGIN_DIRECTORY_URL, self.html)
+        self.assertNotIn("chatgpt.com/skills?skill_id=", self.html)
+        launch = (ROOT / "LAUNCH.md").read_text(encoding="utf-8")
+        release = (ROOT / "releases" / "v1.0.5" / "README.md").read_text(encoding="utf-8")
+        self.assertIn(PLUGIN_DIRECTORY_URL, launch)
+        self.assertIn(PLUGIN_DIRECTORY_URL, release)
+
     def test_no_paid_or_telemetry_prerequisite(self) -> None:
         access = self.manifest["access"]
         self.assertEqual(access["selective_intelligence_fee"], 0)
@@ -126,6 +143,7 @@ class DiscoveryBridgeTests(unittest.TestCase):
         }
         pages = [
             DOCS / "problems" / "index.html",
+            DOCS / "try" / "index.html",
             DOCS / "questions" / "index.html",
             DOCS / "use-with-ai" / "index.html",
             DOCS / "ai-guide" / "index.html",
@@ -190,6 +208,7 @@ class DiscoveryBridgeTests(unittest.TestCase):
         sitemap_urls = {node.text for node in sitemap.findall("s:url/s:loc", namespace)}
         for url in [
             "https://infotradescout.github.io/Selective-Intelligence/problems/",
+            "https://infotradescout.github.io/Selective-Intelligence/try/",
             "https://infotradescout.github.io/Selective-Intelligence/questions/",
             "https://infotradescout.github.io/Selective-Intelligence/use-with-ai/",
             "https://infotradescout.github.io/Selective-Intelligence/ai-guide/",

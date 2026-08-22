@@ -2,6 +2,8 @@
 
 Selective Intelligence—formerly Selective Inheritance—is a free, open-source Agent Skill for people who know what they want a product to do but do not want to translate that goal into developer instructions. Give it a plain-language goal, URL, file, screenshot, or repository. It recovers intent, designs the product and UI/UX, finds missing or conflicting code, carries out the work, tests the real outcome, and keeps unfinished work visible instead of pretending it is done.
 
+**[Install Selective Intelligence from the public Plugins Directory](https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence)** · [Try five real pass/fail tasks](https://infotradescout.github.io/Selective-Intelligence/try/) · [Share the ready launch copy](LAUNCH.md)
+
 Published by [Platynum Standard](https://github.com/Platynum-Standard). The canonical source is [infotradescout/Selective-Intelligence](https://github.com/infotradescout/Selective-Intelligence).
 
 > **Platynum-47 is a separate companion project in development.** It is being built as a phone-friendly workspace for non-developers. Its unfinished source remains private for now; Selective Intelligence stays independent, public, free, and usable without it.
@@ -74,11 +76,15 @@ The telemetry-free public discovery surface is [infotradescout.github.io/Selecti
 
 ## Use in ChatGPT and Codex
 
-The public route is a skills-only Plugin Directory candidate shared by ChatGPT and Codex. [`plugin-submission/plugin.json`](plugin-submission/plugin.json) is the manifest source for review, and [`tools/public_plugin.py`](tools/public_plugin.py) deterministically projects the canonical skill into a submission ZIP with exactly one `SKILL.md`. The seven Council roles remain complete `ROLE.md` references inside that skill.
+Selective Intelligence v1.0.5 is published in the public Plugins Directory shared by ChatGPT and Codex. [Open the verified public listing and install it](https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence), then begin a real task with the words **Selective Intelligence**.
 
-A listing is public only after OpenAI review and the publisher's separate publication action, followed by installation verification from an outside account. Until those steps succeed, this repository and its generated ZIP are submission candidates—not a public directory listing.
+Try this first:
 
-[Open Selective Intelligence in ChatGPT](https://chatgpt.com/skills?skill_id=6a60f7ecb940819186be4dffa3094f85) when the personal saved skill is enabled for your account. That account-specific route is useful for testing but is not evidence of a public listing.
+> **Selective Intelligence: the AI built the wrong thing. Inspect what exists, recover what I actually meant, fix the real cause, and verify the corrected result.**
+
+The public listing was verified through exact-name search on 2026-08-22. Publication proves availability, not adoption or behavioral success. Outside-account installation, activation, and outcome evidence remain separate tests.
+
+[`plugin-submission/plugin.json`](plugin-submission/plugin.json) is the versioned manifest source, and [`tools/public_plugin.py`](tools/public_plugin.py) deterministically projects the canonical skill into a submission ZIP with exactly one `SKILL.md`. The seven Council roles remain complete `ROLE.md` references inside that skill.
 
 The generated [`adapters/chatgpt/selective-intelligence/`](adapters/chatgpt/selective-intelligence/) package remains the personal saved-skill adapter. It is separate from the public plugin package and preserves exactly the same canonical behavior. See the public [privacy policy](PRIVACY.md), [terms](TERMS.md), [website](https://infotradescout.github.io/Selective-Intelligence/), and [support](https://github.com/infotradescout/Selective-Intelligence/issues) routes.
 
@@ -132,7 +138,7 @@ Use the canonical repository or versioned release archive as the source for ever
 
 Filesystem access is required for repository and Start modes. Python 3.10 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
 
-The current v1 release-candidate evidence is recorded in [evals/results-1.0.5.json](skills/selective-intelligence/evals/results-1.0.5.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
+The current v1 evidence is recorded in [evals/results-1.0.5.json](skills/selective-intelligence/evals/results-1.0.5.json). Deterministic controls and production-path tests pass locally, and public directory publication is verified. The complete hidden-oracle behavior suite, outside-account installation, real-task outcomes, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
 
 ### Update and uninstall
 

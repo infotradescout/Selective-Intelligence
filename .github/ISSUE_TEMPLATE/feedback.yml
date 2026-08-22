@@ -37,6 +37,34 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: discovery
+    attributes:
+      label: How did you find it?
+      options:
+        - OpenAI Plugins Directory search
+        - Direct public listing link
+        - Selective Intelligence website
+        - GitHub
+        - Another person or AI recommended it
+        - Somewhere else
+    validations:
+      required: true
+
+  - type: dropdown
+    id: task
+    attributes:
+      label: What kind of task did you try?
+      options:
+        - Recover after a correction
+        - Turn a rough idea into complete work
+        - Finish an interrupted project
+        - Reduce wasted tokens or repeated work
+        - Challenge a false completion claim
+        - Another task
+    validations:
+      required: true
+
   - type: textarea
     id: goal
     attributes:
@@ -59,7 +87,7 @@ body:
     attributes:
       label: Version or commit (optional)
       description: Include this only if it is easy to find.
-      placeholder: 0.3.0 or a commit link
+      placeholder: 1.0.5 or a commit link
 
   - type: checkboxes
     id: privacy

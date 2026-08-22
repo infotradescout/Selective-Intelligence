@@ -7,7 +7,13 @@
     "audience": "public",
     "regions": "global"
   },
-  "release_notes": "Rebuilds the public and installed runtime bundles around only the files the skill can actually load or execute. Removes repository-only tests, historical results, release machinery, READMEs, and changelogs from the upload, reducing the public package from 101 files to fewer than 55. Cuts the always-loaded SKILL.md from about 2,000 words to under 1,500 while preserving activation, authority, Lean execution, checkpoint, Council, and proof rules. Retains the corrected 256x256 icons and agents/openai.yaml interface from 1.0.4. This package does not claim public-directory behavior that has not been verified.",
+  "publication": {
+    "status": "published",
+    "verified_on": "2026-08-22",
+    "directory_url": "https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence",
+    "verification": "Visible under Public through exact-name Plugins Directory search"
+  },
+  "release_notes": "Rebuilds the public and installed runtime bundles around only the files the skill can actually load or execute. Removes repository-only tests, historical results, release machinery, READMEs, and changelogs from the upload, reducing the public package from 101 files to fewer than 55. Cuts the always-loaded SKILL.md from about 2,000 words to under 1,500 while preserving activation, authority, Lean execution, checkpoint, Council, and proof rules. Retains the corrected 256x256 icons and agents/openai.yaml interface from 1.0.4. Public directory publication is verified; installation, adoption, activation, and real-task outcomes remain separate evidence gates.",
   "positive_test_cases": [
     {
       "id": "trigger-start-plain-language",
