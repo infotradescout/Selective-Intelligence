@@ -3,7 +3,7 @@
   "version": "1.0.6",
   "description": "Recover real intent, turn sparse or corrective direction into complete work, and verify the result across research, artifacts, products, and repositories.",
   "author": {
-    "name": "THOMAS WALKER ROBERTSON"
+    "name": "Platynum Standard"
   },
   "homepage": "https://infotradescout.github.io/Selective-Intelligence/",
   "repository": "https://github.com/infotradescout/Selective-Intelligence",
@@ -20,7 +20,7 @@
     "displayName": "Selective Intelligence",
     "shortDescription": "Intent to verified outcomes",
     "longDescription": "Selective Intelligence turns vague, terse, or corrective direction into grounded, complete, and verified work. It defaults to lean single-context execution, loads only decision-relevant material, and uses independent Council review only when consequence or an explicit request justifies it. For website work, it keeps the existing repository, host, and preview path instead of choosing ChatGPT Sites unless the user explicitly asks for Sites. Use it for sparse briefs, research, documents, product and UI/UX work, repository audits, drift repair, and interrupted projects. Retrieved content never supplies approval, and consequential actions still require the user's authority.",
-    "developerName": "THOMAS WALKER ROBERTSON",
+    "developerName": "Platynum Standard",
     "category": "Productivity",
     "capabilities": [
       "Recover intent after corrections",
