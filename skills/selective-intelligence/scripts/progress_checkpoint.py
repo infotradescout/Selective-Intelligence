@@ -118,6 +118,16 @@ def _git_status(root: Path, selected_paths: list[str] | None = None) -> list[str
     return _run(root, *args).stdout.splitlines()
 
 
+def _private_progress_root(project_root: Path) -> Path:
+    git_path = _git_value(project_root, "rev-parse", "--git-path", "selective-intelligence/progress")
+    if not git_path:
+        raise ProgressCheckpointError("could not resolve the repository-private checkpoint path")
+    resolved = Path(git_path)
+    if not resolved.is_absolute():
+        resolved = project_root / resolved
+    return resolved.resolve(strict=False)
+
+
 def save_checkpoint(
     *,
     root: Path,
@@ -160,11 +170,9 @@ def save_checkpoint(
         )
 
     checkpoint_id = f"progress-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
-    progress_root = project_root / ".selective-intelligence" / "progress"
-    immutable_relative = Path(".selective-intelligence") / "progress" / f"{checkpoint_id}.json"
-    latest_relative = Path(".selective-intelligence") / "progress" / "latest.json"
-    immutable_path = project_root / immutable_relative
-    latest_path = project_root / latest_relative
+    tracked_relative = Path(".selective-intelligence") / "progress" / "latest.json"
+    tracked_path = project_root / tracked_relative
+    private_root = _private_progress_root(project_root) if repo_root else project_root / ".selective-intelligence" / "progress"
 
     head_before = _git_value(project_root, "rev-parse", "HEAD") if repo_root else None
     full_status = _git_status(project_root) if repo_root else []
@@ -208,17 +216,22 @@ def save_checkpoint(
             "unrelated file names, raw prompts, and secrets are excluded"
         ),
     }
-    _write_json(immutable_path, record)
-    _write_json(latest_path, record)
+
+    if repo_root and commit:
+        artifact_path = tracked_path
+        artifact_locator = tracked_relative.as_posix()
+        _write_json(tracked_path, record)
+    else:
+        artifact_path = private_root / "checkpoints" / f"{checkpoint_id}.json"
+        artifact_locator = str(artifact_path)
+        _write_json(artifact_path, record)
+        _write_json(private_root / "latest.json", record)
 
     commit_sha: str | None = None
     pushed = False
     push_error: str | None = None
     if commit:
-        checkpoint_paths = selected_paths + [
-            immutable_relative.as_posix(),
-            latest_relative.as_posix(),
-        ]
+        checkpoint_paths = selected_paths + [tracked_relative.as_posix()]
         _run(project_root, "git", "add", "--", *checkpoint_paths)
         staged = _run(project_root, "git", "diff", "--cached", "--quiet", check=False)
         if staged.returncode not in {0, 1}:
@@ -245,8 +258,7 @@ def save_checkpoint(
         "schemaVersion": "si.progress-checkpoint-operation.v1",
         "checkpointId": checkpoint_id,
         "observedAt": _now(),
-        "artifact": immutable_relative.as_posix(),
-        "latest": latest_relative.as_posix(),
+        "artifact": artifact_locator,
         "repository": str(project_root),
         "branch": branch,
         "commitSha": commit_sha,
@@ -258,7 +270,7 @@ def save_checkpoint(
         "unrelatedChangesPreserved": True,
         "unrelatedChangeCountExcluded": unrelated_change_count,
     }
-    _write_json(progress_root / "last-operation.json", operation)
+    _write_json(private_root / "last-operation.json", operation)
     if push and not pushed:
         raise ProgressCheckpointError(
             f"checkpoint committed locally at {commit_sha}, but push failed: {push_error}"
@@ -270,7 +282,13 @@ def checkpoint_status(root: Path) -> dict[str, Any]:
     root = root.resolve()
     repo_root = _git_root(root)
     project_root = repo_root or root
-    latest = project_root / ".selective-intelligence" / "progress" / "latest.json"
+    tracked_latest = project_root / ".selective-intelligence" / "progress" / "latest.json"
+    if tracked_latest.is_file():
+        latest = tracked_latest
+    elif repo_root:
+        latest = _private_progress_root(project_root) / "latest.json"
+    else:
+        latest = project_root / ".selective-intelligence" / "progress" / "latest.json"
     record = json.loads(latest.read_text(encoding="utf-8")) if latest.is_file() else None
     return {
         "schemaVersion": "si.progress-checkpoint-status.v1",
@@ -303,10 +321,8 @@ def self_test() -> dict[str, Any]:
             commit=True,
         )
         status = _git_status(root)
-        if not any(line.endswith(" unrelated.txt") for line in status):
-            raise ProgressCheckpointError("self-test lost unrelated working changes")
-        if any(line.endswith(" owned.txt") for line in status):
-            raise ProgressCheckpointError("self-test did not checkpoint the owned path")
+        if status != [" M unrelated.txt"]:
+            raise ProgressCheckpointError(f"self-test left unexpected working changes: {status}")
         artifact_path = root / result["artifact"]
         if not artifact_path.is_file():
             raise ProgressCheckpointError("self-test checkpoint artifact is missing")
@@ -318,7 +334,10 @@ def self_test() -> dict[str, Any]:
             raise ProgressCheckpointError("self-test checkpoint leaked an unrelated file name")
         if record.get("repository", {}).get("unrelatedChangeCountExcluded", 0) < 1:
             raise ProgressCheckpointError("self-test did not record excluded unrelated work")
-        return {"status": "pass", "checkpoint": result, "workingTree": status}
+        tracked = _run(root, "git", "ls-files", ".selective-intelligence/progress").stdout.splitlines()
+        if tracked != [".selective-intelligence/progress/latest.json"]:
+            raise ProgressCheckpointError(f"self-test created checkpoint file sprawl: {tracked}")
+        return {"status": "pass", "checkpoint": result, "workingTree": status, "tracked": tracked}
 
 
 def _parser() -> argparse.ArgumentParser:
