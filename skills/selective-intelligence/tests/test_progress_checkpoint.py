@@ -15,10 +15,13 @@ import progress_checkpoint  # noqa: E402
 
 
 class ProgressCheckpointTests(unittest.TestCase):
-    def test_self_test_preserves_unrelated_work(self):
+    def test_self_test_preserves_unrelated_work_and_pushes_task_branch(self):
         result = progress_checkpoint.self_test()
         self.assertEqual(result["status"], "pass")
         self.assertTrue(result["checkpoint"]["committed"])
+        self.assertTrue(result["checkpoint"]["pushed"])
+        self.assertEqual(result["remoteHead"], result["checkpoint"]["commitSha"])
+        self.assertEqual(result["tracked"], [".selective-intelligence/progress/latest.json"])
         self.assertTrue(any(line.endswith(" unrelated.txt") for line in result["workingTree"]))
 
     def test_protected_branch_requires_exact_authority(self):

@@ -302,10 +302,15 @@ def checkpoint_status(root: Path) -> dict[str, Any]:
 
 def self_test() -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="si-progress-test-") as temporary:
-        root = Path(temporary)
+        base = Path(temporary)
+        root = base / "workspace"
+        remote = base / "remote.git"
+        root.mkdir()
+        _run(base, "git", "init", "--bare", str(remote))
         _run(root, "git", "init", "-b", "task/checkpoint-test")
         _run(root, "git", "config", "user.name", "SI Test")
         _run(root, "git", "config", "user.email", "si@example.invalid")
+        _run(root, "git", "remote", "add", "origin", str(remote))
         (root / "owned.txt").write_text("before\n", encoding="utf-8")
         (root / "unrelated.txt").write_text("keep\n", encoding="utf-8")
         _run(root, "git", "add", "owned.txt", "unrelated.txt")
@@ -319,6 +324,7 @@ def self_test() -> dict[str, Any]:
             next_safe_action="Verify the owned change",
             paths=["owned.txt"],
             commit=True,
+            push=True,
         )
         status = _git_status(root)
         if status != [" M unrelated.txt"]:
@@ -337,7 +343,23 @@ def self_test() -> dict[str, Any]:
         tracked = _run(root, "git", "ls-files", ".selective-intelligence/progress").stdout.splitlines()
         if tracked != [".selective-intelligence/progress/latest.json"]:
             raise ProgressCheckpointError(f"self-test created checkpoint file sprawl: {tracked}")
-        return {"status": "pass", "checkpoint": result, "workingTree": status, "tracked": tracked}
+        remote_sha = _run(
+            root,
+            "git",
+            "--git-dir",
+            str(remote),
+            "rev-parse",
+            "refs/heads/task/checkpoint-test",
+        ).stdout.strip()
+        if not result.get("pushed") or remote_sha != result.get("commitSha"):
+            raise ProgressCheckpointError("self-test did not push the checkpoint branch")
+        return {
+            "status": "pass",
+            "checkpoint": result,
+            "workingTree": status,
+            "tracked": tracked,
+            "remoteHead": remote_sha,
+        }
 
 
 def _parser() -> argparse.ArgumentParser:
