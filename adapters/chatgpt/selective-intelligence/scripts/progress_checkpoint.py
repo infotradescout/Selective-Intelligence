@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create durable, non-blocking progress checkpoints for Selective Intelligence."""
+"""Preserve work and bound evidence use for Selective Intelligence."""
 
 from __future__ import annotations
 
@@ -15,8 +15,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "si.progress-checkpoint.v1"
+PROGRESS_SCHEMA = "si.progress-checkpoint.v1"
+USAGE_SCHEMA = "si.usage-governor.v1"
 PROTECTED_BRANCHES = {"main", "master", "trunk", "prod", "production", "release"}
+MAX_BATCH_FILES = 12
+MAX_BATCH_BYTES = 65_536
+MAX_BATCHES_BEFORE_DECISION = 3
+MAX_USAGE_EVENTS = 20
 SECRET_PATTERNS = (
     re.compile(r"-----BEGIN (?:RSA |OPENSSH |EC |DSA |PGP )?PRIVATE KEY-----"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
@@ -26,7 +31,7 @@ SECRET_PATTERNS = (
 
 
 class ProgressCheckpointError(RuntimeError):
-    """Raised when a checkpoint cannot be saved safely."""
+    """Raised when preservation or usage control cannot proceed safely."""
 
 
 def _now() -> str:
@@ -35,11 +40,7 @@ def _now() -> str:
 
 def _run(root: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
     completed = subprocess.run(
-        list(args),
-        cwd=root,
-        capture_output=True,
-        text=True,
-        check=False,
+        list(args), cwd=root, capture_output=True, text=True, check=False
     )
     if check and completed.returncode != 0:
         detail = (completed.stderr or completed.stdout).strip()
@@ -49,21 +50,29 @@ def _run(root: Path, *args: str, check: bool = True) -> subprocess.CompletedProc
 
 def _git_root(root: Path) -> Path | None:
     completed = _run(root, "git", "rev-parse", "--show-toplevel", check=False)
-    if completed.returncode != 0:
-        return None
-    return Path(completed.stdout.strip()).resolve()
+    return Path(completed.stdout.strip()).resolve() if completed.returncode == 0 else None
 
 
 def _git_value(root: Path, *args: str) -> str | None:
     completed = _run(root, "git", *args, check=False)
-    if completed.returncode != 0:
-        return None
-    value = completed.stdout.strip()
+    value = completed.stdout.strip() if completed.returncode == 0 else ""
     return value or None
 
 
+def _private_root(project_root: Path, leaf: str) -> Path:
+    git_path = _git_value(
+        project_root, "rev-parse", "--git-path", f"selective-intelligence/{leaf}"
+    )
+    if git_path:
+        candidate = Path(git_path)
+        return (
+            candidate if candidate.is_absolute() else project_root / candidate
+        ).resolve(strict=False)
+    return project_root / ".selective-intelligence" / leaf
+
+
 def _bounded_text(value: str, label: str, maximum: int = 2000) -> str:
-    value = value.strip()
+    value = " ".join(value.split())
     if not value:
         raise ProgressCheckpointError(f"{label} cannot be empty")
     if len(value) > maximum:
@@ -75,6 +84,32 @@ def _bounded_text(value: str, label: str, maximum: int = 2000) -> str:
 
 def _bounded_list(values: list[str] | None, label: str) -> list[str]:
     return [_bounded_text(value, label) for value in (values or [])]
+
+
+def _write_json(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
+    temporary.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    os.replace(temporary, path)
+
+
+def _read_json(path: Path, schema: str) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ProgressCheckpointError(f"state is unreadable: {exc}") from exc
+    if not isinstance(payload, dict) or payload.get("schemaVersion") != schema:
+        raise ProgressCheckpointError("state has an unsupported schema")
+    return payload
+
+
+def _git_status(root: Path, paths: list[str] | None = None) -> list[str]:
+    args = ["git", "status", "--porcelain=v1", "--untracked-files=normal"]
+    if paths:
+        args.extend(["--", *paths])
+    return _run(root, *args).stdout.splitlines()
 
 
 def _safe_paths(repo_root: Path, values: list[str] | None) -> list[str]:
@@ -104,28 +139,13 @@ def _sha256(path: Path) -> str | None:
     return digest.hexdigest()
 
 
-def _write_json(path: Path, payload: dict[str, Any]) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_name(f".{path.name}.{uuid.uuid4().hex}.tmp")
-    temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    os.replace(temporary, path)
-
-
-def _git_status(root: Path, selected_paths: list[str] | None = None) -> list[str]:
-    args = ["git", "status", "--porcelain=v1", "--untracked-files=normal"]
-    if selected_paths:
-        args.extend(["--", *selected_paths])
-    return _run(root, *args).stdout.splitlines()
-
-
-def _private_progress_root(project_root: Path) -> Path:
-    git_path = _git_value(project_root, "rev-parse", "--git-path", "selective-intelligence/progress")
-    if not git_path:
-        raise ProgressCheckpointError("could not resolve the repository-private checkpoint path")
-    resolved = Path(git_path)
-    if not resolved.is_absolute():
-        resolved = project_root / resolved
-    return resolved.resolve(strict=False)
+def _protected_branch(branch: str | None) -> bool:
+    if not branch:
+        return False
+    lower = branch.casefold()
+    return lower in PROTECTED_BRANCHES or any(
+        lower.startswith(prefix) for prefix in ("release/", "prod/", "production/")
+    )
 
 
 def save_checkpoint(
@@ -148,7 +168,7 @@ def save_checkpoint(
     protected_branch_authorized: bool = False,
 ) -> dict[str, Any]:
     root = root.resolve()
-    if not root.exists() or not root.is_dir():
+    if not root.is_dir():
         raise ProgressCheckpointError(f"project root does not exist: {root}")
     if push and not commit:
         raise ProgressCheckpointError("--push requires --commit")
@@ -158,33 +178,34 @@ def save_checkpoint(
         raise ProgressCheckpointError("Git commit or push requested outside a repository")
     project_root = repo_root or root
     selected_paths = _safe_paths(project_root, paths)
-
-    branch = _git_value(project_root, "rev-parse", "--abbrev-ref", "HEAD") if repo_root else None
+    branch = (
+        _git_value(project_root, "rev-parse", "--abbrev-ref", "HEAD")
+        if repo_root
+        else None
+    )
     if branch == "HEAD":
         branch = None
     if commit and not branch:
-        raise ProgressCheckpointError("cannot checkpoint-commit from a detached HEAD")
-    if commit and branch in PROTECTED_BRANCHES and not protected_branch_authorized:
+        raise ProgressCheckpointError("cannot checkpoint-commit from detached HEAD")
+    if commit and _protected_branch(branch) and not protected_branch_authorized:
         raise ProgressCheckpointError(
             f"refusing routine checkpoint on protected branch {branch!r}; use a task branch"
         )
 
-    checkpoint_id = f"progress-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
-    tracked_relative = Path(".selective-intelligence") / "progress" / "latest.json"
+    checkpoint_id = (
+        f"progress-{datetime.now(UTC).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
+    )
+    tracked_relative = Path(".selective-intelligence/progress/latest.json")
     tracked_path = project_root / tracked_relative
-    private_root = _private_progress_root(project_root) if repo_root else project_root / ".selective-intelligence" / "progress"
-
-    head_before = _git_value(project_root, "rev-parse", "HEAD") if repo_root else None
+    private_root = _private_root(project_root, "progress")
     full_status = _git_status(project_root) if repo_root else []
-    selected_status = _git_status(project_root, selected_paths) if repo_root and selected_paths else []
-    unrelated_change_count = max(0, len(full_status) - len(selected_status))
-    file_records = [
-        {"path": relative, "sha256": _sha256(project_root / relative)}
-        for relative in selected_paths
-    ]
-
-    record: dict[str, Any] = {
-        "schemaVersion": SCHEMA_VERSION,
+    selected_status = (
+        _git_status(project_root, selected_paths)
+        if repo_root and selected_paths
+        else []
+    )
+    record = {
+        "schemaVersion": PROGRESS_SCHEMA,
         "checkpointId": checkpoint_id,
         "createdAt": _now(),
         "outcome": _bounded_text(outcome, "outcome"),
@@ -192,27 +213,40 @@ def save_checkpoint(
         "prohibitions": _bounded_list(prohibitions, "prohibition"),
         "progress": {
             "completedVerified": _bounded_list(completed, "completed item"),
-            "changedUnverified": _bounded_list(changed_unverified, "unverified item"),
+            "changedUnverified": _bounded_list(
+                changed_unverified, "unverified item"
+            ),
             "proof": _bounded_list(proof, "proof item"),
-            "externalEffects": _bounded_list(external_effects, "external effect"),
+            "externalEffects": _bounded_list(
+                external_effects, "external effect"
+            ),
             "doNotRepeat": _bounded_list(do_not_repeat, "do-not-repeat item"),
-            "nextSafeAction": _bounded_text(next_safe_action, "next safe action"),
+            "nextSafeAction": _bounded_text(
+                next_safe_action, "next safe action"
+            ),
         },
         "repository": {
             "root": ".",
             "rootKind": "repository_relative" if repo_root else "project_relative",
             "branch": branch,
-            "headBefore": head_before,
+            "headBefore": (
+                _git_value(project_root, "rev-parse", "HEAD") if repo_root else None
+            ),
             "checkpointCommit": "containing_commit" if commit else None,
             "pushRequested": push,
             "pushRemote": remote if push else None,
             "protectedBranchAuthorized": protected_branch_authorized,
             "selectedStatusBefore": selected_status,
-            "unrelatedChangeCountExcluded": unrelated_change_count,
+            "unrelatedChangeCountExcluded": max(
+                0, len(full_status) - len(selected_status)
+            ),
         },
-        "savedFiles": file_records,
+        "savedFiles": [
+            {"path": relative, "sha256": _sha256(project_root / relative)}
+            for relative in selected_paths
+        ],
         "privacyBoundary": (
-            "bounded summaries and selected file identities only; absolute project paths, "
+            "bounded summaries and selected file identities only; absolute paths, "
             "unrelated file names, raw prompts, and secrets are excluded"
         ),
     }
@@ -220,9 +254,11 @@ def save_checkpoint(
     if repo_root and commit:
         artifact_path = tracked_path
         artifact_locator = tracked_relative.as_posix()
-        _write_json(tracked_path, record)
+        _write_json(artifact_path, record)
     else:
-        artifact_path = private_root / "checkpoints" / f"{checkpoint_id}.json"
+        artifact_path = (
+            private_root / "checkpoints" / f"{checkpoint_id}.json"
+        )
         artifact_locator = str(artifact_path)
         _write_json(artifact_path, record)
         _write_json(private_root / "latest.json", record)
@@ -231,14 +267,29 @@ def save_checkpoint(
     pushed = False
     push_error: str | None = None
     if commit:
-        checkpoint_paths = selected_paths + [tracked_relative.as_posix()]
-        _run(project_root, "git", "add", "--", *checkpoint_paths)
-        staged = _run(project_root, "git", "diff", "--cached", "--quiet", check=False)
+        _run(
+            project_root,
+            "git",
+            "add",
+            "--",
+            *selected_paths,
+            tracked_relative.as_posix(),
+        )
+        staged = _run(
+            project_root, "git", "diff", "--cached", "--quiet", check=False
+        )
         if staged.returncode not in {0, 1}:
-            raise ProgressCheckpointError("could not inspect staged checkpoint changes")
+            raise ProgressCheckpointError(
+                "could not inspect staged checkpoint changes"
+            )
         if staged.returncode == 1:
-            message = commit_message or "checkpoint: preserve authorized work"
-            _run(project_root, "git", "commit", "-m", message)
+            _run(
+                project_root,
+                "git",
+                "commit",
+                "-m",
+                commit_message or "checkpoint: preserve authorized work",
+            )
         commit_sha = _git_value(project_root, "rev-parse", "HEAD")
         if push:
             pushed_result = _run(
@@ -252,7 +303,9 @@ def save_checkpoint(
             )
             pushed = pushed_result.returncode == 0
             if not pushed:
-                push_error = (pushed_result.stderr or pushed_result.stdout).strip() or "push failed"
+                push_error = (
+                    pushed_result.stderr or pushed_result.stdout
+                ).strip() or "push failed"
 
     operation = {
         "schemaVersion": "si.progress-checkpoint-operation.v1",
@@ -268,7 +321,9 @@ def save_checkpoint(
         "pushRemote": remote if push else None,
         "pushError": push_error,
         "unrelatedChangesPreserved": True,
-        "unrelatedChangeCountExcluded": unrelated_change_count,
+        "unrelatedChangeCountExcluded": record["repository"][
+            "unrelatedChangeCountExcluded"
+        ],
     }
     _write_json(private_root / "last-operation.json", operation)
     if push and not pushed:
@@ -282,88 +337,392 @@ def checkpoint_status(root: Path) -> dict[str, Any]:
     root = root.resolve()
     repo_root = _git_root(root)
     project_root = repo_root or root
-    tracked_latest = project_root / ".selective-intelligence" / "progress" / "latest.json"
-    if tracked_latest.is_file():
-        latest = tracked_latest
-    elif repo_root:
-        latest = _private_progress_root(project_root) / "latest.json"
-    else:
-        latest = project_root / ".selective-intelligence" / "progress" / "latest.json"
-    record = json.loads(latest.read_text(encoding="utf-8")) if latest.is_file() else None
+    tracked = project_root / ".selective-intelligence/progress/latest.json"
+    private = _private_root(project_root, "progress") / "latest.json"
+    latest = tracked if tracked.is_file() else private
     return {
         "schemaVersion": "si.progress-checkpoint-status.v1",
         "projectRoot": str(project_root),
-        "latestCheckpoint": record,
-        "currentBranch": _git_value(project_root, "rev-parse", "--abbrev-ref", "HEAD") if repo_root else None,
-        "currentHead": _git_value(project_root, "rev-parse", "HEAD") if repo_root else None,
+        "latestCheckpoint": (
+            _read_json(latest, PROGRESS_SCHEMA) if latest.is_file() else None
+        ),
+        "currentBranch": (
+            _git_value(project_root, "rev-parse", "--abbrev-ref", "HEAD")
+            if repo_root
+            else None
+        ),
+        "currentHead": (
+            _git_value(project_root, "rev-parse", "HEAD") if repo_root else None
+        ),
         "workingTree": _git_status(project_root) if repo_root else [],
     }
 
 
-def self_test() -> dict[str, Any]:
-    with tempfile.TemporaryDirectory(prefix="si-progress-test-") as temporary:
-        base = Path(temporary)
-        root = base / "workspace"
-        remote = base / "remote.git"
-        root.mkdir()
-        _run(base, "git", "init", "--bare", str(remote))
-        _run(root, "git", "init", "-b", "task/checkpoint-test")
-        _run(root, "git", "config", "user.name", "SI Test")
-        _run(root, "git", "config", "user.email", "si@example.invalid")
-        _run(root, "git", "remote", "add", "origin", str(remote))
-        (root / "owned.txt").write_text("before\n", encoding="utf-8")
-        (root / "unrelated.txt").write_text("keep\n", encoding="utf-8")
-        _run(root, "git", "add", "owned.txt", "unrelated.txt")
-        _run(root, "git", "commit", "-m", "baseline")
-        (root / "owned.txt").write_text("after\n", encoding="utf-8")
-        (root / "unrelated.txt").write_text("uncommitted unrelated\n", encoding="utf-8")
-        result = save_checkpoint(
-            root=root,
-            outcome="Preserve one owned slice",
-            completed=["Owned file updated"],
-            next_safe_action="Verify the owned change",
-            paths=["owned.txt"],
-            commit=True,
-            push=True,
+def _usage_path(root: Path) -> Path:
+    root = root.resolve()
+    repo_root = _git_root(root)
+    project_root = repo_root or root
+    return _private_root(project_root, "usage") / "current.json"
+
+
+def _usage_status(state: dict[str, Any]) -> dict[str, Any]:
+    questions = state.get("questions", {})
+    window = state.get("window", {})
+    return {
+        "schemaVersion": USAGE_SCHEMA,
+        "runId": state.get("runId"),
+        "outcome": state.get("outcome"),
+        "phase": state.get("phase"),
+        "batchCount": window.get("batchCount", 0),
+        "batchLimit": MAX_BATCHES_BEFORE_DECISION,
+        "decisionRequired": window.get("decisionRequired", False),
+        "questionCount": len(questions) if isinstance(questions, dict) else 0,
+        "lastDecision": state.get("lastDecision"),
+        "requiredAction": (
+            "act, narrow, checkpoint, or stop before another search or inspection batch"
+            if window.get("decisionRequired")
+            else None
+        ),
+    }
+
+
+def usage_start(root: Path, outcome: str) -> dict[str, Any]:
+    root = root.resolve()
+    if not root.is_dir():
+        raise ProgressCheckpointError(f"project root does not exist: {root}")
+    state = {
+        "schemaVersion": USAGE_SCHEMA,
+        "runId": f"usage-{uuid.uuid4().hex}",
+        "createdAt": _now(),
+        "updatedAt": _now(),
+        "outcome": _bounded_text(outcome, "outcome", 600),
+        "phase": "research",
+        "window": {
+            "batchCount": 0,
+            "decisionRequired": False,
+            "limit": MAX_BATCHES_BEFORE_DECISION,
+        },
+        "questions": {},
+        "events": [],
+        "lastDecision": None,
+    }
+    _write_json(_usage_path(root), state)
+    return _usage_status(state)
+
+
+def _usage_load(root: Path) -> dict[str, Any]:
+    path = _usage_path(root)
+    if not path.is_file():
+        raise ProgressCheckpointError(
+            "no active usage-governor run; start one first"
         )
-        status = _git_status(root)
-        if status != [" M unrelated.txt"]:
-            raise ProgressCheckpointError(f"self-test left unexpected working changes: {status}")
-        artifact_path = root / result["artifact"]
-        if not artifact_path.is_file():
-            raise ProgressCheckpointError("self-test checkpoint artifact is missing")
-        record = json.loads(artifact_path.read_text(encoding="utf-8"))
-        serialized = json.dumps(record, ensure_ascii=False)
-        if record.get("repository", {}).get("root") != ".":
-            raise ProgressCheckpointError("self-test checkpoint leaked the absolute repository root")
-        if "unrelated.txt" in serialized:
-            raise ProgressCheckpointError("self-test checkpoint leaked an unrelated file name")
-        if record.get("repository", {}).get("unrelatedChangeCountExcluded", 0) < 1:
-            raise ProgressCheckpointError("self-test did not record excluded unrelated work")
-        tracked = _run(root, "git", "ls-files", ".selective-intelligence/progress").stdout.splitlines()
-        if tracked != [".selective-intelligence/progress/latest.json"]:
-            raise ProgressCheckpointError(f"self-test created checkpoint file sprawl: {tracked}")
-        remote_sha = _run(
+    return _read_json(path, USAGE_SCHEMA)
+
+
+def usage_record(
+    root: Path,
+    *,
+    kind: str,
+    question: str,
+    owner: str,
+    file_count: int,
+    byte_count: int,
+    impact: str,
+    result: str,
+) -> dict[str, Any]:
+    if kind not in {"search", "inspection"}:
+        raise ProgressCheckpointError("kind must be search or inspection")
+    if impact not in {"decision", "risk", "proof"}:
+        raise ProgressCheckpointError("impact must be decision, risk, or proof")
+    if (
+        isinstance(file_count, bool)
+        or not isinstance(file_count, int)
+        or file_count < 0
+    ):
+        raise ProgressCheckpointError(
+            "file_count must be a non-negative integer"
+        )
+    if (
+        isinstance(byte_count, bool)
+        or not isinstance(byte_count, int)
+        or byte_count < 0
+    ):
+        raise ProgressCheckpointError(
+            "byte_count must be a non-negative integer"
+        )
+    if file_count > MAX_BATCH_FILES:
+        raise ProgressCheckpointError(
+            f"batch has {file_count} files; maximum is {MAX_BATCH_FILES}"
+        )
+    if byte_count > MAX_BATCH_BYTES:
+        raise ProgressCheckpointError(
+            f"batch has {byte_count} bytes; maximum is {MAX_BATCH_BYTES}; use targeted ranges"
+        )
+
+    state = _usage_load(root)
+    if state.get("phase") != "research":
+        raise ProgressCheckpointError(
+            f"run phase is {state.get('phase')!r}; start a new run before more research"
+        )
+    window = state.setdefault("window", {})
+    if window.get("decisionRequired"):
+        raise ProgressCheckpointError(
+            "three search or inspection batches are complete; act, narrow, checkpoint, or stop"
+        )
+
+    clean_question = _bounded_text(question, "question", 600)
+    clean_owner = _bounded_text(owner, "owner", 120)
+    clean_result = _bounded_text(result, "result", 600)
+    key = hashlib.sha256(
+        clean_question.casefold().encode("utf-8")
+    ).hexdigest()[:16]
+    questions = state.setdefault("questions", {})
+    existing = questions.get(key)
+    if existing and existing.get("owner") != clean_owner:
+        raise ProgressCheckpointError(
+            f"question already belongs to {existing.get('owner')!r}; overlapping ownership is blocked"
+        )
+    question_state = existing or {
+        "question": clean_question,
+        "owner": clean_owner,
+        "batchCount": 0,
+    }
+    question_state["batchCount"] += 1
+    question_state["lastImpact"] = impact
+    question_state["lastResult"] = clean_result
+    questions[key] = question_state
+
+    event = {
+        "recordedAt": _now(),
+        "kind": kind,
+        "questionKey": key,
+        "owner": clean_owner,
+        "files": file_count,
+        "bytes": byte_count,
+        "estimatedTokensUpperBound": (byte_count + 3) // 4,
+        "impact": impact,
+        "result": clean_result,
+    }
+    events = state.setdefault("events", [])
+    events.append(event)
+    state["events"] = events[-MAX_USAGE_EVENTS:]
+    window["batchCount"] = int(window.get("batchCount", 0)) + 1
+    window["decisionRequired"] = (
+        window["batchCount"] >= MAX_BATCHES_BEFORE_DECISION
+    )
+    state["updatedAt"] = _now()
+    _write_json(_usage_path(root), state)
+    response = _usage_status(state)
+    response["recorded"] = event
+    return response
+
+
+def usage_decide(root: Path, *, action: str, summary: str) -> dict[str, Any]:
+    if action not in {"act", "narrow", "checkpoint", "stop"}:
+        raise ProgressCheckpointError(
+            "action must be act, narrow, checkpoint, or stop"
+        )
+    state = _usage_load(root)
+    state["lastDecision"] = {
+        "decidedAt": _now(),
+        "action": action,
+        "summary": _bounded_text(summary, "decision summary", 600),
+        "batchesClosed": state.get("window", {}).get("batchCount", 0),
+    }
+    if action == "narrow":
+        state["phase"] = "research"
+        state["window"] = {
+            "batchCount": 0,
+            "decisionRequired": False,
+            "limit": MAX_BATCHES_BEFORE_DECISION,
+        }
+    else:
+        state["phase"] = action
+        state["window"]["decisionRequired"] = False
+    state["updatedAt"] = _now()
+    _write_json(_usage_path(root), state)
+    return _usage_status(state)
+
+
+def usage_status(root: Path) -> dict[str, Any]:
+    return _usage_status(_usage_load(root))
+
+
+def _checkpoint_self_test(base: Path) -> dict[str, Any]:
+    root = base / "workspace"
+    remote = base / "remote.git"
+    root.mkdir()
+    _run(base, "git", "init", "--bare", str(remote))
+    _run(root, "git", "init", "-b", "task/checkpoint-test")
+    _run(root, "git", "config", "user.name", "SI Test")
+    _run(root, "git", "config", "user.email", "si@example.invalid")
+    _run(root, "git", "remote", "add", "origin", str(remote))
+    (root / "owned.txt").write_text("before\n", encoding="utf-8")
+    (root / "unrelated.txt").write_text("keep\n", encoding="utf-8")
+    _run(root, "git", "add", "owned.txt", "unrelated.txt")
+    _run(root, "git", "commit", "-m", "baseline")
+    (root / "owned.txt").write_text("after\n", encoding="utf-8")
+    (root / "unrelated.txt").write_text(
+        "uncommitted unrelated\n", encoding="utf-8"
+    )
+    operation = save_checkpoint(
+        root=root,
+        outcome="Preserve one owned slice",
+        completed=["Owned file updated"],
+        next_safe_action="Verify the owned change",
+        paths=["owned.txt"],
+        commit=True,
+        push=True,
+    )
+    working_tree = _git_status(root)
+    if working_tree != [" M unrelated.txt"]:
+        raise ProgressCheckpointError(
+            f"self-test left unexpected working changes: {working_tree}"
+        )
+    artifact = root / operation["artifact"]
+    record = _read_json(artifact, PROGRESS_SCHEMA)
+    serialized = json.dumps(record, ensure_ascii=False)
+    if record["repository"]["root"] != "." or "unrelated.txt" in serialized:
+        raise ProgressCheckpointError("checkpoint leaked private path data")
+    tracked = _run(
+        root, "git", "ls-files", ".selective-intelligence/progress"
+    ).stdout.splitlines()
+    if tracked != [".selective-intelligence/progress/latest.json"]:
+        raise ProgressCheckpointError(
+            f"checkpoint created tracked file sprawl: {tracked}"
+        )
+    remote_head = _run(
+        root,
+        "git",
+        "--git-dir",
+        str(remote),
+        "rev-parse",
+        "refs/heads/task/checkpoint-test",
+    ).stdout.strip()
+    if not operation["pushed"] or remote_head != operation["commitSha"]:
+        raise ProgressCheckpointError(
+            "checkpoint task branch was not verified remotely"
+        )
+    return {
+        "checkpoint": operation,
+        "workingTree": working_tree,
+        "tracked": tracked,
+        "remoteHead": remote_head,
+        "root": root,
+    }
+
+
+def _usage_self_test(root: Path) -> dict[str, Any]:
+    usage_start(root, "Bound the evidence work")
+    for index in range(3):
+        response = usage_record(
             root,
-            "git",
-            "--git-dir",
-            str(remote),
-            "rev-parse",
-            "refs/heads/task/checkpoint-test",
-        ).stdout.strip()
-        if not result.get("pushed") or remote_sha != result.get("commitSha"):
-            raise ProgressCheckpointError("self-test did not push the checkpoint branch")
+            kind="inspection",
+            question="Which files own checkout totals?",
+            owner="worker-1",
+            file_count=4,
+            byte_count=8192,
+            impact="decision" if index == 2 else "risk",
+            result=f"Batch {index + 1} removed one candidate",
+        )
+    if not response["decisionRequired"]:
+        raise ProgressCheckpointError(
+            "usage self-test did not stop after three batches"
+        )
+    try:
+        usage_record(
+            root,
+            kind="search",
+            question="Which files own checkout totals?",
+            owner="worker-1",
+            file_count=1,
+            byte_count=100,
+            impact="proof",
+            result="must be rejected",
+        )
+    except ProgressCheckpointError:
+        pass
+    else:
+        raise ProgressCheckpointError(
+            "usage self-test allowed a fourth batch"
+        )
+    usage_decide(
+        root,
+        action="narrow",
+        summary="Inspect only the selected owner",
+    )
+    try:
+        usage_record(
+            root,
+            kind="inspection",
+            question="Which files own checkout totals?",
+            owner="worker-2",
+            file_count=1,
+            byte_count=100,
+            impact="proof",
+            result="must be rejected",
+        )
+    except ProgressCheckpointError:
+        pass
+    else:
+        raise ProgressCheckpointError(
+            "usage self-test allowed overlapping ownership"
+        )
+    for files, bytes_ in (
+        (MAX_BATCH_FILES + 1, 100),
+        (1, MAX_BATCH_BYTES + 1),
+    ):
+        try:
+            usage_record(
+                root,
+                kind="inspection",
+                question="A bounded second question",
+                owner="worker-1",
+                file_count=files,
+                byte_count=bytes_,
+                impact="proof",
+                result="must be rejected",
+            )
+        except ProgressCheckpointError:
+            pass
+        else:
+            raise ProgressCheckpointError(
+                "usage self-test allowed an oversized batch"
+            )
+    state = _usage_path(root)
+    if state.stat().st_size > 32_768:
+        raise ProgressCheckpointError("usage state exceeded its size limit")
+    if _git_status(root) != [" M unrelated.txt"]:
+        raise ProgressCheckpointError("usage ledger dirtied the worktree")
+    return {
+        "limits": {
+            "filesPerBatch": MAX_BATCH_FILES,
+            "bytesPerBatch": MAX_BATCH_BYTES,
+            "batchesBeforeDecision": MAX_BATCHES_BEFORE_DECISION,
+        },
+        "stateBytes": state.stat().st_size,
+        "status": usage_status(root),
+    }
+
+
+def self_test() -> dict[str, Any]:
+    with tempfile.TemporaryDirectory(prefix="si-work-guard-test-") as temporary:
+        proof = _checkpoint_self_test(Path(temporary))
+        usage = _usage_self_test(proof["root"])
         return {
             "status": "pass",
-            "checkpoint": result,
-            "workingTree": status,
-            "tracked": tracked,
-            "remoteHead": remote_sha,
+            "checkpoint": proof["checkpoint"],
+            "workingTree": proof["workingTree"],
+            "tracked": proof["tracked"],
+            "remoteHead": proof["remoteHead"],
+            "usage": usage,
         }
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Create durable Selective Intelligence progress checkpoints")
+    parser = argparse.ArgumentParser(
+        description="Preserve work and bound Selective Intelligence evidence use"
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     save = subparsers.add_parser("save")
@@ -384,8 +743,38 @@ def _parser() -> argparse.ArgumentParser:
     save.add_argument("--commit-message")
     save.add_argument("--protected-branch-authorized", action="store_true")
 
-    status = subparsers.add_parser("status")
-    status.add_argument("--root", default=".")
+    checkpoint_status_parser = subparsers.add_parser("status")
+    checkpoint_status_parser.add_argument("--root", default=".")
+
+    usage_start_parser = subparsers.add_parser("usage-start")
+    usage_start_parser.add_argument("--root", default=".")
+    usage_start_parser.add_argument("--outcome", required=True)
+
+    usage_record_parser = subparsers.add_parser("usage-record")
+    usage_record_parser.add_argument("--root", default=".")
+    usage_record_parser.add_argument(
+        "--kind", choices=("search", "inspection"), required=True
+    )
+    usage_record_parser.add_argument("--question", required=True)
+    usage_record_parser.add_argument("--owner", required=True)
+    usage_record_parser.add_argument("--files", type=int, default=0)
+    usage_record_parser.add_argument("--bytes", type=int, default=0)
+    usage_record_parser.add_argument(
+        "--impact", choices=("decision", "risk", "proof"), required=True
+    )
+    usage_record_parser.add_argument("--result", required=True)
+
+    usage_decide_parser = subparsers.add_parser("usage-decide")
+    usage_decide_parser.add_argument("--root", default=".")
+    usage_decide_parser.add_argument(
+        "--action",
+        choices=("act", "narrow", "checkpoint", "stop"),
+        required=True,
+    )
+    usage_decide_parser.add_argument("--summary", required=True)
+
+    usage_status_parser = subparsers.add_parser("usage-status")
+    usage_status_parser.add_argument("--root", default=".")
 
     subparsers.add_parser("self-test")
     return parser
@@ -415,10 +804,35 @@ def main() -> int:
             )
         elif args.command == "status":
             result = checkpoint_status(Path(args.root))
+        elif args.command == "usage-start":
+            result = usage_start(Path(args.root), args.outcome)
+        elif args.command == "usage-record":
+            result = usage_record(
+                Path(args.root),
+                kind=args.kind,
+                question=args.question,
+                owner=args.owner,
+                file_count=args.files,
+                byte_count=args.bytes,
+                impact=args.impact,
+                result=args.result,
+            )
+        elif args.command == "usage-decide":
+            result = usage_decide(
+                Path(args.root), action=args.action, summary=args.summary
+            )
+        elif args.command == "usage-status":
+            result = usage_status(Path(args.root))
         else:
             result = self_test()
     except (ProgressCheckpointError, OSError, json.JSONDecodeError) as exc:
-        print(json.dumps({"status": "error", "error": str(exc)}, ensure_ascii=False, indent=2))
+        print(
+            json.dumps(
+                {"status": "error", "error": str(exc)},
+                ensure_ascii=False,
+                indent=2,
+            )
+        )
         return 1
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0

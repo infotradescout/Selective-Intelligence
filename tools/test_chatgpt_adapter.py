@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -26,7 +27,7 @@ def main() -> int:
     require(skill_entrypoints == ["SKILL.md"], f"expected one SKILL.md, found {skill_entrypoints}")
     require(len(files) <= 50, f"runtime adapter is bloated: {len(files)} files")
     require("scripts/project_index.py" in files, "project index tool is missing")
-    require("scripts/progress_checkpoint.py" in files, "durable progress checkpoint tool is missing")
+    require("scripts/progress_checkpoint.py" in files, "durable progress and usage guard is missing")
     require("references/project-index-and-reuse-gate.md" in files, "project index reference is missing")
     require(
         "references/durable-progress-and-recovery.md" in files,
@@ -80,6 +81,10 @@ def main() -> int:
     ):
         require(phrase in description, f"ChatGPT discovery metadata is missing: {phrase}")
 
+    core_words = len(re.findall(r"\b[\w’'-]+\b", master_skill))
+    require(core_words <= 1_200, f"ChatGPT runtime core exceeds the lean word ceiling: {core_words}")
+    require(len(master_skill) <= 10_000, f"ChatGPT runtime core exceeds the lean character ceiling: {len(master_skill)}")
+
     combined = "\n".join(
         path.read_text(encoding="utf-8", errors="strict")
         for path in ADAPTER_ROOT.rglob("*")
@@ -92,6 +97,8 @@ def main() -> int:
     )
     for phrase in (
         "Whole-run usage governor",
+        "at most 12 text files or 64 KB",
+        "bundled checkpoint helper must open a usage ledger",
         "Two checkpoint types — never confuse them",
         "A progress checkpoint is automatic, non-blocking",
         "Silent human decision integrity",
@@ -143,6 +150,12 @@ def main() -> int:
     for command in commands:
         completed = subprocess.run(command, cwd=REPO_ROOT, text=True, capture_output=True, check=False)
         require(completed.returncode == 0, completed.stdout + completed.stderr)
+        if command[-2].endswith("progress_checkpoint.py"):
+            result = json.loads(completed.stdout)
+            require(result.get("checkpoint", {}).get("pushed") is True, "checkpoint self-test did not prove a branch push")
+            require(result.get("usage", {}).get("limits", {}).get("filesPerBatch") == 12, "usage self-test file limit drift")
+            require(result.get("usage", {}).get("limits", {}).get("bytesPerBatch") == 65_536, "usage self-test byte limit drift")
+            require(result.get("usage", {}).get("limits", {}).get("batchesBeforeDecision") == 3, "usage self-test batch limit drift")
 
     print(json.dumps({"status": "pass", "files": len(files), "skill_entrypoints": skill_entrypoints}, indent=2))
     return 0

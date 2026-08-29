@@ -1,15 +1,10 @@
 # Durable progress and recovery
 
-Use this reference whenever work can outlive one response, tool run, context window, worker, or local workspace. The purpose is simple: completed work must become recoverable before the next risky step begins.
+Use this whenever work can outlive one response, tool run, context window, worker, or workspace. Completed work must become recoverable before the next risky step begins.
 
-## The anti-loss invariant
+## Anti-loss invariant
 
-Never hold more than:
-
-- one coherent completed slice; or
-- five materially changed files
-
-without a durable checkpoint.
+Never hold more than one coherent completed slice or five materially changed files without a durable checkpoint.
 
 A coherent slice is a bounded outcome that can be explained, inspected, and resumed independently, such as a repaired route, completed component state, migration draft, research decision, document section, or verified artifact.
 
@@ -17,29 +12,33 @@ A coherent slice is a bounded outcome that can be explained, inspected, and resu
 
 For authorized repository work:
 
-1. Inspect the current branch, revision, dirty changes, and unrelated user work.
+1. Inspect the current branch, revision, dirty changes, and unrelated work.
 2. Select only files owned by the current slice.
 3. Run the fastest relevant validation that can catch a destructive save.
 4. Write the progress record.
 5. Commit the selected files and record on the existing task branch.
-6. Push that branch when remote writing is available and local-only work was not required.
+6. Push when remote writing is available and local-only work was not required.
 7. Verify the remote branch contains the checkpoint revision.
-8. Record the push result, proof, and next safe action.
+8. Record proof and the next safe action.
 9. Only then begin a long command, new slice, handoff, or context change.
 
-Never stage all repository changes blindly. Never discard or rewrite unrelated work to make a clean checkpoint.
+Never stage all changes blindly. Never discard or rewrite unrelated work to create a clean checkpoint.
 
-## Runtime helper
+## Bundled work guard
 
-When the bundled helper is executable, use `scripts/progress_checkpoint.py save` as the default repository savepoint implementation. Supply only task-owned paths and bounded outcome, proof, and next-action summaries. Use its commit and push options when the authority and branch rules above permit them.
+Use `scripts/progress_checkpoint.py` when it can run.
 
-When the helper cannot run, reproduce the same behavior with the available repository tools. A chat message, plan update, or local edit is not a checkpoint. Do not continue until the saved commit and, when requested, the remote branch revision are observed.
+Its progress commands create a bounded recovery record, selectively commit task-owned files, push the existing task branch, verify the remote revision, preserve unrelated changes, and reject routine checkpoint commits to protected branches.
 
-The helper keeps one tracked `latest.json` record. Git history provides the checkpoint timeline, preventing a new tracked file from being added for every save. Local operation receipts stay in the repository-private Git area and must not dirty the working tree.
+Its usage commands open a private evidence ledger before a second persistent repository batch. They reject more than 12 files or 64 KB in one batch, overlapping ownership of the same question, and a fourth search or inspection batch without an `act`, `narrow`, `checkpoint`, or `stop` decision.
+
+When the helper cannot run, reproduce the same behavior with available repository tools. Do not continue after a checkpoint or usage-stop trigger until the required state is observed.
+
+The helper keeps one tracked `latest.json` recovery record. Git history provides the checkpoint timeline, preventing one new tracked file per save. Local operation and usage receipts remain in the repository-private Git area and do not dirty the working tree.
 
 ## Safe branch policy
 
-Routine preservation belongs on an existing non-protected task branch. It does not belong directly on `main`, `master`, `trunk`, `production`, `prod`, or a release branch unless the person explicitly authorized that exact target.
+Routine preservation belongs on an existing non-protected task branch. It does not belong directly on `main`, `master`, `trunk`, `production`, `prod`, or release branches without exact authorization.
 
 A progress push is preservation, not publication. It does not authorize:
 
@@ -55,8 +54,7 @@ A progress push is preservation, not publication. It does not authorize:
 Store a concise, privacy-safe record containing:
 
 - checkpoint identifier and time;
-- outcome and active correction;
-- scope and prohibitions;
+- outcome, active correction, scope, and prohibitions;
 - completed and verified work;
 - changed but unverified work;
 - repository-relative location, branch, base revision, and containing commit;
@@ -68,11 +66,11 @@ Store a concise, privacy-safe record containing:
 - next safe action;
 - exact remaining authority step.
 
-Do not store secrets, absolute local paths, unrelated file names, raw private prompts, hidden reasoning, or customer data that is not needed for continuity.
+Do not store secrets, absolute local paths, unrelated file names, raw private prompts, hidden reasoning, or unnecessary customer data.
 
 ## Before long operations
 
-Create the checkpoint before:
+Checkpoint before:
 
 - dependency installation or a large build;
 - broad test suites;
@@ -80,27 +78,18 @@ Create the checkpoint before:
 - image processing, crawling, or bulk import;
 - deployment preparation;
 - cross-repository integration;
-- changing models, agents, contexts, branches, or worktrees;
-- any operation whose failure or timeout could erase the ability to explain or recover current work.
+- changing models, workers, contexts, branches, or worktrees;
+- any operation whose failure could erase the ability to explain or recover current work.
 
-A command finishing successfully does not preserve earlier uncommitted work. Save first.
+A successful command does not preserve earlier uncommitted work. Save first.
 
 ## External effects
 
-After sending, publishing, purchasing, deploying, migrating, changing access, or triggering another provider, record:
+After sending, publishing, purchasing, deploying, migrating, changing access, or triggering another provider, record the exact target, action, observed result, receipt or revision, retry safety, and rollback path.
 
-- exact target;
-- action;
-- observed result;
-- receipt, revision, identifier, or URL;
-- whether retry is safe, unsafe, or unknown;
-- compensation or rollback path.
-
-An unknown result is not a failure and not a success. Inspect actual state before retrying.
+An unknown result is neither failure nor success. Inspect actual state before retrying.
 
 ## Resume protocol
-
-On resume:
 
 1. Load the latest durable checkpoint.
 2. Inspect actual repository and external state.
@@ -110,18 +99,18 @@ On resume:
 6. Revalidate proof invalidated by shared changes.
 7. Save a new checkpoint after the recovered slice.
 
-Do not restart the original plan from step one. Do not repeat external actions merely because a new worker cannot see their result.
+Do not restart the original plan from step one. Do not repeat external actions because a new worker cannot see their result.
 
-## Fallback when Git is unavailable
+## Fallback without Git
 
-Write the record and completed artifact to a durable project location. Include file hashes or exact saved paths when possible. State that the work is saved locally but not remotely protected.
+Write the record and completed artifact to a durable project location. Include hashes or exact saved paths when possible. State that the work is saved locally but not remotely protected.
 
-Do not tell the person that work is backed up, pushed, or recoverable from another device unless the evidence proves it.
+Do not claim work is backed up, pushed, or recoverable from another device unless evidence proves it.
 
 ## User-facing update
 
-A checkpoint update should be short:
+Keep it short:
 
 **Saved checkpoint:** what is complete, where it is preserved, what proof passed, and what starts next.
 
-Do not dump internal logs or the full record into the conversation. The durable artifact carries the details.
+A progress message without saved state is not a checkpoint.
