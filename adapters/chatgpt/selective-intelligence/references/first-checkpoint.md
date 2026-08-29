@@ -1,70 +1,86 @@
-# First checkpoint
+# Checkpoints: intent locks and durable progress
 
-The first checkpoint prevents expensive drift when meaning or consequence justifies a lock. It is not the default first response to every request that creates or changes something.
+Selective Intelligence uses two different checkpoint types. Confusing them creates either needless approval friction or lost work.
 
-## When it fires
+## 1. Intent and authority checkpoint
 
-Use a checkpoint headed **What I understand you want** before action only when at least one condition applies:
+This checkpoint prevents expensive drift when meaning or consequence justifies a lock. It is not the default before every edit.
+
+### When it fires
+
+Use a checkpoint headed **What I understand you want** before consequential action only when:
 
 - material ambiguity remains and plausible readings lead to meaningfully different outcomes;
-- the request locks a new whole product, system architecture, migration, or cross-system contract;
+- the request locks a whole product, system architecture, migration, or cross-system contract;
 - the next action is public, irreversible, expensive, destructive, permission-changing, or exposes sensitive data; or
-- the person explicitly asks to lock intent before execution.
+- the person explicitly requests an intent lock.
 
-A clear correction, focused document change, reversible local edit, bounded feature repair, routine repository continuation, or ordinary research task stays Lean. The existence of a user, persistent file, or durable result does not by itself fire this checkpoint.
+A clear correction, bounded repair, routine continuation, reversible local edit, or ordinary research task stays Lean.
 
-## The checkpoint artifact
+### What it contains
 
-Include only the fields needed to prevent the identified drift:
+Include only what prevents the identified drift:
 
-1. **Outcome and user** — the real-world result and who must be able to use it.
-2. **Non-negotiables and prohibitions** — what must be preserved and what must not happen.
-3. **Scope and boundaries** — the complete affected surface, including explicitly excluded areas.
-4. **Outcome slices and proof** — for a whole-product lock, the bounded parts and observable evidence that make each part real.
-5. **Canonical reuse map** — existing owners to reuse or change before creating another one.
-6. **Build or action sequence** — the dependency order that avoids partial or contradictory work.
-7. **Authority split** — reversible work the AI may perform and exact consequential actions reserved for the person.
-8. **Constraint reconciliation** — material conflicts among requirements, capabilities, privacy, time, and cost.
-9. **Human-only activation steps** — only actions the person truly must take, expressed in plain language without technical setup homework.
+- real-world outcome and intended person;
+- non-negotiables and prohibitions;
+- affected and excluded surfaces;
+- observable proof;
+- canonical owners to reuse;
+- consequential authority reserved for the person.
 
-Do not inflate a narrow consequential action into a whole-product essay. For example, a publish checkpoint may need the target, artifact, visibility, and rollback implication—not nine repeated sections.
+Outside Platynum, use `APPROVE` or `CORRECT: <instruction>`. Approval unlocks only the described scope. A correction reopens affected meaning and invalidates dependent work and proof.
 
-## Information sufficiency
+Do not require approval again for every harmless step under the same boundary.
 
-Infer from active conversation, existing artifacts, authoritative evidence, and established decisions before asking. Ask one compact question only when the missing answer changes the outcome, authority, sensitive-data boundary, consequential cost, or irreversible choice and cannot be resolved safely.
+## 2. Durable progress checkpoint
 
-Whole-product locks should resolve their genuinely blocking inputs together. Later unknowns that do not block the next reversible slice stay visible; they do not prevent useful local progress. Do not trickle-ask questions that inspection can answer, and do not claim that an unverified inference is approved intent.
+This checkpoint prevents loss. It is automatic, non-blocking, and does not ask the person to approve routine preservation of already-authorized work.
 
-## Approval surface
+Create one:
 
-Present the checkpoint in short human language. Keep the complete machine-checkable record internally when the runtime needs it.
+- after each coherent completed slice;
+- before beginning the next slice;
+- before a long test, build, migration preparation, or external tool sequence;
+- before changing model, agent, context, branch, or work surface;
+- before likely timeout, capacity, or runtime boundaries;
+- whenever one completed slice or five materially changed files remain uncommitted or only in working memory;
+- immediately after a consequential external effect, with a receipt and a do-not-repeat note.
 
-- **Platynum:** the product may provide wired Approve and Correct controls bound to the current checkpoint identifier and intent hash.
-- **Outside Platynum:** use the text gate `APPROVE` or `CORRECT: <instruction>`. Do not render decorative buttons or emoji controls.
+For repository work, commit only task-owned files. Preserve unrelated changes. When remote writing is available and the person has not required local-only work, push the checkpoint to the existing task branch. Do not push directly to protected branches merely to create a savepoint. A checkpoint push never authorizes merge, release, deployment, or production mutation.
 
-Approval unlocks only the described action and scope. A correction reopens affected meaning, invalidates dependent work and proof, and creates a revised checkpoint where the trigger still applies.
+When commit or push is unavailable, write a durable resume artifact inside the project and plainly identify what remains local.
+
+### Required record
+
+A durable progress checkpoint records:
+
+- governing outcome and prohibitions;
+- completed and verified work;
+- changed but unverified work;
+- repository, branch, base revision, and current revision or containing commit;
+- saved files and their ownership;
+- tests and evidence;
+- external effects and receipts;
+- actions that must not be repeated;
+- next safe action;
+- remaining authority requirement, if any.
+
+A progress message, chat summary, or “still working” update without saved state is not a checkpoint.
+
+## Resume rule
+
+Resume from the checkpoint, actual source state, and external receipts. Never restart from persuasive conversation memory.
+
+1. Inspect repository, branch, revision, and dirty changes.
+2. Compare them with the checkpoint.
+3. Verify external effects before retrying.
+4. Continue from the first unproved transition.
+5. Create a new checkpoint after the recovered slice.
+
+Unknown external outcomes are never assumed safe to repeat.
 
 ## Enforcement boundary
 
-- Do not perform the gated consequential action before valid approval.
-- Reversible inspection and preparation may continue when they do not pre-commit the disputed choice or create an external effect.
-- Do not require approval again for every harmless step under the same approved boundary.
-- A deadline never authorizes a consequential action or false completion claim.
-- If the delivered result does not match what the person wanted, reopen understanding even when narrow tests pass.
+Intent checkpoints protect meaning and authority. Progress checkpoints protect continuity. Neither replaces the other.
 
-The SI checkpoint runtime can bind and interrupt governed session work. Do not claim it stopped arbitrary third-party model streams, tools, or workers unless product wiring proves that effect.
-
-## Relationship to execution lanes
-
-Lean work normally has no checkpoint. Guarded work uses one only when a trigger above is present. Council work commonly includes one because its selection conditions often involve ambiguity or consequence, but Council status alone is not a reason to repeat already settled approval.
-
-The checkpoint locks meaning or authority; it does not require seven roles, a Start Pack, a queue, or a Resume Packet. Those artifacts are separate tools used only when the selected workflow genuinely needs them.
-
-## Measure
-
-Track two outcomes:
-
-- **avoidable checkpoint rate** — clear reversible tasks stopped for approval without a trigger; target zero;
-- **correction rounds to correct consequential checkpoint** — user corrections needed before a triggered lock matches intent; target zero.
-
-Both matter. A gate that catches costly drift is useful; a gate placed before every harmless edit is token and interaction waste.
+A runtime may enforce both, one, or neither. Do not claim a checkpoint stopped a third-party worker, committed files, or pushed a branch unless the actual wiring and evidence prove it.
