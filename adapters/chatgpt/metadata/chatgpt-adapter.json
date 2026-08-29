@@ -7,7 +7,7 @@
   "adapter_path": "adapters/chatgpt/selective-intelligence",
   "transformation": "runtime_only_with_nested_role_entrypoints_as_role_references",
   "single_skill_entrypoint": "SKILL.md",
-  "runtime_file_count": 47,
+  "runtime_file_count": 50,
   "role_path_map": {
     "subskills/si-aligner/SKILL.md": "subskills/si-aligner/ROLE.md",
     "subskills/si-intake/SKILL.md": "subskills/si-intake/ROLE.md",

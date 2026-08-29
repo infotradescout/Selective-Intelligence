@@ -152,11 +152,13 @@
     "references/actual-intent-alignment.md",
     "references/architecture-reuse.md",
     "references/continuity-and-impact.md",
+    "references/durable-progress-and-recovery.md",
     "references/failure-patterns-and-gates.md",
     "references/feedback-and-learning-loop.md",
     "references/first-checkpoint.md",
     "references/friction-ladder.md",
     "references/guided-council.md",
+    "references/human-decision-integrity.md",
     "references/intent-intelligence.md",
     "references/model-neutral-execution.md",
     "references/no-paid-capability-recovery.md",
@@ -179,6 +181,7 @@
     "scripts/intent_contract.py",
     "scripts/policy_guard.py",
     "scripts/project_index.py",
+    "scripts/progress_checkpoint.py",
     "scripts/prompt_queue.py",
     "scripts/start_pack.py",
     "scripts/text_gate.py",
@@ -233,6 +236,7 @@
     "references/application-patterns.md",
     "references/architecture-reuse.md",
     "references/continuity-and-impact.md",
+    "references/durable-progress-and-recovery.md",
     "references/correction-harvesting.md",
     "references/distribution-and-discoverability.md",
     "references/evidence-and-completion.md",
@@ -241,6 +245,7 @@
     "references/first-checkpoint.md",
     "references/friction-ladder.md",
     "references/guided-council.md",
+    "references/human-decision-integrity.md",
     "references/intent-intelligence.md",
     "references/model-neutral-execution.md",
     "references/no-paid-capability-recovery.md",
@@ -280,6 +285,7 @@
     "scripts/intent_contract.py",
     "scripts/policy_guard.py",
     "scripts/project_index.py",
+    "scripts/progress_checkpoint.py",
     "scripts/context_budget.py",
     "scripts/site_quality.py",
     "scripts/site_review_gate.py",
@@ -291,6 +297,47 @@
     "tests/test_site_review_gate.py",
     "tests/test_policy_guard_command_resolution.py",
     "tests/test_production_path.py",
+    "tests/test_progress_checkpoint.py",
     "tests/test_release_prompt_budget.py"
-  ]
+  ],
+  "whole_run_usage_governor": {
+    "scope": "entire_run",
+    "large_repository_batch_max_text_files": 12,
+    "large_repository_batch_max_bytes": 250000,
+    "max_search_batches_before_explicit_decision": 3,
+    "duplicate_contexts_for_same_question": 0,
+    "overlapping_workers_for_same_question": 0
+  },
+  "durable_progress_checkpoint": {
+    "type": "automatic_non_blocking_preservation",
+    "max_completed_slices_without_checkpoint": 1,
+    "max_materially_changed_files_without_checkpoint": 5,
+    "task_branch_push_when_available": true,
+    "merge_release_deploy_authority": false,
+    "protected_branch_default": "blocked"
+  },
+  "silent_human_decision_integrity": {
+    "automatic_surfaces": [
+      "customer_facing_ui",
+      "public_profiles",
+      "pricing",
+      "onboarding",
+      "discovery",
+      "marketplaces",
+      "payments",
+      "trust",
+      "sales",
+      "conversion"
+    ],
+    "lenses": [
+      "comprehension",
+      "desire_without_manipulation",
+      "trust",
+      "scam_and_fraud_resistance"
+    ],
+    "color_theory_required": true,
+    "consumer_behavior_required": true,
+    "anti_scam_and_fraud_required": true,
+    "silent_by_default": true
+  }
 }
