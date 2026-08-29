@@ -1,0 +1,46 @@
+name: Temporary rebuild public package
+
+on:
+  push:
+    branches:
+      - fix/rebuild-public-package-publisher
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    name: Rebuild corrected package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Rebuild and commit corrected package
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+
+          git init .
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          git fetch --depth=1 origin "${BRANCH}"
+          git checkout -B "${BRANCH}" FETCH_HEAD
+
+          python3 -B tools/public_plugin.py package --output-dir dist --force
+
+          package="selective-intelligence-plugin-1.0.6.zip"
+          cp "dist/${package}" "releases/v1.0.6/${package}"
+          (
+            cd releases/v1.0.6
+            sha256sum "${package}" > SHA256SUMS
+          )
+
+          rm -f .github/workflows/temp-rebuild-public-package.yml
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "releases/v1.0.6/${package}" releases/v1.0.6/SHA256SUMS .github/workflows/temp-rebuild-public-package.yml
+          git commit -m "Rebuild public plugin package with publisher privacy fix"
+          git push origin "HEAD:${BRANCH}"
