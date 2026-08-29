@@ -111,6 +111,13 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     os.replace(temporary, path)
 
 
+def _git_status(root: Path, selected_paths: list[str] | None = None) -> list[str]:
+    args = ["git", "status", "--porcelain=v1", "--untracked-files=normal"]
+    if selected_paths:
+        args.extend(["--", *selected_paths])
+    return _run(root, *args).stdout.splitlines()
+
+
 def save_checkpoint(
     *,
     root: Path,
@@ -160,11 +167,9 @@ def save_checkpoint(
     latest_path = project_root / latest_relative
 
     head_before = _git_value(project_root, "rev-parse", "HEAD") if repo_root else None
-    status_before = (
-        _run(project_root, "git", "status", "--porcelain=v1", "--untracked-files=normal").stdout.splitlines()
-        if repo_root
-        else []
-    )
+    full_status = _git_status(project_root) if repo_root else []
+    selected_status = _git_status(project_root, selected_paths) if repo_root and selected_paths else []
+    unrelated_change_count = max(0, len(full_status) - len(selected_status))
     file_records = [
         {"path": relative, "sha256": _sha256(project_root / relative)}
         for relative in selected_paths
@@ -186,17 +191,22 @@ def save_checkpoint(
             "nextSafeAction": _bounded_text(next_safe_action, "next safe action"),
         },
         "repository": {
-            "root": str(project_root),
+            "root": ".",
+            "rootKind": "repository_relative" if repo_root else "project_relative",
             "branch": branch,
             "headBefore": head_before,
             "checkpointCommit": "containing_commit" if commit else None,
             "pushRequested": push,
             "pushRemote": remote if push else None,
             "protectedBranchAuthorized": protected_branch_authorized,
-            "statusBefore": status_before,
+            "selectedStatusBefore": selected_status,
+            "unrelatedChangeCountExcluded": unrelated_change_count,
         },
         "savedFiles": file_records,
-        "privacyBoundary": "bounded summaries and file identities; no raw prompts or secrets",
+        "privacyBoundary": (
+            "bounded summaries and selected file identities only; absolute project paths, "
+            "unrelated file names, raw prompts, and secrets are excluded"
+        ),
     }
     _write_json(immutable_path, record)
     _write_json(latest_path, record)
@@ -214,7 +224,7 @@ def save_checkpoint(
         if staged.returncode not in {0, 1}:
             raise ProgressCheckpointError("could not inspect staged checkpoint changes")
         if staged.returncode == 1:
-            message = commit_message or f"checkpoint: {record['outcome'][:72]}"
+            message = commit_message or "checkpoint: preserve authorized work"
             _run(project_root, "git", "commit", "-m", message)
         commit_sha = _git_value(project_root, "rev-parse", "HEAD")
         if push:
@@ -246,6 +256,7 @@ def save_checkpoint(
         "pushRemote": remote if push else None,
         "pushError": push_error,
         "unrelatedChangesPreserved": True,
+        "unrelatedChangeCountExcluded": unrelated_change_count,
     }
     _write_json(progress_root / "last-operation.json", operation)
     if push and not pushed:
@@ -267,11 +278,7 @@ def checkpoint_status(root: Path) -> dict[str, Any]:
         "latestCheckpoint": record,
         "currentBranch": _git_value(project_root, "rev-parse", "--abbrev-ref", "HEAD") if repo_root else None,
         "currentHead": _git_value(project_root, "rev-parse", "HEAD") if repo_root else None,
-        "workingTree": (
-            _run(project_root, "git", "status", "--porcelain=v1", "--untracked-files=normal").stdout.splitlines()
-            if repo_root
-            else []
-        ),
+        "workingTree": _git_status(project_root) if repo_root else [],
     }
 
 
@@ -295,13 +302,22 @@ def self_test() -> dict[str, Any]:
             paths=["owned.txt"],
             commit=True,
         )
-        status = _run(root, "git", "status", "--porcelain=v1").stdout.splitlines()
+        status = _git_status(root)
         if not any(line.endswith(" unrelated.txt") for line in status):
             raise ProgressCheckpointError("self-test lost unrelated working changes")
         if any(line.endswith(" owned.txt") for line in status):
             raise ProgressCheckpointError("self-test did not checkpoint the owned path")
-        if not (root / result["artifact"]).is_file():
+        artifact_path = root / result["artifact"]
+        if not artifact_path.is_file():
             raise ProgressCheckpointError("self-test checkpoint artifact is missing")
+        record = json.loads(artifact_path.read_text(encoding="utf-8"))
+        serialized = json.dumps(record, ensure_ascii=False)
+        if record.get("repository", {}).get("root") != ".":
+            raise ProgressCheckpointError("self-test checkpoint leaked the absolute repository root")
+        if "unrelated.txt" in serialized:
+            raise ProgressCheckpointError("self-test checkpoint leaked an unrelated file name")
+        if record.get("repository", {}).get("unrelatedChangeCountExcluded", 0) < 1:
+            raise ProgressCheckpointError("self-test did not record excluded unrelated work")
         return {"status": "pass", "checkpoint": result, "workingTree": status}
 
 
