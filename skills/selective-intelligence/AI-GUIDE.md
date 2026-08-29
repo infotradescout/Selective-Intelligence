@@ -66,9 +66,11 @@ This is automatic and non-blocking.
 - Never leave more than one completed slice or five materially changed files uncommitted or only in memory.
 - Save before long tests, builds, migration preparation, handoffs, context changes, or runtime boundaries.
 - Commit only task-owned files.
-- When remote writing is available and local-only work was not required, push to the existing task branch.
+- When remote writing is available and local-only work was not required, push to the existing task branch and verify the remote revision.
 - Never treat a checkpoint push as authority to merge, release, deploy, or mutate a protected branch.
 - If commit or push is unavailable, write a durable project resume artifact and state what remains local.
+
+Use the bundled `scripts/progress_checkpoint.py` helper when executable. Otherwise perform the same selective commit, task-branch push, remote verification, and recovery record with the repository tools already available. Do not continue after a checkpoint trigger until preservation is observed.
 
 Record completed proof, unverified changes, repository/branch/revision, saved files, external effects, actions not to repeat, and the next safe action. A progress message without saved state is not a checkpoint.
 

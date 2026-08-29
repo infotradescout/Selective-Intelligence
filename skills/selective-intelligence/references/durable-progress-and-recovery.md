@@ -23,10 +23,19 @@ For authorized repository work:
 4. Write the progress record.
 5. Commit the selected files and record on the existing task branch.
 6. Push that branch when remote writing is available and local-only work was not required.
-7. Record the push result, proof, and next safe action.
-8. Only then begin a long command, new slice, handoff, or context change.
+7. Verify the remote branch contains the checkpoint revision.
+8. Record the push result, proof, and next safe action.
+9. Only then begin a long command, new slice, handoff, or context change.
 
 Never stage all repository changes blindly. Never discard or rewrite unrelated work to make a clean checkpoint.
+
+## Runtime helper
+
+When the bundled helper is executable, use `scripts/progress_checkpoint.py save` as the default repository savepoint implementation. Supply only task-owned paths and bounded outcome, proof, and next-action summaries. Use its commit and push options when the authority and branch rules above permit them.
+
+When the helper cannot run, reproduce the same behavior with the available repository tools. A chat message, plan update, or local edit is not a checkpoint. Do not continue until the saved commit and, when requested, the remote branch revision are observed.
+
+The helper keeps one tracked `latest.json` record. Git history provides the checkpoint timeline, preventing a new tracked file from being added for every save. Local operation receipts stay in the repository-private Git area and must not dirty the working tree.
 
 ## Safe branch policy
 
@@ -50,7 +59,7 @@ Store a concise, privacy-safe record containing:
 - scope and prohibitions;
 - completed and verified work;
 - changed but unverified work;
-- repository, branch, base revision, and containing commit or local revision;
+- repository-relative location, branch, base revision, and containing commit;
 - task-owned files included;
 - tests, rendered proof, and known failures;
 - external effects with receipts;
@@ -59,7 +68,7 @@ Store a concise, privacy-safe record containing:
 - next safe action;
 - exact remaining authority step.
 
-Do not store secrets, raw private prompts, hidden reasoning, customer data that is not needed for continuity, or unsupported claims.
+Do not store secrets, absolute local paths, unrelated file names, raw private prompts, hidden reasoning, or customer data that is not needed for continuity.
 
 ## Before long operations
 
