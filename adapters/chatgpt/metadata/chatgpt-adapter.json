@@ -2,7 +2,7 @@
   "schema_version": 1,
   "adapter": "chatgpt_personal_skills",
   "skill": "selective-intelligence",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "portable_source_path": "skills/selective-intelligence",
   "adapter_path": "adapters/chatgpt/selective-intelligence",
   "transformation": "runtime_only_with_nested_role_entrypoints_as_role_references",

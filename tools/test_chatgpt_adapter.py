@@ -38,7 +38,8 @@ def main() -> int:
         "silent human decision integrity reference is missing",
     )
     version = (ADAPTER_ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    require(version == "1.0.6", f"unexpected runtime adapter version: {version}")
+    source_version = (REPO_ROOT / "skills/selective-intelligence/VERSION").read_text(encoding="utf-8").strip()
+    require(version == source_version, f"adapter version {version} differs from source {source_version}")
     require(ADAPTER_METADATA.is_file(), "repository adapter projection manifest is missing")
     projection = json.loads(ADAPTER_METADATA.read_text(encoding="utf-8"))
     require(projection.get("version") == version, "adapter projection manifest version drift")

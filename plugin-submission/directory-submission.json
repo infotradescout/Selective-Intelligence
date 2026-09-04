@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "plugin": "selective-intelligence",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "submission_type": "skills_only",
   "availability": {
     "audience": "public",
@@ -10,12 +10,12 @@
   "publication": {
     "status": "update_candidate",
     "currently_published_version": "1.0.5",
-    "candidate_version": "1.0.6",
+    "candidate_version": "1.0.7",
     "verified_on": "2026-08-22",
     "directory_url": "https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence",
     "verification": "Visible under Public through exact-name Plugins Directory search"
   },
-  "release_notes": "Stops website work from being silently rerouted into ChatGPT Sites. Selective Intelligence now keeps the user's existing repository, application, host, and normal preview path as the canonical owner. Sites may be used only when the user explicitly requests Sites for that task; a website request, tool availability, or convenience is not permission. Adds the same rule to discovery metadata, the strict text guide, the non-developer boundary, and website regression cases. The current public directory version remains 1.0.5 until this 1.0.6 update completes review and publication.",
+  "release_notes": "Bounds repeated inspection across the whole run, restores silent color, consumer-behavior and anti-fraud checks, and saves completed work automatically. Checkpoint commits preserve unrelated staged and unstaged files, handle ignored recovery state, treat selected filenames literally, and verify the saved remote revision. Keeps existing-repository website routing and the Platynum Standard publisher identity. The public directory remains at its last verified version until this update completes review and publication.",
   "positive_test_cases": [
     {
       "id": "trigger-start-plain-language",

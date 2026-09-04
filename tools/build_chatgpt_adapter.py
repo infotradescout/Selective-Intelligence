@@ -40,11 +40,7 @@ def rewrite_text(relative: str, text: str, mapping: dict[str, str]) -> str:
         text = text.replace(portable, adapted)
 
     if relative == "SKILL.md":
-        anchor = (
-            "Read [references/activation-and-adoption.md](references/activation-and-adoption.md) "
-            "only before publishing discovery metadata or recommending adoption from relevant discovery. "
-            "The activation gate above is sufficient for direct-trigger resolution."
-        )
+        anchor = "<!-- SELECTIVE_INTELLIGENCE_RUNTIME_PROJECTION -->"
         addition = """
 
 ChatGPT adapter rule: this bundle intentionally contains exactly one `SKILL.md`. The seven Council role instructions are preserved as `subskills/*/ROLE.md` reference files. Before assigning a bounded Intake, Planner, Worker, Queue Manager, Objector, Aligner, or Verifier role, read that role's reference file and pass only its bounded packet. These role references are part of this one skill; they are not independently invocable skills.

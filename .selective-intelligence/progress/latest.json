@@ -1,53 +1,89 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260904T222429Z-89fdb96b",
-  "createdAt": "2026-09-04T22:24:29.128400+00:00",
-  "outcome": "Complete the existing Selective Intelligence usage, design-integrity, and durable-save update",
+  "checkpointId": "progress-20260904T223418Z-c4cdef87",
+  "createdAt": "2026-09-04T22:34:18.195607+00:00",
+  "outcome": "Complete Selective Intelligence 1.0.7",
   "scope": [],
   "prohibitions": [],
   "progress": {
     "completedVerified": [
-      "Checkpoint runtime excludes unrelated staged work and verifies the remote branch",
-      "Eight checkpoint regression tests pass"
+      "All 17 discovery and native-pointer tests pass",
+      "The 50-file installed edition is valid",
+      "Public package validation passed"
     ],
     "changedUnverified": [
-      "Strict guide restored; generated editions and full release gate remain to validate"
+      "Final archived bytes and remote source reconciliation remain"
     ],
     "proof": [
-      "Checkpoint regression suite: eight passed"
+      "Current generated source preserves activation and authority boundaries"
     ],
     "externalEffects": [],
     "doNotRepeat": [],
-    "nextSafeAction": "Regenerate editions, validate release consistency, then save the installed skill"
+    "nextSafeAction": "Run the final release gate, save archive in the update branch, and verify the installed remote content"
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/usage-psychology-durable-checkpoints",
-    "headBefore": "914c820c51427c92852d423575ebe620e0bb84cd",
+    "headBefore": "369362922b4ba4a22c08f4ff61a0bbfd1138834c",
     "checkpointCommit": "containing_commit",
-    "pushRequested": true,
-    "pushRemote": "origin",
+    "pushRequested": false,
+    "pushRemote": null,
     "protectedBranchAuthorized": false,
     "selectedStatusBefore": [
+      " M adapters/chatgpt/selective-intelligence/SKILL.md",
+      " M docs/.well-known/selective-intelligence.json",
+      " M docs/AI-GUIDE.md",
+      " M docs/SKILL.md",
+      " M docs/selective-intelligence.json",
       " M skills/selective-intelligence/AI-GUIDE.md",
-      " M skills/selective-intelligence/scripts/progress_checkpoint.py",
-      " M skills/selective-intelligence/tests/test_progress_checkpoint.py"
+      " M skills/selective-intelligence/SKILL.md",
+      " M skills/selective-intelligence/evals/results-1.0.7.json",
+      " M tools/test_discovery_bridge.py",
+      " M tools/test_native_pointers.py"
     ],
     "unrelatedChangeCountExcluded": 0
   },
   "savedFiles": [
     {
-      "path": "skills/selective-intelligence/scripts/progress_checkpoint.py",
-      "sha256": "dc955e3ecc597aaa05f6efdee3af9b1ef70ebbda8e372a0882382db55f761955"
+      "path": "adapters/chatgpt/selective-intelligence/SKILL.md",
+      "sha256": "26aecf90dc044e77bc361678c62871893f86498734b4e644b0d9b9cd32d642ca"
     },
     {
-      "path": "skills/selective-intelligence/tests/test_progress_checkpoint.py",
-      "sha256": "c6186aa9eee131b916d45084bfd6c2c775c0dbff01cde5da937e9f19749f5b37"
+      "path": "docs/.well-known/selective-intelligence.json",
+      "sha256": "1ef3c09fb994dc0b92f59ada9f3cfb9df628643b68fbe9630cea11188e7c5e2a"
+    },
+    {
+      "path": "docs/AI-GUIDE.md",
+      "sha256": "bd5b8ae7795a1d18fc1756681a56504e3064fa8d0219dc1bac612785e8f3892c"
+    },
+    {
+      "path": "docs/SKILL.md",
+      "sha256": "3d64eca71fd3d248e5e7ea3709ff5ead5eabef7bb36be2225369b77ea6b1a7d9"
+    },
+    {
+      "path": "docs/selective-intelligence.json",
+      "sha256": "1ef3c09fb994dc0b92f59ada9f3cfb9df628643b68fbe9630cea11188e7c5e2a"
     },
     {
       "path": "skills/selective-intelligence/AI-GUIDE.md",
-      "sha256": "d56c3689e5e11436d4903a38f93943bdeb08cd3a0d4f832f330e6c356a5fdf44"
+      "sha256": "bd5b8ae7795a1d18fc1756681a56504e3064fa8d0219dc1bac612785e8f3892c"
+    },
+    {
+      "path": "skills/selective-intelligence/SKILL.md",
+      "sha256": "3d64eca71fd3d248e5e7ea3709ff5ead5eabef7bb36be2225369b77ea6b1a7d9"
+    },
+    {
+      "path": "skills/selective-intelligence/evals/results-1.0.7.json",
+      "sha256": "55684b13dbff6b2be79d967d002ef337ca720ba1520871a0716a380874180b09"
+    },
+    {
+      "path": "tools/test_discovery_bridge.py",
+      "sha256": "26d708beb703474f0392f90627c8cd6fea0ad63a85fc0cf0b5b3392f249dd082"
+    },
+    {
+      "path": "tools/test_native_pointers.py",
+      "sha256": "3b3df041b0a7ad6254b6ddaf8587a982c08d81c86c0ce4238398660ed2783bbc"
     }
   ],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
