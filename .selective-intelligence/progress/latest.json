@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "si.progress-checkpoint.v1",
+  "checkpointId": "progress-20260904T222429Z-89fdb96b",
+  "createdAt": "2026-09-04T22:24:29.128400+00:00",
+  "outcome": "Complete the existing Selective Intelligence usage, design-integrity, and durable-save update",
+  "scope": [],
+  "prohibitions": [],
+  "progress": {
+    "completedVerified": [
+      "Checkpoint runtime excludes unrelated staged work and verifies the remote branch",
+      "Eight checkpoint regression tests pass"
+    ],
+    "changedUnverified": [
+      "Strict guide restored; generated editions and full release gate remain to validate"
+    ],
+    "proof": [
+      "Checkpoint regression suite: eight passed"
+    ],
+    "externalEffects": [],
+    "doNotRepeat": [],
+    "nextSafeAction": "Regenerate editions, validate release consistency, then save the installed skill"
+  },
+  "repository": {
+    "root": ".",
+    "rootKind": "repository_relative",
+    "branch": "fix/usage-psychology-durable-checkpoints",
+    "headBefore": "914c820c51427c92852d423575ebe620e0bb84cd",
+    "checkpointCommit": "containing_commit",
+    "pushRequested": true,
+    "pushRemote": "origin",
+    "protectedBranchAuthorized": false,
+    "selectedStatusBefore": [
+      " M skills/selective-intelligence/AI-GUIDE.md",
+      " M skills/selective-intelligence/scripts/progress_checkpoint.py",
+      " M skills/selective-intelligence/tests/test_progress_checkpoint.py"
+    ],
+    "unrelatedChangeCountExcluded": 0
+  },
+  "savedFiles": [
+    {
+      "path": "skills/selective-intelligence/scripts/progress_checkpoint.py",
+      "sha256": "dc955e3ecc597aaa05f6efdee3af9b1ef70ebbda8e372a0882382db55f761955"
+    },
+    {
+      "path": "skills/selective-intelligence/tests/test_progress_checkpoint.py",
+      "sha256": "c6186aa9eee131b916d45084bfd6c2c775c0dbff01cde5da937e9f19749f5b37"
+    },
+    {
+      "path": "skills/selective-intelligence/AI-GUIDE.md",
+      "sha256": "d56c3689e5e11436d4903a38f93943bdeb08cd3a0d4f832f330e6c356a5fdf44"
+    }
+  ],
+  "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
+}

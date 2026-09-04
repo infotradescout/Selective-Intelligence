@@ -106,7 +106,7 @@ def _read_json(path: Path, schema: str) -> dict[str, Any]:
 
 
 def _git_status(root: Path, paths: list[str] | None = None) -> list[str]:
-    args = ["git", "status", "--porcelain=v1", "--untracked-files=normal"]
+    args = ["git", "--literal-pathspecs", "status", "--porcelain=v1", "--untracked-files=normal"]
     if paths:
         args.extend(["--", *paths])
     return _run(root, *args).stdout.splitlines()
@@ -123,6 +123,8 @@ def _safe_paths(repo_root: Path, values: list[str] | None) -> list[str]:
         candidate = (repo_root / relative).resolve(strict=False)
         if candidate != repo_root and repo_root not in candidate.parents:
             raise ProgressCheckpointError(f"checkpoint path escapes repository: {raw}")
+        if candidate.is_dir():
+            raise ProgressCheckpointError("checkpoint paths must name individual task-owned files")
         normalized = relative.as_posix()
         if normalized not in safe:
             safe.append(normalized)
@@ -197,6 +199,7 @@ def save_checkpoint(
     )
     tracked_relative = Path(".selective-intelligence/progress/latest.json")
     tracked_path = project_root / tracked_relative
+    _safe_paths(project_root, [tracked_relative.as_posix()])
     private_root = _private_root(project_root, "progress")
     full_status = _git_status(project_root) if repo_root else []
     selected_status = (
@@ -265,18 +268,18 @@ def save_checkpoint(
 
     commit_sha: str | None = None
     pushed = False
+    push_accepted = False
+    remote_head: str | None = None
     push_error: str | None = None
     if commit:
-        _run(
-            project_root,
-            "git",
-            "add",
-            "--",
-            *selected_paths,
-            tracked_relative.as_posix(),
-        )
+        if selected_paths:
+            _run(project_root, "git", "--literal-pathspecs", "add", "--", *selected_paths)
+        # The project may ignore local SI state. Only the bounded recovery
+        # record is deliberately tracked; never force-add selected user files.
+        _run(project_root, "git", "--literal-pathspecs", "add", "--force", "--", tracked_relative.as_posix())
         staged = _run(
-            project_root, "git", "diff", "--cached", "--quiet", check=False
+            project_root, "git", "--literal-pathspecs", "diff", "--cached", "--quiet",
+            "--", *selected_paths, tracked_relative.as_posix(), check=False
         )
         if staged.returncode not in {0, 1}:
             raise ProgressCheckpointError(
@@ -286,9 +289,14 @@ def save_checkpoint(
             _run(
                 project_root,
                 "git",
+                "--literal-pathspecs",
                 "commit",
+                "--only",
                 "-m",
                 commit_message or "checkpoint: preserve authorized work",
+                "--",
+                *selected_paths,
+                tracked_relative.as_posix(),
             )
         commit_sha = _git_value(project_root, "rev-parse", "HEAD")
         if push:
@@ -301,8 +309,20 @@ def save_checkpoint(
                 f"HEAD:refs/heads/{branch}",
                 check=False,
             )
-            pushed = pushed_result.returncode == 0
-            if not pushed:
+            push_accepted = pushed_result.returncode == 0
+            if push_accepted:
+                verified = _run(
+                    project_root, "git", "ls-remote", "--exit-code", "--refs",
+                    remote, f"refs/heads/{branch}", check=False,
+                )
+                if verified.returncode == 0:
+                    heads = [line.split()[0] for line in verified.stdout.splitlines()
+                             if len(line.split()) == 2 and line.split()[1] == f"refs/heads/{branch}"]
+                    remote_head = heads[0] if len(heads) == 1 else None
+                pushed = remote_head == commit_sha
+                if not pushed:
+                    push_error = "push was accepted, but the remote checkpoint revision could not be verified; inspect remote state before retrying"
+            else:
                 push_error = (
                     pushed_result.stderr or pushed_result.stdout
                 ).strip() or "push failed"
@@ -317,7 +337,10 @@ def save_checkpoint(
         "commitSha": commit_sha,
         "committed": bool(commit_sha) if commit else False,
         "pushRequested": push,
+        "pushAccepted": push_accepted,
         "pushed": pushed,
+        "remoteVerified": pushed,
+        "remoteHead": remote_head,
         "pushRemote": remote if push else None,
         "pushError": push_error,
         "unrelatedChangesPreserved": True,
@@ -328,7 +351,7 @@ def save_checkpoint(
     _write_json(private_root / "last-operation.json", operation)
     if push and not pushed:
         raise ProgressCheckpointError(
-            f"checkpoint committed locally at {commit_sha}, but push failed: {push_error}"
+            f"checkpoint committed locally at {commit_sha}, but remote preservation is unverified: {push_error}"
         )
     return operation
 
