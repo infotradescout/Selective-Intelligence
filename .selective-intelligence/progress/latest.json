@@ -1,0 +1,168 @@
+{
+  "schemaVersion": "si.progress-checkpoint.v1",
+  "checkpointId": "progress-20260904T225000Z-5e5d7734",
+  "createdAt": "2026-09-04T22:50:00.182203+00:00",
+  "outcome": "Release SI 1.0.7 with Platynum-47 as publisher",
+  "scope": [],
+  "prohibitions": [],
+  "progress": {
+    "completedVerified": [
+      "Publisher corrected in package metadata and current public documents",
+      "All 15 public-package and discovery tests pass",
+      "Archive names Platynum-47 in both publisher fields"
+    ],
+    "changedUnverified": [],
+    "proof": [
+      "Public archive SHA-256 ec9eb4a339170dbe5afda10b5b68d48b84a0a2ca15e4183253210c1167372943"
+    ],
+    "externalEffects": [],
+    "doNotRepeat": [],
+    "nextSafeAction": "Save the corrected source remotely, merge the approved update, and submit the corrected public archive"
+  },
+  "repository": {
+    "root": ".",
+    "rootKind": "repository_relative",
+    "branch": "fix/usage-psychology-durable-checkpoints",
+    "headBefore": "ce5a82978caf6fb78a6ba6b02a95334869171d87",
+    "checkpointCommit": "containing_commit",
+    "pushRequested": false,
+    "pushRemote": null,
+    "protectedBranchAuthorized": false,
+    "selectedStatusBefore": [
+      " M CITATION.cff",
+      " M README.md",
+      " M docs/CITATION.cff",
+      " M docs/ai-guide/index.html",
+      " M docs/index.html",
+      " M docs/problems/ai-built-the-wrong-thing/index.html",
+      " M docs/problems/free-ai-coding-workflow/index.html",
+      " M docs/problems/index.html",
+      " M docs/problems/one-prompt-website-first-deliverable/index.html",
+      " M docs/problems/reduce-ai-token-usage/index.html",
+      " M docs/problems/repository-drift/index.html",
+      " M docs/problems/research-without-hallucinations/index.html",
+      " M docs/problems/ui-component-sprawl/index.html",
+      " M docs/problems/vague-idea-to-complete-outcome/index.html",
+      " M docs/questions/index.html",
+      " M docs/try/index.html",
+      " M docs/use-with-ai/index.html",
+      " M plugin-submission/directory-submission.json",
+      " M plugin-submission/plugin.json",
+      " M releases/v1.0.7/README.md",
+      " M releases/v1.0.7/SHA256SUMS",
+      " M releases/v1.0.7/selective-intelligence-plugin-1.0.7.zip",
+      " M skills/selective-intelligence/CHANGELOG.md",
+      " M skills/selective-intelligence/README.md",
+      " M skills/selective-intelligence/metadata/distribution.json",
+      " M tools/build_discovery_bridge.py"
+    ],
+    "unrelatedChangeCountExcluded": 0
+  },
+  "savedFiles": [
+    {
+      "path": "CITATION.cff",
+      "sha256": "6bd50bfe7456567941e9857e4a2a5b70e630f8bc1c0ae3e9e6bd9c604b7438b6"
+    },
+    {
+      "path": "README.md",
+      "sha256": "fad031c545a3df12dc826de57c04707412370b6a276f984f3a92a47c7079fbb1"
+    },
+    {
+      "path": "docs/CITATION.cff",
+      "sha256": "6bd50bfe7456567941e9857e4a2a5b70e630f8bc1c0ae3e9e6bd9c604b7438b6"
+    },
+    {
+      "path": "docs/ai-guide/index.html",
+      "sha256": "abec1ae753d59ee2b218aa612d449f85c2a67f43c467a5a00139fec2980867ec"
+    },
+    {
+      "path": "docs/index.html",
+      "sha256": "1b2be7aad40550bca0e13b3b3270e96f0cb0df7fce80334642102efb954f13c9"
+    },
+    {
+      "path": "docs/problems/ai-built-the-wrong-thing/index.html",
+      "sha256": "44564cd546eb0d2031c99829dc5efd0d2ab1c1fffdb264042ec64c7d45d3226a"
+    },
+    {
+      "path": "docs/problems/free-ai-coding-workflow/index.html",
+      "sha256": "1de2bd58ce67ab57c891bd4dc9d7e2876bfb2478eb9cfb2bbd933ae9ff9c23a8"
+    },
+    {
+      "path": "docs/problems/index.html",
+      "sha256": "bb0b40c6f9d149fcc4e38dea2c00bcc2f482a21f76da54f6ef299fae3069817e"
+    },
+    {
+      "path": "docs/problems/one-prompt-website-first-deliverable/index.html",
+      "sha256": "2c8f79b63c44454b602197d85d46e6cc1d5c396949f925e4faf08043f9778fc1"
+    },
+    {
+      "path": "docs/problems/reduce-ai-token-usage/index.html",
+      "sha256": "8bab1539bec1e0a04e3c58a3600bad9fed0167c1af25af02dc9241338719f452"
+    },
+    {
+      "path": "docs/problems/repository-drift/index.html",
+      "sha256": "d3ac8f8c47bfc92028ef1bb27ef3e50805e36749ce282cf0d80caef54d9c2619"
+    },
+    {
+      "path": "docs/problems/research-without-hallucinations/index.html",
+      "sha256": "cbaa211e27727c53c27eeb031f9090d2e8f443de6350cf7631b4d7ef287d36dc"
+    },
+    {
+      "path": "docs/problems/ui-component-sprawl/index.html",
+      "sha256": "c4f6ee54afd677da82579a31174d9dd44141ee270c5e3e59d8708a0b122b60bf"
+    },
+    {
+      "path": "docs/problems/vague-idea-to-complete-outcome/index.html",
+      "sha256": "01524bef9604db5738e02d7f35a1f376c8dda744eb3fd83976bcd0ab870b44d6"
+    },
+    {
+      "path": "docs/questions/index.html",
+      "sha256": "6734ec3ed3cde15363c5c87c77cc5b3c0349b87532b978de0830915502e0927a"
+    },
+    {
+      "path": "docs/try/index.html",
+      "sha256": "fd1e869495aa8dd62d4da8003d66c764a442746b78408bd19c7dd8953a5f2bb5"
+    },
+    {
+      "path": "docs/use-with-ai/index.html",
+      "sha256": "38b064787b6b2700aaed7182fbff374c1aaae5861655b80f572383b8e0839c7a"
+    },
+    {
+      "path": "plugin-submission/directory-submission.json",
+      "sha256": "8bfb86d9ff348a911163f332b89e685baccbd550e876efb9e5538739e07af834"
+    },
+    {
+      "path": "plugin-submission/plugin.json",
+      "sha256": "332d13717ca85874531748e142e4592697d0a03c859404fe4212e1ed492d11c4"
+    },
+    {
+      "path": "releases/v1.0.7/README.md",
+      "sha256": "2bd8ecfc3d9a7acd64e9e2769a724feb75f6cba9c96dc5998d518b2537a8d1bd"
+    },
+    {
+      "path": "releases/v1.0.7/SHA256SUMS",
+      "sha256": "b51c10e0b5290eb6a4145583e77932c060105d34855ea88a30e26a1a6b6887dd"
+    },
+    {
+      "path": "releases/v1.0.7/selective-intelligence-plugin-1.0.7.zip",
+      "sha256": "ec9eb4a339170dbe5afda10b5b68d48b84a0a2ca15e4183253210c1167372943"
+    },
+    {
+      "path": "skills/selective-intelligence/CHANGELOG.md",
+      "sha256": "b0aa3d8a2822897cd1450ab919441ff4a3dc5ac54fd85a991f5ba1daa8c64205"
+    },
+    {
+      "path": "skills/selective-intelligence/README.md",
+      "sha256": "a79fc760fd0d505c56ae186725ecdf9bf3aef8a22bf0842654916a9935ef965c"
+    },
+    {
+      "path": "skills/selective-intelligence/metadata/distribution.json",
+      "sha256": "41f122eabd2281374e9747acbaa663959fd42ae7112721b1b9ff1a47568f56a8"
+    },
+    {
+      "path": "tools/build_discovery_bridge.py",
+      "sha256": "2a886dd7149bce0cb2a858b4de747c94e7a2895e5c59c5efe38538849ba1708c"
+    }
+  ],
+  "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
+}

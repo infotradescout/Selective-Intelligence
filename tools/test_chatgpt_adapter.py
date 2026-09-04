@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -26,9 +27,19 @@ def main() -> int:
     require(skill_entrypoints == ["SKILL.md"], f"expected one SKILL.md, found {skill_entrypoints}")
     require(len(files) <= 50, f"runtime adapter is bloated: {len(files)} files")
     require("scripts/project_index.py" in files, "project index tool is missing")
+    require("scripts/progress_checkpoint.py" in files, "durable progress and usage guard is missing")
     require("references/project-index-and-reuse-gate.md" in files, "project index reference is missing")
+    require(
+        "references/durable-progress-and-recovery.md" in files,
+        "durable progress reference is missing",
+    )
+    require(
+        "references/human-decision-integrity.md" in files,
+        "silent human decision integrity reference is missing",
+    )
     version = (ADAPTER_ROOT / "VERSION").read_text(encoding="utf-8").strip()
-    require(version == "1.0.6", f"unexpected runtime adapter version: {version}")
+    source_version = (REPO_ROOT / "skills/selective-intelligence/VERSION").read_text(encoding="utf-8").strip()
+    require(version == source_version, f"adapter version {version} differs from source {source_version}")
     require(ADAPTER_METADATA.is_file(), "repository adapter projection manifest is missing")
     projection = json.loads(ADAPTER_METADATA.read_text(encoding="utf-8"))
     require(projection.get("version") == version, "adapter projection manifest version drift")
@@ -71,6 +82,10 @@ def main() -> int:
     ):
         require(phrase in description, f"ChatGPT discovery metadata is missing: {phrase}")
 
+    core_words = len(re.findall(r"\b[\w’'-]+\b", master_skill))
+    require(core_words <= 1_200, f"ChatGPT runtime core exceeds the lean word ceiling: {core_words}")
+    require(len(master_skill) <= 10_000, f"ChatGPT runtime core exceeds the lean character ceiling: {len(master_skill)}")
+
     combined = "\n".join(
         path.read_text(encoding="utf-8", errors="strict")
         for path in ADAPTER_ROOT.rglob("*")
@@ -81,6 +96,18 @@ def main() -> int:
         "Do not choose or create ChatGPT Sites merely because the task involves a website." in master_skill,
         "no-unrequested-Sites rule is missing from the runtime adapter",
     )
+    for phrase in (
+        "Whole-run usage governor",
+        "at most 12 text files or 64 KB",
+        "bundled checkpoint helper must open a usage ledger",
+        "Two checkpoint types — never confuse them",
+        "A progress checkpoint is automatic, non-blocking",
+        "Silent human decision integrity",
+        "Use color deliberately",
+        "payment diversion",
+    ):
+        require(phrase in master_skill, f"new core behavior is missing from the runtime adapter: {phrase}")
+
     active_contracts = [
         "SKILL.md",
         "references/activation-and-adoption.md",
@@ -117,9 +144,19 @@ def main() -> int:
         if relative.endswith(".py"):
             ast.parse((ADAPTER_ROOT / relative).read_text(encoding="utf-8"), filename=relative)
 
-    command = [sys.executable, str(ADAPTER_ROOT / "scripts" / "project_index.py"), "self-test"]
-    completed = subprocess.run(command, cwd=REPO_ROOT, text=True, capture_output=True, check=False)
-    require(completed.returncode == 0, completed.stdout + completed.stderr)
+    commands = [
+        [sys.executable, str(ADAPTER_ROOT / "scripts" / "project_index.py"), "self-test"],
+        [sys.executable, str(ADAPTER_ROOT / "scripts" / "progress_checkpoint.py"), "self-test"],
+    ]
+    for command in commands:
+        completed = subprocess.run(command, cwd=REPO_ROOT, text=True, capture_output=True, check=False)
+        require(completed.returncode == 0, completed.stdout + completed.stderr)
+        if command[-2].endswith("progress_checkpoint.py"):
+            result = json.loads(completed.stdout)
+            require(result.get("checkpoint", {}).get("pushed") is True, "checkpoint self-test did not prove a branch push")
+            require(result.get("usage", {}).get("limits", {}).get("filesPerBatch") == 12, "usage self-test file limit drift")
+            require(result.get("usage", {}).get("limits", {}).get("bytesPerBatch") == 65_536, "usage self-test byte limit drift")
+            require(result.get("usage", {}).get("limits", {}).get("batchesBeforeDecision") == 3, "usage self-test batch limit drift")
 
     print(json.dumps({"status": "pass", "files": len(files), "skill_entrypoints": skill_entrypoints}, indent=2))
     return 0

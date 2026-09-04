@@ -1,53 +1,92 @@
 # Token efficiency and human language
 
-Token efficiency is the first operating priority because wasted context causes
-wasted work, drift, and more correction. It never means silently shrinking the
-wanted outcome or dropping proof.
+Token efficiency governs the whole run because wasted context causes drift, repeated work, correction, and lost progress. It never means shrinking the wanted outcome or dropping proof.
 
-## Prompt budget
+## Startup budget
 
-- Keep the canonical `SKILL.md` under 1,500 words and 12,000 characters. Release validation fails above either limit.
-- Start Lean work with the master skill only: zero reference files, zero role packets, and one active execution context.
-- Load at most one reference before the first useful action. More is justified only by a documented safety trigger or an explicitly selected Council lane.
-- Do not copy the full doctrine, conversation history, or implementation narrative into a reviewer packet. Send only the outcome, prohibitions, relevant evidence, authority boundary, artifact, and proof question.
-- Prefer deterministic searches, validators, indexes, and targeted line ranges over prose summaries or broad file ingestion.
+- Start Lean work with the master skill only: zero references, zero role packets, and one active context.
+- Load at most one reference before the first useful action unless a recorded safety or Council trigger requires more.
+- Pass only the outcome, prohibitions, relevant evidence, authority boundary, artifact, and proof question to another worker.
+- Prefer deterministic search, validators, indexes, targeted ranges, and exact owners over broad ingestion.
 
-Measure total task cost. A short final answer does not compensate for several duplicated contexts, automatic role handoffs, or references loaded without changing a decision.
+## Whole-run governor
+
+Every added source, file, worker, search, or check must do at least one of these:
+
+1. change the next decision;
+2. reduce a material risk;
+3. prove or disprove an acceptance condition.
+
+If it does none, do not spend context on it.
+
+For large repositories, inspect no more than 12 text files or 64 KB in one batch. Use targeted ranges for any larger file. Exclude binaries, generated output, dependencies, secrets, and unrelated history. After each batch, update one compact evidence ledger, state what decision changed, and select the smallest next batch.
+
+Use one owner per bounded question. Do not send the same repository slice or question to overlapping workers. A second worker needs a different proof question.
+
+Before a second persistent repository batch, open the usage ledger in the bundled checkpoint helper. Record the question, owner, number of files, byte count, decision/risk/proof impact, and one short result. The helper rejects:
+
+- more than 12 files;
+- more than 64 KB;
+- a second owner for the same question;
+- a fourth search or inspection batch without a recorded decision.
+
+After three batches, choose one:
+
+- act on the supported decision;
+- narrow the unresolved question;
+- create a durable progress checkpoint and resume from saved state;
+- stop with the strongest supported result and exact unknown.
+
+Do not keep searching merely because more sources exist.
+
+## Evidence ledger
+
+Keep only:
+
+- governing outcome and correction;
+- confirmed facts;
+- unknowns that can change the result;
+- canonical owners;
+- selected evidence and why it matters;
+- completed proof;
+- next decision.
+
+Record a source once. Reference the ledger instead of copying full source content into plans, reviewers, and handoffs.
+
+## Context-pressure triggers
+
+Checkpoint before continuing when:
+
+- history no longer changes decisions;
+- one coherent completed slice or five materially changed files remain only in memory or uncommitted;
+- a long test, build, migration preparation, handoff, context change, or likely runtime limit is next;
+- the same facts are being reread or re-explained;
+- a timeout, capacity limit, or tool boundary may interrupt the run.
+
+Resume from the saved artifact and current source state. Do not reconstruct the task from conversation memory.
 
 ## Spend in this order
 
-1. Recover the real intent before generating a plan or code.
-2. Inspect the current system and select only context that can change the next decision.
-3. Reuse the canonical owner instead of generating another version.
-4. Build and verify the result.
-5. Report the result, proof, limitation, and next material fact in the fewest useful words.
-
-Do not spend context on files merely because they sort first, restating the
-prompt, repeating settled decisions, generic encouragement, hidden alternatives,
-or long progress narration. An explicitly named file wins. Otherwise rank files
-by objective, task, acceptance criteria, path, source-content, canonical-owner, and local dependency relevance.
-Keep hard file and byte limits, exclude secret-like and binary content, and emit
-the selection reasons plus estimated selected and avoided tokens. Estimates must
-be labeled estimates.
+1. Recover intent.
+2. Inspect the named target.
+3. Reuse the canonical owner.
+4. Build the smallest complete authorized slice.
+5. Save the slice.
+6. Verify the result.
+7. Report result, proof, limitation, and next authority step.
 
 ## Write like a person
 
-Use concrete nouns and verbs. Say what changed, what works, what failed, and what
-is still unknown. Prefer “The mobile menu opens and closes” to “The experience
-has been enhanced.” Delete any sentence that could be pasted into an unrelated
-project unchanged. Do not pad a short answer with headings, recaps, throat
-clearing, praise, slogans, or generic claims about robustness and seamlessness.
+Use concrete nouns and verbs. Say what changed, what works, what failed, and what remains unknown. Delete generic narration, repeated plans, encouragement, doctrine speeches, and sentences that could fit any project.
 
-Technical terms are useful when they identify evidence or a real constraint.
-They are not useful as decoration. Never hide a missing result behind polished
-language.
+Technical terms are useful only when they identify evidence or a real constraint. Never hide a missing result behind polished language.
 
 ## Completion check
 
-- Did misunderstanding create avoidable work or repeated context?
-- Did the run remain Lean unless a real escalation trigger was recorded?
-- Was no more than one reference loaded before useful action?
-- Was every selected file relevant to the next decision or required proof?
-- Was an existing owner reused before new code was proposed?
+- Did every context expense change a decision, reduce risk, or prove acceptance?
+- Did the run stay single-context unless a real escalation trigger was recorded?
+- Were batches held to 12 files and 64 KB, then consolidated?
+- Did the usage ledger stop duplicate ownership and a fourth undecided batch?
+- Was progress saved before context pressure or a long operation?
+- Was the existing owner reused before new code was proposed?
 - Does every user-facing sentence carry a result, decision, proof, limit, or required action?
-- Could the same truth be said more directly without losing a guardrail?

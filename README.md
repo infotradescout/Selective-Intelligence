@@ -4,7 +4,7 @@ Selective Intelligence—formerly Selective Inheritance—is a free, open-source
 
 **[Install Selective Intelligence from the public Plugins Directory](https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence)** · [Try five real pass/fail tasks](https://infotradescout.github.io/Selective-Intelligence/try/) · [Share the ready launch copy](LAUNCH.md)
 
-Published by [Platynum Standard](https://github.com/Platynum-Standard). The canonical source is [infotradescout/Selective-Intelligence](https://github.com/infotradescout/Selective-Intelligence).
+Published by [Platynum-47](https://github.com/Platynum-Standard). The canonical source is [infotradescout/Selective-Intelligence](https://github.com/infotradescout/Selective-Intelligence).
 
 > **Platynum-47 is a separate companion project in development.** It is being built as a phone-friendly workspace for non-developers. Its unfinished source remains private for now; Selective Intelligence stays independent, public, free, and usable without it.
 

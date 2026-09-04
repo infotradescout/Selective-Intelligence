@@ -67,7 +67,7 @@ class PublicPluginTests(unittest.TestCase):
                 manifest = json.loads(archive.read(".codex-plugin/plugin.json"))
                 self.assertEqual(manifest["name"], "selective-intelligence")
                 self.assertEqual(manifest["skills"], "./skills/")
-                self.assertEqual(manifest["version"], "1.0.6")
+                self.assertEqual(manifest["version"], (public_plugin.SKILL_ROOT / "VERSION").read_text().strip())
                 master = archive.read("skills/selective-intelligence/SKILL.md").decode("utf-8")
                 self.assertIn("Public plugin rule:", master)
                 self.assertIn(

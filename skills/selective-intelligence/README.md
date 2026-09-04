@@ -2,7 +2,7 @@
 
 Selective Intelligence—formerly Selective Inheritance—is a free, open-source Agent Skill for people who know what they want a product to do but do not want to translate that goal into developer instructions. Give it a plain-language goal, URL, file, screenshot, or repository. It recovers intent, designs the product and UI/UX, finds missing or conflicting code, carries out the work, tests the real outcome, and keeps unfinished work visible instead of pretending it is done.
 
-Published by [Platynum Standard](https://github.com/Platynum-Standard). The canonical source is [infotradescout/Selective-Intelligence](https://github.com/infotradescout/Selective-Intelligence).
+Published by [Platynum-47](https://github.com/Platynum-Standard). The canonical source is [infotradescout/Selective-Intelligence](https://github.com/infotradescout/Selective-Intelligence).
 
 Platynum-47 is a separate companion project in development: a phone-friendly workspace for non-developers. Its unfinished source remains private for now; Selective Intelligence stays independent, public, free, and usable without it.
 
@@ -184,13 +184,13 @@ Use the canonical repository or versioned release archive as the source for ever
 
 Filesystem access is required for repository and Start modes. Python 3.10 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
 
-The current v1 release-candidate evidence is recorded in [evals/results-1.0.6.json](evals/results-1.0.6.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory update review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
+The current v1 release-candidate evidence is recorded in [evals/results-1.0.7.json](evals/results-1.0.7.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory update review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
 
 ### Update and uninstall
 
 To update after publication, run `gh skill update selective-intelligence`, or obtain a newer versioned archive or canonical repository revision, verify its release checksum, and replace only the existing `selective-intelligence` skill directory at the destination you chose. Preserve any project-created `.selective-intelligence/` Start Packs and feedback stores; they are project data, not installed skill files.
 
-Version 1.0.6 keeps website work in the user's existing repository, application, host, and normal preview path. It forbids silently choosing ChatGPT Sites unless the user explicitly requested Sites for that task, and adds regression coverage for the same boundary.
+Version 1.0.7 adds whole-run usage limits, silent decision-integrity checks, and automatic durable checkpoints with isolated commits and verified remote revisions. It preserves existing-repository website routing and restores working generation of the installed and public editions.
 
 To uninstall, remove only the installed `selective-intelligence` skill directory from that documented destination. Do not delete a parent skills directory or any project `.selective-intelligence/` directory.
 
