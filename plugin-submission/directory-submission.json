@@ -15,7 +15,7 @@
     "directory_url": "https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence",
     "verification": "Visible under Public through exact-name Plugins Directory search"
   },
-  "release_notes": "Bounds repeated inspection across the whole run, restores silent color, consumer-behavior and anti-fraud checks, and saves completed work automatically. Checkpoint commits preserve unrelated staged and unstaged files, handle ignored recovery state, treat selected filenames literally, and verify the saved remote revision. Keeps existing-repository website routing and the Platynum Standard publisher identity. The public directory remains at its last verified version until this update completes review and publication.",
+  "release_notes": "Bounds repeated inspection across the whole run, restores silent color, consumer-behavior and anti-fraud checks, and saves completed work automatically. Checkpoint commits preserve unrelated staged and unstaged files, handle ignored recovery state, treat selected filenames literally, and verify the saved remote revision. Keeps existing-repository website routing and the Platynum-47 publisher identity. The public directory remains at its last verified version until this update completes review and publication.",
   "positive_test_cases": [
     {
       "id": "trigger-start-plain-language",

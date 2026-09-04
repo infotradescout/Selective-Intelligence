@@ -2,7 +2,7 @@
 
 Selective Intelligence—formerly Selective Inheritance—is a free, open-source Agent Skill for people who know what they want a product to do but do not want to translate that goal into developer instructions. Give it a plain-language goal, URL, file, screenshot, or repository. It recovers intent, designs the product and UI/UX, finds missing or conflicting code, carries out the work, tests the real outcome, and keeps unfinished work visible instead of pretending it is done.
 
-Published by [Platynum Standard](https://github.com/Platynum-Standard). The canonical source is [infotradescout/Selective-Intelligence](https://github.com/infotradescout/Selective-Intelligence).
+Published by [Platynum-47](https://github.com/Platynum-Standard). The canonical source is [infotradescout/Selective-Intelligence](https://github.com/infotradescout/Selective-Intelligence).
 
 Platynum-47 is a separate companion project in development: a phone-friendly workspace for non-developers. Its unfinished source remains private for now; Selective Intelligence stays independent, public, free, and usable without it.
 

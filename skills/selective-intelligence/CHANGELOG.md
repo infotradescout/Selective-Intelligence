@@ -8,7 +8,7 @@ All notable behavior changes to Selective Intelligence are recorded here.
 - Preserve unrelated staged and unstaged changes during checkpoint commits; verify remote revisions and retain honest failure receipts.
 - Handle ignored checkpoint state and literal filenames without broad staging.
 - Restore strict-guide contracts and a stable anchor for generated runtime editions.
-- Keep the core below its existing instruction-size ceiling and align publisher metadata with Platynum Standard.
+- Keep the core below its existing instruction-size ceiling and align publisher metadata with Platynum-47.
 - Keep directory publication and cross-client behavior claims separate from local validation.
 
 ## 1.0.6 - 2026-08-22

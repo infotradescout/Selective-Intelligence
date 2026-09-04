@@ -9,7 +9,7 @@ Prepared September 4, 2026. This is the completed source and installable update;
 - Save coherent progress automatically, preserving unrelated staged and unstaged files.
 - Verify the saved remote revision and distinguish an accepted push from an unverified remote result.
 - Restore reproducible installed and public package generation.
-- Keep existing-repository website routing and use Platynum Standard in publisher metadata.
+- Keep existing-repository website routing and use Platynum-47 in publisher metadata.
 
 ## Verification
 
@@ -26,6 +26,6 @@ These results establish local source, package, and saving behavior. They do not 
 
 `selective-intelligence-plugin-1.0.7.zip`
 
-SHA-256: `2492c52834f00c12ab9d3b575a9ecb6cbe8c3c2c6be57641672029b36c0f776a`
+SHA-256: `ec9eb4a339170dbe5afda10b5b68d48b84a0a2ca15e4183253210c1167372943`
 
 The corrected public package is prepared for submission. Publishing it and changing the live directory's displayed publisher require the authenticated publisher workflow.

@@ -28,7 +28,7 @@
     "account_required": false,
     "notification_is_not_indexing_or_adoption_proof": true
   },
-  "publisher_identity": "Platynum Standard",
+  "publisher_identity": "Platynum-47",
   "chatgpt_skill_url": "https://chatgpt.com/skills?skill_id=6a60f7ecb940819186be4dffa3094f85",
   "support_url": null,
   "support_is_optional": true,

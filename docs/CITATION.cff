@@ -4,7 +4,7 @@ title: "Selective Intelligence"
 type: software
 version: 1.0.5
 authors:
-  - name: "Platynum Standard"
+  - name: "Platynum-47"
 repository-code: "https://github.com/infotradescout/Selective-Intelligence"
 url: "https://infotradescout.github.io/Selective-Intelligence/"
 abstract: "A free, open, model-neutral Agent Skill for reconstructing human intent, completing sparse inputs, product design, developer-grade execution, repository realignment, evidence-grounded research, and verified improvement."

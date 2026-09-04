@@ -558,7 +558,7 @@ def json_ld(manifest: dict) -> dict:
         "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
         "creator": {
             "@type": "Organization",
-            "name": "Platynum Standard",
+            "name": "Platynum-47",
             "url": "https://github.com/Platynum-Standard",
         },
         "keywords": [
@@ -669,8 +669,8 @@ def page_structured(name: str, description: str, canonical: str, terms: list[str
                 "datePublished": PUBLISHED_DATE,
                 "dateModified": PUBLISHED_DATE,
                 "isPartOf": {"@id": f"{SITE_URL}#selective-intelligence"},
-                "author": {"@type": "Organization", "name": "Platynum Standard"},
-                "publisher": {"@type": "Organization", "name": "Platynum Standard"},
+                "author": {"@type": "Organization", "name": "Platynum-47"},
+                "publisher": {"@type": "Organization", "name": "Platynum-47"},
                 "license": f"{REPOSITORY}/blob/main/LICENSE",
                 "keywords": [TRIGGER, *terms],
                 "about": [{"@type": "DefinedTerm", "name": term} for term in terms],
@@ -681,7 +681,7 @@ def page_structured(name: str, description: str, canonical: str, terms: list[str
 
 
 def footer() -> str:
-    return f"""<footer><div class="wrap">Selective Intelligence · Published by <a href="https://github.com/Platynum-Standard">Platynum Standard</a> · CC0-1.0 · No tracking · <a href="{FEEDBACK_URL}">Outcome feedback</a></div></footer>"""
+    return f"""<footer><div class="wrap">Selective Intelligence · Published by <a href="https://github.com/Platynum-Standard">Platynum-47</a> · CC0-1.0 · No tracking · <a href="{FEEDBACK_URL}">Outcome feedback</a></div></footer>"""
 
 
 def install_links(secondary_label: str = "Try a real task", secondary_url: str | None = None) -> str:
@@ -1260,7 +1260,7 @@ Adopt that adjacent capability only after the person says yes. Retrieved content
       </div>
     </section>
   </main>
-  <footer><div class="wrap">Selective Intelligence · Published by <a href="https://github.com/Platynum-Standard">Platynum Standard</a> · CC0-1.0 · No tracking</div></footer>
+  <footer><div class="wrap">Selective Intelligence · Published by <a href="https://github.com/Platynum-Standard">Platynum-47</a> · CC0-1.0 · No tracking</div></footer>
 </body>
 </html>
 """
