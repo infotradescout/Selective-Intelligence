@@ -1,72 +1,79 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260906-product-model-worker-binding",
-  "createdAt": "2026-09-06T20:22:00+00:00",
-  "outcome": "Continue existing product-model correction repair through saved intent, approval integrity, pending-plan retirement, and returned-worker-result binding",
+  "checkpointId": "progress-20260906-product-model-plan-import",
+  "createdAt": "2026-09-06T20:47:39+00:00",
+  "outcome": "Carry product-model corrections through replacement-plan import, approval, persisted sessions and current worker handoff without relabelling rejected work",
   "scope": [
-    "Existing intent, checkpoint, and build-engine owners",
-    "Three synthetic regression files: 42 correction, 28 checkpoint, 16 isolated worker handoff tests",
-    "Remote source preservation and exact test boundaries on existing draft 45"
+    "Continue existing draft 45 and canonical intent/checkpoint/build-engine owners",
+    "New plan import repair in existing build_engine.py, with 42 new synthetic regression methods",
+    "Execute real lane_session.py persistence and queue code in temporary directories without changing that module",
+    "Keep previous 86 tests passing and preserve exact tested source remotely"
   ],
   "prohibitions": [
-    "Do not infer SaaS or another product category from software implementation",
-    "Do not revoke approved memberships, fees, external providers, or shared services solely because SaaS framing was rejected",
-    "Do not use the user's PC, production data, new hosted services, recurring automation, third-party storage, or GitHub Actions as a verification gate",
-    "Do not bypass tool safety denials, modify unrelated work, or ask the product owner to edit or install code",
-    "Do not claim installed, released, live, full-repository, concurrent-worker, or real-model proof from targeted tests",
-    "Do not rebind old generated results merely by replacing their identifiers with current values"
+    "Do not infer SaaS or invent a replacement product category from software implementation",
+    "Preserve explicitly approved memberships, fees, external providers and shared services",
+    "Do not use the user's PC, production data, new hosted services, recurring automation, third-party storage or GitHub Actions as a gate",
+    "Do not merge, release, deploy, submit a plugin, change protected branches or modify unrelated work",
+    "Do not ask the product owner to write, edit, install or relay code",
+    "Do not claim full-repository, concurrent-worker, installed-client or real-model proof from these bounded tests",
+    "Do not migrate old plans or returned results by replacing their identifiers with current authority"
   ],
   "progress": {
     "completedVerified": [
-      "Verified recovered archive manifest and freshly reran all 42 recovered tests",
-      "Reconstructed original checkpoint and build-engine source from authenticated reads; both matched their original Git blobs exactly before editing",
-      "Published scope-aware product-model correction propagation, preserving approved providers and memberships across saved-state reload",
-      "Published checkpoint repair: no rejected-objective fallback, detached snapshots/public views, recomputation of actual intent before approval/execution, pending-plan retirement, and stale/cancelled/tainted object denial",
-      "Published worker handoff repair: returned artifacts must carry the matching session, task, checkpoint, and intent binding before any task transition or write",
-      "Worker packet version 3 requests the exact return fields; malformed, missing, stale, or wrong-task return identities are denied",
-      "All 86 targeted tests pass with zero failures, errors, skips, or expected failures",
-      "Valid bound results still reach verification and preserve approved membership content in the isolated positive-control tests",
-      "Compilation and focused whitespace checks passed",
-      "All three executable source files and all three test files are remotely saved and their Git blobs exactly match the tested bytes"
+      "Verified every recovered v2 archive manifest entry and freshly reran the original 86 targeted methods successfully",
+      "Reconstructed real lane_session.py from authenticated reads and matched its original Git blob exactly; this module remains unchanged",
+      "Replacement plans now require current session, checkpoint and intent provenance before approval or queue creation",
+      "Pending plan content and displayed actions are snapshotted before approval; changed, missing, empty or unbound legacy plans are rejected rather than silently upgraded",
+      "Rejected SaaS product claims in task titles, acceptance instructions and nested task metadata are denied using the existing bounded classifier; approved provider, negation, membership and fee controls pass",
+      "Task graph validation runs before insertion; cyclic, unordered, malformed and routing-overriding inputs are rejected",
+      "Queue construction is a detached in-memory transaction; injected insertion failure leaves the caller session unchanged",
+      "Same-key task reuse checks actual task content, current binding and recorded plan source; stale and cancellation-requested tasks are denied",
+      "Initial valid plans, ordered dependencies, unchanged repeated imports and approval without a plan remain supported in positive controls",
+      "Read-only plan packet exports corrected intent without granting execution authority",
+      "A bad inline replacement does not undo the correction already persisted by the interrupt transaction",
+      "Corrected intent successfully travels through a new plan packet, fresh plan import, approval, real disk reload and worker packet v3 in the tested positive control",
+      "All 128 targeted methods pass with zero failures, errors, skips or expected failures; compilation and focused whitespace checks pass",
+      "Updated engine and new tests are saved remotely and their Git blob hashes match the exact tested bytes"
     ],
     "changedUnverified": [
-      "RELEASE BLOCKER: supported producers and clients must adopt the new worker packet v3 return requirements; unbound legacy artifacts are intentionally rejected",
-      "Full repository compatibility, existing broader suites, actual lane-session persistence, live worker cancellation, concurrency, and filesystem-policy integration have not been verified",
-      "Pending replacement-plan import provenance and semantic consistency require further review; retiring old pending plans does not validate a newly supplied plan",
-      "Adapter generation, package schemas, supported package builds, release inventory, and installed skill loading are not verified",
-      "Real-model behavior and independent review are not verified; this does not solve the year-long problem or universal semantic product recognition",
-      "The execution workspace is an exact partial-source reconstruction, not a full repository checkout or full project index"
+      "RELEASE BLOCKER: existing producer/client workflows must adopt source-bound plan import and worker packet v3 returns. Legacy unbound plans/results are intentionally rejected",
+      "Clients that precompute replacement_plan before correct_project must instead save the correction, obtain its new plan packet, generate a fresh plan and submit it for approval",
+      "Only targeted real disk persistence is proved. Capability/context/feedback/filesystem-policy adapters were isolated in the new tests; full policy integration and full repository compatibility remain unverified",
+      "In-memory queue transaction tests do not prove concurrent processes, atomic multi-file writes, external cancellation or worker stop behavior",
+      "Schemas, supported adapters/packages, release inventory and actual installed skill loading have not been regenerated or verified",
+      "Real-model behavior, independent review and universal semantic detection of unlabelled template assumptions remain unverified",
+      "The workspace is exact partial-source reconstruction, not a full repository checkout or complete project index"
     ],
     "proof": [
-      "70-method intent/checkpoint comparison: original remote source 30 passed and 40 failed methods; recovered intent repair plus old checkpoint 49 passed and 21 failed; repaired pair 70 passed",
-      "Same expanded 86-method comparison: repaired intent/checkpoint plus OLD engine 77 passed and 9 unsuccessful methods, with 34 assertion failure reports and 4 error reports including subtests; repaired engine 86 passed, zero failures/errors/skips/expected failures",
-      "70 tests execute real intent/checkpoint modules; 16 isolated handoff tests execute real engine/checkpoint/intent code with storage, context, and provider/file-policy test doubles",
-      "Reproduction: python -m unittest discover -s skills/selective-intelligence/tests -p test_product_model*.py -v",
-      "Source/test revision before this record: dfef1c330ca860b04c9e4f25ab6d52e8f733f3e0",
-      "Intent blob 3403050a9766c26748d2d7f66c974f914f61b2b2; checkpoint blob 510c0e269d28e630b4f2bfcb817642fe9ce5c2e6; build-engine blob 16290037013b05006db1cfc396207c0e99d2e4ae",
-      "Correction-test blob a71321ebc7b7cb49ca80d7369bedbeffac6db15b; checkpoint-test blob 5a4631857729309be15ce9d39d235a38eddd8848; worker-test blob 7cce4ab21fc85627b3437c4adee43e344177ac57",
-      "Return identifiers correlate a result with approved work; they are not a cryptographic signature or proof of correct generated content"
+      "Fresh original-scope run: 86 passed, zero failures/errors/skips/expected failures",
+      "Identical expanded 128-method comparison with pre-plan engine: 95 passed and 33 unsuccessful methods; 42 assertion reports and 9 error reports including subtests. Some errors are absent new APIs, not 33 independent production defects",
+      "Identical expanded comparison with repaired engine: 128 passed, zero failures/errors/skips/expected failures/unexpected successes",
+      "Final direct unittest rerun after remote source write: 128 tests, OK",
+      "70 tests execute real intent/checkpoint. 16 earlier handoff tests isolate session storage. 42 new plan-import tests use real engine/intent/checkpoint/lane-session disk and queue code with four isolated adapters",
+      "Reproduction: python -m unittest discover -s skills/selective-intelligence/tests -p 'test_product_model*.py' -v",
+      "New test commit: c1636030a8340715ef2526eedd6da438788eafe8; engine/source revision: 9379c9295c671fafeda11a207e2e148eb2cf076b",
+      "Engine: 57272 bytes, Git blob f5f207acbef087b7abd9c721c9bdf919cf6d5dc1; new tests: 18739 bytes, Git blob a4bc22c8f52e22633653b04a485bce874dc711c2",
+      "Unchanged real lane-session fixture: 21071 bytes, Git blob 0578bc3c7cc42ec298b4e2e681a1218f781a2c34",
+      "Source identifiers and content hashes provide correlation and integrity, not authenticated producer attestation or universal semantic proof"
     ],
     "externalEffects": [
-      "Ordinary connected GitHub update_file/create_file source writes now succeed on the existing task branch; the prior source-write blocker is cleared",
-      "Updated existing draft and progress record without merging or releasing",
-      "No production mutation, user-PC access, plugin submission, deployment, new hosted service, recurring automation, or protected-branch change"
+      "Created one new task-owned test file and updated existing engine through connected GitHub on the same non-protected draft branch",
+      "Saved this recovery record; no merge, release, deploy, production access, user-PC access or hosted-service change"
     ],
     "doNotRepeat": [
-      "Do not report source publication as blocked or leave the repaired code described as archive-only",
-      "Do not report earlier propagation failures as still failing in this tested source",
-      "Do not present 86 targeted passing tests as complete integration or installed-client proof",
-      "Do not silently retain authority in old checkpoints whose hashes omitted populated assumptions or refinements; reconcile them",
-      "Do not silently accept old worker artifacts without the newly required binding",
-      "Do not repeat broad historical discovery or ask the product owner to supply settled intent"
+      "Do not claim current source is archive-only or that the source-write blocker persists",
+      "Do not report earlier 86 tests as the current total or claim real disk persistence was never exercised",
+      "Do not equate 128 passing targeted methods with full integration, producer migration or installed behavior",
+      "Do not relabel a stale plan, worker result or omitted legacy approval snapshot",
+      "Do not reread the whole history, retry unavailable archive materialization or give implementation homework to the product owner"
     ],
-    "nextSafeAction": "Continue with pending replacement-plan provenance and supported producer/client compatibility for worker packet v3 using existing owners. Acquire the remaining real dependencies and run broader repository tests, reconcile schemas and generated adapters, then verify actual installed behavior before release. Keep saving proved slices on this branch without handing implementation or installation work back to the product owner."
+    "nextSafeAction": "Trace supported producers and clients through the existing owners. Adopt fresh post-correction plan packet generation and exact worker v3 return fields, exercise actual policy/feedback/context adapters and broader tests, then reconcile schemas/packages and prove installed behavior. Inspect task-content integrity at dispatch and cancellation/concurrency before release. Keep each coherent slice remotely preserved on this draft."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "repair/product-model-corrections-2026-09-06",
-    "headBefore": "dfef1c330ca860b04c9e4f25ab6d52e8f733f3e0",
+    "headBefore": "9379c9295c671fafeda11a207e2e148eb2cf076b",
     "checkpointCommit": "containing_commit",
     "pushRequested": false,
     "pushRemote": null,
@@ -77,10 +84,11 @@
   "savedFiles": [
     {"path": "skills/selective-intelligence/scripts/intent_contract.py", "sha256": "a3bcb84336179e5dc9e18f55c7f02c27bbe777a116aa0942bee807ea82eb58a6"},
     {"path": "skills/selective-intelligence/scripts/checkpoint.py", "sha256": "841a5b16ef422edf0fc1c20235244825ddfa5da08f5eaa713ff208dad401a95e"},
-    {"path": "skills/selective-intelligence/scripts/build_engine.py", "sha256": "950dea2f697bbfa6c89e7aeea2b2b952ec57acdc18e00b53d5e5d5fd34f0a140"},
+    {"path": "skills/selective-intelligence/scripts/build_engine.py", "sha256": "f03a97de4ab5d0d13874d34ec6113301fef21c735c57cdaf63fb4fd7b5eeaaa6"},
     {"path": "skills/selective-intelligence/tests/test_product_model_corrections.py", "sha256": "462dce157ccc04ca0fd92ed8e8f5c11d6db154591ada02502a6b8ec36e14c470"},
     {"path": "skills/selective-intelligence/tests/test_product_model_checkpoint.py", "sha256": "ad74952ea084dde7fc818b64944fd872802bc72b605fffc52d831966c1d2d431"},
-    {"path": "skills/selective-intelligence/tests/test_product_model_worker_binding.py", "sha256": "70d63ce8f83ae0895a11ff1bf9b3cd2de63ebdaa294fec27551f9b8fab8eb3d7"}
+    {"path": "skills/selective-intelligence/tests/test_product_model_worker_binding.py", "sha256": "70d63ce8f83ae0895a11ff1bf9b3cd2de63ebdaa294fec27551f9b8fab8eb3d7"},
+    {"path": "skills/selective-intelligence/tests/test_product_model_plan_import.py", "sha256": "084a23bf7e33bea2dad5fb8b1695fec347e3236a12a0d99508b4f824063e9182"}
   ],
-  "privacyBoundary": "Synthetic, product-neutral tests and bounded repair evidence only; no credentials, private prices, private user-computer paths, or unrelated data"
+  "privacyBoundary": "Public synthetic, product-neutral fixtures and bounded source/test evidence only. No credentials, private prices, private computer paths or unrelated user data."
 }
