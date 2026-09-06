@@ -35,6 +35,7 @@ class WorkerBindingTests(unittest.TestCase):
         policy = modules["policy_guard"]
         policy.PolicyDenied = type("PolicyDenied", (RuntimeError,), {})
         policy.PolicyGuard = mock.Mock()
+        policy.PolicyGuard.return_value.authorize.return_value = {"allowed": True}
         policy.guarded_run = mock.Mock()
         policy.guarded_write_text = mock.Mock(side_effect=self.write_file)
         self.writer = policy.guarded_write_text
