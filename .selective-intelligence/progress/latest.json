@@ -1,79 +1,80 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260906-product-model-plan-import",
-  "createdAt": "2026-09-06T20:47:39+00:00",
-  "outcome": "Carry product-model corrections through replacement-plan import, approval, persisted sessions and current worker handoff without relabelling rejected work",
+  "checkpointId": "progress-20260906-product-model-client-protocol",
+  "createdAt": "2026-09-06T21:28:08.214472+00:00",
+  "outcome": "Carry corrections through the actual CLI, fresh plan review, correctly routed results and real verification without silently approving or relabelling old work",
   "scope": [
-    "Continue existing draft 45 and canonical intent/checkpoint/build-engine owners",
-    "New plan import repair in existing build_engine.py, with 42 new synthetic regression methods",
-    "Execute real lane_session.py persistence and queue code in temporary directories without changing that module",
-    "Keep previous 86 tests passing and preserve exact tested source remotely"
+    "Continue existing draft 45 and existing canonical owners only",
+    "Repair existing CLI transports and file-batch preflight in build_engine.py",
+    "Add 36 real-process integration methods and migrate the existing instruction-fidelity vertical",
+    "Preserve exact tested source on the same draft and retain prior 128 tests"
   ],
   "prohibitions": [
-    "Do not infer SaaS or invent a replacement product category from software implementation",
-    "Preserve explicitly approved memberships, fees, external providers and shared services",
-    "Do not use the user's PC, production data, new hosted services, recurring automation, third-party storage or GitHub Actions as a gate",
-    "Do not merge, release, deploy, submit a plugin, change protected branches or modify unrelated work",
-    "Do not ask the product owner to write, edit, install or relay code",
-    "Do not claim full-repository, concurrent-worker, installed-client or real-model proof from these bounded tests",
-    "Do not migrate old plans or returned results by replacing their identifiers with current authority"
+    "Do not infer SaaS or invent another product category from software implementation",
+    "Preserve approved memberships, fees, external providers and shared services",
+    "Do not use user PC, production data, new hosted services, recurring automation or GitHub Actions as a gate",
+    "Do not merge, release, deploy, submit a plugin, mutate protected branches or modify unrelated work",
+    "Do not ask the product owner to write, install or relay code",
+    "Do not relabel old plans or results with current identifiers",
+    "Do not claim full repository, installed-client, live-model or arbitrary external-worker proof from these tests"
   ],
   "progress": {
     "completedVerified": [
-      "Verified every recovered v2 archive manifest entry and freshly reran the original 86 targeted methods successfully",
-      "Reconstructed real lane_session.py from authenticated reads and matched its original Git blob exactly; this module remains unchanged",
-      "Replacement plans now require current session, checkpoint and intent provenance before approval or queue creation",
-      "Pending plan content and displayed actions are snapshotted before approval; changed, missing, empty or unbound legacy plans are rejected rather than silently upgraded",
-      "Rejected SaaS product claims in task titles, acceptance instructions and nested task metadata are denied using the existing bounded classifier; approved provider, negation, membership and fee controls pass",
-      "Task graph validation runs before insertion; cyclic, unordered, malformed and routing-overriding inputs are rejected",
-      "Queue construction is a detached in-memory transaction; injected insertion failure leaves the caller session unchanged",
-      "Same-key task reuse checks actual task content, current binding and recorded plan source; stale and cancellation-requested tasks are denied",
-      "Initial valid plans, ordered dependencies, unchanged repeated imports and approval without a plan remain supported in positive controls",
-      "Read-only plan packet exports corrected intent without granting execution authority",
-      "A bad inline replacement does not undo the correction already persisted by the interrupt transaction",
-      "Corrected intent successfully travels through a new plan packet, fresh plan import, approval, real disk reload and worker packet v3 in the tested positive control",
-      "All 128 targeted methods pass with zero failures, errors, skips or expected failures; compilation and focused whitespace checks pass",
-      "Updated engine and new tests are saved remotely and their Git blob hashes match the exact tested bytes"
+      "Verified recovered v3 manifest and exact pinned dependency sources; prior 128 methods passed again",
+      "Plain corrections persist despite missing, malformed or schema-invalid optional plan/model input; responses distinguish correction saved from attachment rejected",
+      "Fresh source-bound plans can be staged for review without granting execution authority, creating tasks or silently updating old proposals",
+      "Compatibility plan command no longer silently approves; compatibility build command no longer crashes or routes to an unrelated first-ready task",
+      "Build consumes the actual result task ID and checks its unchanged session/checkpoint/intent fields; missing or stale bindings are not fabricated",
+      "All file targets and policy decisions are preflighted before a task transition or the first write; predictable invalid later paths, symlink escapes, duplicate targets and parent conflicts reject the batch without partial writes in tested cases",
+      "36 new methods run actual CLI subprocesses with real persisted sessions, context, feedback, policy, capability probes and file/verification adapters; no mocks in this group",
+      "A full synthetic correction -> new plan -> stage -> explicit text approval -> current worker result -> file write -> actual verification -> reload journey passes",
+      "A correction stops an SI-owned running verification subprocess; the cancelled test never writes its final sentinel",
+      "Existing process vertical migrated to generate synthetic replacements only after correction, and each implementation/repair result from its own current worker packet",
+      "Migrated vertical passes actual failed verification followed by successful repair, four denied operations, final reload and unchanged protected fixture files",
+      "Identical expanded 164-method suite: pre-client source 133 passed / 31 unsuccessful; repaired source 164 passed / zero unsuccessful",
+      "Final rerun after source saving: 164 tests passed, zero failures/errors/skips/expected failures/unexpected successes; changed-source compilation, whitespace and byte-integrity checks passed",
+      "Engine, new process tests, existing worker test adjustment and migrated runner saved remotely; returned or re-read Git blob hashes match exact tested bytes"
     ],
     "changedUnverified": [
-      "RELEASE BLOCKER: existing producer/client workflows must adopt source-bound plan import and worker packet v3 returns. Legacy unbound plans/results are intentionally rejected",
-      "Clients that precompute replacement_plan before correct_project must instead save the correction, obtain its new plan packet, generate a fresh plan and submit it for approval",
-      "Only targeted real disk persistence is proved. Capability/context/feedback/filesystem-policy adapters were isolated in the new tests; full policy integration and full repository compatibility remain unverified",
-      "In-memory queue transaction tests do not prove concurrent processes, atomic multi-file writes, external cancellation or worker stop behavior",
-      "Schemas, supported adapters/packages, release inventory and actual installed skill loading have not been regenerated or verified",
-      "Real-model behavior, independent review and universal semantic detection of unlabelled template assumptions remain unverified",
-      "The workspace is exact partial-source reconstruction, not a full repository checkout or complete project index"
+      "RELEASE BLOCKER: external supported clients/producers still need migration and proof; only canonical CLI transports and existing synthetic vertical are migrated here",
+      "Full repository compatibility suite not run. The existing production-path test file was read, but only its standalone vertical runner was migrated/executed",
+      "Task-content integrity at dispatch remains unproven; correlation identifiers are not content approval or producer authentication",
+      "File preflight is not atomic multi-file commit or rollback: concurrent changes, disk errors, per-write authority races and session transactions remain unresolved",
+      "Only SI-owned verification-process cancellation was exercised. External model streams, external workers and arbitrary child-process trees were not proved stopped",
+      "Schemas, generated adapters, supported packages, release inventory and actual installed skill activation have not been reconciled or verified",
+      "Real-model behavior, independent review and semantic detection of unlabelled template assumptions remain unverified",
+      "Workspace is exact partial-source reconstruction, not a full clone or complete project index"
     ],
     "proof": [
-      "Fresh original-scope run: 86 passed, zero failures/errors/skips/expected failures",
-      "Identical expanded 128-method comparison with pre-plan engine: 95 passed and 33 unsuccessful methods; 42 assertion reports and 9 error reports including subtests. Some errors are absent new APIs, not 33 independent production defects",
-      "Identical expanded comparison with repaired engine: 128 passed, zero failures/errors/skips/expected failures/unexpected successes",
-      "Final direct unittest rerun after remote source write: 128 tests, OK",
-      "70 tests execute real intent/checkpoint. 16 earlier handoff tests isolate session storage. 42 new plan-import tests use real engine/intent/checkpoint/lane-session disk and queue code with four isolated adapters",
-      "Reproduction: python -m unittest discover -s skills/selective-intelligence/tests -p 'test_product_model*.py' -v",
-      "New test commit: c1636030a8340715ef2526eedd6da438788eafe8; engine/source revision: 9379c9295c671fafeda11a207e2e148eb2cf076b",
-      "Engine: 57272 bytes, Git blob f5f207acbef087b7abd9c721c9bdf919cf6d5dc1; new tests: 18739 bytes, Git blob a4bc22c8f52e22633653b04a485bce874dc711c2",
-      "Unchanged real lane-session fixture: 21071 bytes, Git blob 0578bc3c7cc42ec298b4e2e681a1218f781a2c34",
-      "Source identifiers and content hashes provide correlation and integrity, not authenticated producer attestation or universal semantic proof"
+      "Prior 128 passed; final suite has 42 correction, 28 checkpoint, 16 isolated worker, 42 real-disk plan and 36 real-process CLI methods",
+      "Same expanded baseline: 164 methods, 133 passed, 31 unsuccessful, 26 assertion reports, 5 error reports, zero skips. Absent new APIs and response changes are included; not 31 independent production defects",
+      "Repaired comparison and final post-save rerun: 164 passed, zero failures/errors/skips/expected failures/unexpected successes",
+      "Separate existing runner: PRODUCTION_MODULE_PATH_PASS; failedExitCode=1; passedExitCode=0; deniedActionCount=4; canonicalUnchanged=true; finalState=VERIFIED_COMPLETE",
+      "Reproduce targeted suite: python -m unittest discover -s skills/selective-intelligence/tests -p 'test_product_model*.py' -v",
+      "Reproduce separate process vertical: python skills/selective-intelligence/tests/run_instruction_fidelity_vertical.py",
+      "Raw comparison logs, full synthetic vertical evidence, final rerun, pre-client sources and dependency fingerprints retained in v4 recovery archive",
+      "All process proof uses synthetic fixtures and temporary directories, not actual product membership access or live model generation"
     ],
     "externalEffects": [
-      "Created one new task-owned test file and updated existing engine through connected GitHub on the same non-protected draft branch",
-      "Saved this recovery record; no merge, release, deploy, production access, user-PC access or hosted-service change"
+      "Four task-owned source/test writes through connected GitHub on the existing draft branch",
+      "Updated existing recovery record and PR status only; no merge/release/deploy/installed-client/user-PC changes"
     ],
     "doNotRepeat": [
-      "Do not claim current source is archive-only or that the source-write blocker persists",
-      "Do not report earlier 86 tests as the current total or claim real disk persistence was never exercised",
-      "Do not equate 128 passing targeted methods with full integration, producer migration or installed behavior",
-      "Do not relabel a stale plan, worker result or omitted legacy approval snapshot",
-      "Do not reread the whole history, retry unavailable archive materialization or give implementation homework to the product owner"
+      "Do not claim these repairs remain archive-only or source writes are blocked",
+      "Do not report 128 as the current total or say real policy/process integration was never exercised",
+      "Do not call 164 targeted methods a full repository or live-model test",
+      "Do not weaken bindings to accommodate legacy clients; generate fresh plans/results instead",
+      "Do not claim preflight is a concurrent filesystem transaction or SI cancellation stops all external workers",
+      "Do not ask the product owner to install recovery archives or relay code"
     ],
-    "nextSafeAction": "Trace supported producers and clients through the existing owners. Adopt fresh post-correction plan packet generation and exact worker v3 return fields, exercise actual policy/feedback/context adapters and broader tests, then reconcile schemas/packages and prove installed behavior. Inspect task-content integrity at dispatch and cancellation/concurrency before release. Keep each coherent slice remotely preserved on this draft."
+    "nextSafeAction": "Trace actual supported external-client call sites and migrate them to correction -> fresh plan packet -> stage/review -> approval -> current task packet -> bound result. Test task-content integrity at dispatch and concurrent authority changes. Execute full compatibility coverage, reconcile generated schemas/packages, and prove installed activation before release. Keep coherent work on the existing draft."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "repair/product-model-corrections-2026-09-06",
-    "headBefore": "9379c9295c671fafeda11a207e2e148eb2cf076b",
+    "headBefore": "31b8b3039098f67a5a9a2c608ea28be0f2f51e1c",
+    "previousCheckpoint": "e2e834e1b1642d236e04580e1944b7c832386fe1",
     "checkpointCommit": "containing_commit",
     "pushRequested": false,
     "pushRemote": null,
@@ -82,13 +83,30 @@
     "unrelatedChangeCountExcluded": 0
   },
   "savedFiles": [
-    {"path": "skills/selective-intelligence/scripts/intent_contract.py", "sha256": "a3bcb84336179e5dc9e18f55c7f02c27bbe777a116aa0942bee807ea82eb58a6"},
-    {"path": "skills/selective-intelligence/scripts/checkpoint.py", "sha256": "841a5b16ef422edf0fc1c20235244825ddfa5da08f5eaa713ff208dad401a95e"},
-    {"path": "skills/selective-intelligence/scripts/build_engine.py", "sha256": "f03a97de4ab5d0d13874d34ec6113301fef21c735c57cdaf63fb4fd7b5eeaaa6"},
-    {"path": "skills/selective-intelligence/tests/test_product_model_corrections.py", "sha256": "462dce157ccc04ca0fd92ed8e8f5c11d6db154591ada02502a6b8ec36e14c470"},
-    {"path": "skills/selective-intelligence/tests/test_product_model_checkpoint.py", "sha256": "ad74952ea084dde7fc818b64944fd872802bc72b605fffc52d831966c1d2d431"},
-    {"path": "skills/selective-intelligence/tests/test_product_model_worker_binding.py", "sha256": "70d63ce8f83ae0895a11ff1bf9b3cd2de63ebdaa294fec27551f9b8fab8eb3d7"},
-    {"path": "skills/selective-intelligence/tests/test_product_model_plan_import.py", "sha256": "084a23bf7e33bea2dad5fb8b1695fec347e3236a12a0d99508b4f824063e9182"}
+    {
+      "path": "skills/selective-intelligence/scripts/build_engine.py",
+      "bytes": 60382,
+      "sha256": "eea4a25b7628a1568de5e6483f9944d797985bfc837eb59f340d9aaf8b7d697a",
+      "git_blob": "5e1a6aa121586ad19cf156771fc893707dc4797b"
+    },
+    {
+      "path": "skills/selective-intelligence/tests/test_product_model_client_protocol.py",
+      "bytes": 24920,
+      "sha256": "fb62a93dc1209596eb30bca0e4fb4212b94c404c08ad0c75ec311823a1c744b7",
+      "git_blob": "d179c01cc9b076be5378f96450a837bccd0d6b80"
+    },
+    {
+      "path": "skills/selective-intelligence/tests/test_product_model_worker_binding.py",
+      "bytes": 10332,
+      "sha256": "6e809d42a8cb026d8687255cef1e5491af3db159cc641f60873389004cfee95f",
+      "git_blob": "68f8ca52071a0069538c807fdee68a459ad8cff1"
+    },
+    {
+      "path": "skills/selective-intelligence/tests/run_instruction_fidelity_vertical.py",
+      "bytes": 21887,
+      "sha256": "153ea6c213db5c34a490e97eb8d99c6eb71647075a6ae5b83b756cb82d7cd745",
+      "git_blob": "36566a9dd2dc18b75478a54290920d14b73d6816"
+    }
   ],
-  "privacyBoundary": "Public synthetic, product-neutral fixtures and bounded source/test evidence only. No credentials, private prices, private computer paths or unrelated user data."
+  "privacyBoundary": "Synthetic product-neutral fixtures; no private prices, credentials, user-PC data or unrelated user records."
 }
