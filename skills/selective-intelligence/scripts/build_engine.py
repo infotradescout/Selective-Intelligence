@@ -15,6 +15,8 @@ or an optional managed provider without changing the session contract.
 from __future__ import annotations
 
 import argparse
+import copy
+import hashlib
 import json
 import os
 import sys
@@ -31,6 +33,7 @@ import capabilities as CAP  # noqa: E402
 import checkpoint as CP  # noqa: E402
 import context_budget as CB  # noqa: E402
 import feedback as FB  # noqa: E402
+import intent_contract as IC  # noqa: E402
 import lane_session as LS  # noqa: E402
 from policy_guard import PolicyDenied, PolicyGuard, guarded_run, guarded_write_text  # noqa: E402
 
@@ -218,32 +221,169 @@ def _task_by_key(session: dict[str, Any], key: str) -> dict[str, Any] | None:
     return None
 
 
+def _plan_hash(value: dict[str, Any]) -> str:
+    try:
+        encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    except (TypeError, ValueError, RecursionError) as exc:
+        raise EngineError("plan must contain finite, JSON-compatible values") from exc
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
 def validate_plan(plan: dict[str, Any]) -> None:
+    """Preflight the entire plan before creating any queue entries."""
+    if not isinstance(plan, dict):
+        raise EngineError("plan must be an object")
+    _plan_hash(plan)
     tasks = plan.get("tasks")
     if not isinstance(tasks, list) or not tasks:
         raise EngineError("plan.tasks must be a non-empty list")
     seen: set[str] = set()
+    reserved = {
+        "planKey", "kind", "authorized_checkpoint_id", "authorized_intent_hash",
+        "planSpecHash", "planSource",
+    }
     for index, task in enumerate(tasks):
         if not isinstance(task, dict):
             raise EngineError(f"plan task {index} must be an object")
         key = task.get("key")
         title = task.get("title")
-        if not isinstance(key, str) or not key.strip():
-            raise EngineError(f"plan task {index} missing key")
+        if not isinstance(key, str) or not key.strip() or key != key.strip():
+            raise EngineError(f"plan task {index} missing or malformed key")
         if key in seen:
             raise EngineError(f"duplicate plan task key: {key}")
-        seen.add(key)
         if not isinstance(title, str) or not title.strip():
             raise EngineError(f"plan task {key} missing title")
         for field in ("dependencies", "tags", "invalidationConditions", "acceptanceRefs"):
             if field in task and (
-                not isinstance(task[field], list) or not all(isinstance(v, str) for v in task[field])
+                not isinstance(task[field], list)
+                or not all(isinstance(v, str) and v.strip() for v in task[field])
             ):
-                raise EngineError(f"plan task {key}.{field} must be a list of strings")
-    for task in tasks:
-        unknown = sorted(set(task.get("dependencies", [])) - seen)
-        if unknown:
-            raise EngineError(f"plan task {task['key']} has unknown dependencies: {', '.join(unknown)}")
+                raise EngineError(f"plan task {key}.{field} must be a list of nonempty strings")
+        unresolved = [dep for dep in task.get("dependencies", []) if dep not in seen]
+        if unresolved:
+            raise EngineError(f"plan is not dependency ordered; {key} precedes {', '.join(unresolved)}")
+        seen.add(key)
+        if not isinstance(task.get("queue", "ready"), str) or not task.get("queue", "ready").strip():
+            raise EngineError(f"plan task {key}.queue must be a nonempty string")
+        if not isinstance(task.get("kind", "worker"), str) or task.get("kind", "worker") not in {
+            "worker", "discovery", "repair",
+        }:
+            raise EngineError(f"plan task {key} has an unsupported worker kind")
+        metadata = task.get("metadata", {})
+        if not isinstance(metadata, dict):
+            raise EngineError(f"plan task {key}.metadata must be an object")
+        if reserved.intersection(metadata):
+            raise EngineError(f"plan task {key}.metadata cannot override routing or authorization")
+        if task.get("operation") is not None and not isinstance(task["operation"], dict):
+            raise EngineError(f"plan task {key}.operation must be an object or null")
+
+
+def _plan_checkpoint(session: dict[str, Any]) -> dict[str, Any]:
+    checkpoint = CP.current_checkpoint(session)
+    if not checkpoint or checkpoint.get("status") not in {"proposed", "correction_mode", "approved"}:
+        raise EngineError("plan requires a current proposed or approved checkpoint")
+    try:
+        CP._assert_current_intent(session, checkpoint)
+    except CP.CheckpointError as exc:
+        raise EngineError(str(exc)) from exc
+    return checkpoint
+
+
+def _plan_source(session: dict[str, Any]) -> dict[str, str]:
+    checkpoint = _plan_checkpoint(session)
+    return {
+        "sessionId": session["sessionId"],
+        "checkpointId": checkpoint["checkpoint_id"],
+        "intentHash": checkpoint["intent_hash"],
+    }
+
+
+def _plan_text(value: Any):
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, dict):
+        for child in value.values():
+            yield from _plan_text(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _plan_text(child)
+
+
+def _validate_plan_source_and_intent(session: dict[str, Any], plan: dict[str, Any]) -> None:
+    validate_plan(plan)
+    source = plan.get("source")
+    expected = _plan_source(session)
+    if not isinstance(source, dict) or set(source) != set(expected):
+        raise EngineError("plan source is required; regenerate from the current plan packet")
+    for field, value in expected.items():
+        if not isinstance(source.get(field), str) or source[field] != value:
+            raise EngineError(f"plan source {field} does not match the current checkpoint")
+    intent = session["activeIntent"]
+    rejected = IC._product_model_targets(list(intent.get("superseded_concepts") or []))
+    if rejected:
+        for task in plan["tasks"]:
+            # Identifiers are not product assertions. Inspect the actual task
+            # instructions, including nested metadata, with the existing bounded
+            # product-model classifier. This is not universal semantic proof.
+            instructions = {key: value for key, value in task.items() if key != "key"}
+            if any(IC._conflicts_with_product_model(text) for text in _plan_text(instructions)):
+                raise EngineError("plan conflicts with the rejected product model; regenerate the affected plan")
+
+
+def _stage_pending_plan(
+    session: dict[str, Any], plan: dict[str, Any], *, initial_request: bool = False,
+) -> None:
+    """Bind a proposal before approval; never relabel an imported old plan.
+
+    Only a plan supplied with the initial request may omit its source. Later
+    imports must echo the plan packet they were generated from. Source fields
+    correlate a proposal with intent; they are not producer attestation.
+    """
+    validate_plan(plan)
+    pending = copy.deepcopy(plan)
+    checkpoint = _plan_checkpoint(session)
+    if checkpoint["status"] not in {"proposed", "correction_mode"}:
+        raise EngineError("a changed plan needs a proposed checkpoint, not an existing approval")
+    if initial_request and "source" not in pending:
+        pending["source"] = _plan_source(session)
+    _validate_plan_source_and_intent(session, pending)
+    digest = _plan_hash(pending)
+    previous = checkpoint.get("pending_plan_hash")
+    if previous is not None and previous != digest:
+        raise EngineError("checkpoint already has a different plan; reconcile before approval")
+    checkpoint["pending_plan_hash"] = digest
+    checkpoint["planned_next_actions"] = [task["title"] for task in pending["tasks"]]
+    session["pendingPlan"] = pending
+
+
+def _assert_plan_snapshot(session: dict[str, Any], plan: dict[str, Any]) -> None:
+    _validate_plan_source_and_intent(session, plan)
+    checkpoint = _plan_checkpoint(session)
+    if not checkpoint.get("pending_plan_hash") or checkpoint["pending_plan_hash"] != _plan_hash(plan):
+        raise EngineError("plan differs from the checkpoint proposal; reconcile before execution")
+    if checkpoint.get("planned_next_actions") != [task["title"] for task in plan["tasks"]]:
+        raise EngineError("checkpoint actions differ from the plan proposal")
+
+
+def make_plan_packet(*, session_id: str) -> dict[str, Any]:
+    """Read-only proposed-intent handoff; grants no execution authority."""
+    session = LS.load_session(session_id)
+    if not session:
+        raise EngineError("session not found")
+    return {
+        "schemaVersion": "si.plan_packet.v1",
+        "source": _plan_source(session),
+        "activeIntent": copy.deepcopy(session["activeIntent"]),
+        "requiredOutput": {
+            "required": ["source", "tasks"],
+            "source": _plan_source(session),
+            "notes": (
+                "Return source unchanged from this packet. Generate tasks for this intent; "
+                "do not relabel an old plan. List dependencies before dependents. "
+                "A proposed plan grants no execution permission."
+            ),
+        },
+    }
 
 
 def add_plan_tasks(session: dict[str, Any], plan: dict[str, Any]) -> dict[str, str]:
@@ -251,59 +391,63 @@ def add_plan_tasks(session: dict[str, Any], plan: dict[str, Any]) -> dict[str, s
         CP.require_authorized_checkpoint(session)
     except CP.CheckpointError as exc:
         raise EngineError(str(exc)) from exc
-    validate_plan(plan)
-    existing = {
-        task.get("metadata", {}).get("planKey"): task["taskId"]
-        for task in session["queue"].values()
-        if task.get("metadata", {}).get("planKey")
-        and task.get("status") not in {"cancelled", "invalidated"}
-        and not task.get("tainted")
-    }
-    key_to_id = dict(existing)
-    pending_specs: list[dict[str, Any]] = []
-    for spec in plan["tasks"]:
-        if spec["key"] in existing:
+    plan = copy.deepcopy(plan)
+    _assert_plan_snapshot(session, plan)
+    # Queue construction is an in-memory transaction. A failed insertion must
+    # not leave half a plan in the caller's session. Disk/concurrent transactions
+    # remain the persistence owner's responsibility.
+    staged = copy.deepcopy(session)
+    existing: dict[str, dict[str, Any]] = {}
+    for task in staged["queue"].values():
+        key = task.get("metadata", {}).get("planKey")
+        if not key or task.get("status") in {"cancelled", "invalidated"} or task.get("tainted"):
             continue
-        pending_specs.append(spec)
-        # Reserve IDs only by ordering dependencies after creation; plans are
-        # required to list dependencies before dependents for deterministic
-        # evidence. This makes bad plans fail closed.
-        unresolved = [dep for dep in spec.get("dependencies", []) if dep not in key_to_id]
-        if unresolved:
-            raise EngineError(
-                f"plan is not dependency ordered; {spec['key']} precedes {', '.join(unresolved)}"
+        if key in existing:
+            raise EngineError(f"ambiguous existing plan task: {key}")
+        existing[key] = task
+    key_to_id: dict[str, str] = {}
+    added: list[str] = []
+    for spec in plan["tasks"]:
+        metadata = {
+            **copy.deepcopy(spec.get("metadata", {})),
+            "planKey": spec["key"], "kind": spec.get("kind", "worker"),
+            "planSpecHash": _plan_hash(spec), "planSource": copy.deepcopy(plan["source"]),
+        }
+        expected = {
+            "title": spec["title"], "queue": spec.get("queue", "ready"),
+            "dependencies": [key_to_id[dep] for dep in spec.get("dependencies", [])],
+            "tags": spec.get("tags", []), "acceptanceRefs": spec.get("acceptanceRefs", []),
+            "invalidationConditions": spec.get("invalidationConditions", []),
+            "operation": spec.get("operation"),
+        }
+        if spec["key"] in existing:
+            task = existing[spec["key"]]
+            try:
+                CP.assert_binding(staged, task)
+            except CP.CheckpointError as exc:
+                raise EngineError(str(exc)) from exc
+            if any(task.get(key) != value for key, value in expected.items()):
+                raise EngineError(f"existing task differs from current plan: {spec['key']}")
+            if any(task.get("metadata", {}).get(key) != value for key, value in metadata.items()):
+                raise EngineError(f"existing task provenance differs from current plan: {spec['key']}")
+        else:
+            task = LS.add_task(
+                staged, title=expected["title"], queue=expected["queue"],
+                dependencies=expected["dependencies"], tags=expected["tags"],
+                acceptance_refs=expected["acceptanceRefs"],
+                invalidation_conditions=expected["invalidationConditions"],
+                operation=expected["operation"], metadata=metadata,
             )
-        task = LS.add_task(
-            session,
-            title=spec["title"],
-            queue=spec.get("queue", "ready"),
-            dependencies=[key_to_id[dep] for dep in spec.get("dependencies", [])],
-            tags=spec.get("tags", []),
-            acceptance_refs=spec.get("acceptanceRefs", []),
-            invalidation_conditions=spec.get("invalidationConditions", []),
-            operation=spec.get("operation"),
-            metadata={
-                "planKey": spec["key"],
-                "kind": spec.get("kind", "worker"),
-                **dict(spec.get("metadata", {})),
-            },
-        )
+            added.append(spec["key"])
         key_to_id[spec["key"]] = task["taskId"]
-    LS.record_event(
-        session,
-        "plan.tasks_added",
-        {
-            "planId": plan.get("planId"),
-            "taskKeys": [spec["key"] for spec in pending_specs],
-            "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
-            "authorized_intent_hash": session.get("authorizedIntentHash"),
-        },
-    )
-    CP.receipt(
-        session,
-        action="plan.tasks_add",
-        details={"planId": plan.get("planId"), "taskKeys": [spec["key"] for spec in pending_specs]},
-    )
+    LS.record_event(staged, "plan.tasks_added", {
+        "planId": plan.get("planId"), "taskKeys": added,
+        "authorized_checkpoint_id": staged.get("authorizedCheckpointId"),
+        "authorized_intent_hash": staged.get("authorizedIntentHash"),
+    })
+    CP.receipt(staged, action="plan.tasks_add", details={"planId": plan.get("planId"), "taskKeys": added})
+    session.clear()
+    session.update(staged)
     return key_to_id
 
 
@@ -352,7 +496,9 @@ def run_discovery_tasks(session: dict[str, Any]) -> None:
 
 def _apply_pending_plan(session: dict[str, Any], plan: dict[str, Any] | None = None) -> None:
     pending = plan if plan is not None else session.get("pendingPlan")
-    if not pending:
+    if pending is None:
+        if _plan_checkpoint(session).get("pending_plan_hash"):
+            raise EngineError("checkpoint plan is missing; reconcile before approval")
         return
     add_plan_tasks(session, pending)
     run_discovery_tasks(session)
@@ -391,8 +537,7 @@ def start_project(
         structured_intent=structured_intent,
     )
     if plan is not None:
-        validate_plan(plan)
-        session["pendingPlan"] = plan
+        _stage_pending_plan(session, plan, initial_request=True)
     if auto_approve:
         checkpoint = CP.current_checkpoint(session)
         if not checkpoint:
@@ -418,6 +563,14 @@ def approve_project(
     checkpoint_id = checkpoint_id or session.get("currentCheckpointId")
     if not checkpoint_id:
         raise EngineError("no checkpoint to approve")
+    # Validate the complete proposal before granting authority, creating a
+    # workspace, recording feedback, or dispatching discovery.
+    if plan is not None:
+        _stage_pending_plan(session, plan)
+    if "pendingPlan" in session:
+        _assert_plan_snapshot(session, session["pendingPlan"])
+    elif _plan_checkpoint(session).get("pending_plan_hash"):
+        raise EngineError("checkpoint plan is missing; reconcile before approval")
     try:
         CP.approve_checkpoint(
             session,
@@ -430,9 +583,6 @@ def approve_project(
     if workspace:
         Path(workspace).resolve().mkdir(parents=True, exist_ok=True)
     _start_feedback(session)
-    if plan is not None:
-        validate_plan(plan)
-        session["pendingPlan"] = plan
     _apply_pending_plan(session)
     LS.save_session(session)
     return session
@@ -530,7 +680,9 @@ def correct_project(
 
     SI owns the interpretation. A caller-supplied ``replacement_plan`` is stored
     as pending only; it is not authority and cannot execute until the new
-    checkpoint is approved.
+    checkpoint is approved. A replacement generated before this interrupt has
+    stale provenance: obtain the new plan packet and import a fresh plan through
+    approve_project instead of relabelling the old proposal.
     """
     session, result = interrupt_project(
         session_id=session_id,
@@ -544,8 +696,9 @@ def correct_project(
         "preservedCompletedTaskIds": [],
     }
     if replacement_plan is not None:
-        validate_plan(replacement_plan)
-        session["pendingPlan"] = replacement_plan
+        # The correction has already been saved by interrupt_project. Rejecting
+        # a stale/unbound replacement must never undo that correction.
+        _stage_pending_plan(session, replacement_plan)
         LS.record_event(
             session,
             "plan.pending_after_correction",
@@ -1055,6 +1208,16 @@ def cmd_authorize(args: argparse.Namespace) -> int:
     return 0 if decision["allowed"] else 3
 
 
+def cmd_plan_packet(args: argparse.Namespace) -> int:
+    try:
+        packet = make_plan_packet(session_id=args.session)
+    except (EngineError, ValueError, OSError, json.JSONDecodeError) as exc:
+        print(json.dumps({"error": str(exc), "code": "plan_packet_failed"}))
+        return 2
+    print(json.dumps(packet, indent=2))
+    return 0
+
+
 def cmd_packet(args: argparse.Namespace) -> int:
     try:
         packet = make_worker_packet(session_id=args.session, task_id=args.task)
@@ -1174,7 +1337,7 @@ def main() -> int:
     correct = sub.add_parser("correct")
     correct.add_argument("--session", required=True)
     correct.add_argument("--correction", required=True)
-    correct.add_argument("--plan", help="Pending plan only; not authoritative until approve")
+    correct.add_argument("--plan", help="Source-bound replacement only; after correction use plan-packet then approve --plan")
     correct.add_argument("--intent-override")
     correct.set_defaults(func=cmd_correct)
 
@@ -1201,6 +1364,10 @@ def main() -> int:
     authorize.add_argument("--task", required=True)
     authorize.add_argument("--action", required=True)
     authorize.set_defaults(func=cmd_authorize)
+
+    plan_packet = sub.add_parser("plan-packet")
+    plan_packet.add_argument("--session", required=True)
+    plan_packet.set_defaults(func=cmd_plan_packet)
 
     packet = sub.add_parser("packet")
     packet.add_argument("--session", required=True)
