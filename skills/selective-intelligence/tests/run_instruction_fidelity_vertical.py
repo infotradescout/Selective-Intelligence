@@ -135,34 +135,9 @@ def main() -> int:
             },
         ],
     }
-    replacement_plan = {
-        "planId": "instruction-fidelity-corrected-v1",
-        "tasks": [
-            # Existing discovery is referenced and therefore preserved, not rerun.
-            {
-                "key": "discovery",
-                "title": "Inspect project and probe executable SI adapters",
-                "queue": "discovery",
-                "kind": "discovery",
-                "tags": ["discovery", "capability_probing"],
-            },
-            {
-                "key": "verified_status",
-                "title": "Implement verified capability status view with adapter provenance",
-                "queue": "ready",
-                "kind": "worker",
-                "dependencies": ["discovery"],
-                "tags": ["verified_capabilities", "adapter_provenance", "status_view"],
-                "acceptanceRefs": ["correction: verified adapters only"],
-                "invalidationConditions": ["verified adapter contract changes"],
-            },
-        ],
-    }
 
     initial_plan_path = run_root / "initial_plan.json"
-    replacement_plan_path = run_root / "replacement_plan.json"
     write_json(initial_plan_path, initial_plan)
-    write_json(replacement_plan_path, replacement_plan)
 
     # Process 1: SI interprets and emits a proposed checkpoint (plan is pending only).
     start_args = [
@@ -198,13 +173,13 @@ def main() -> int:
         [
             "correct", "--session", session_id,
             "--correction", correction,
-            "--plan", str(replacement_plan_path),
         ],
         env=env,
     )
     assert correction_payload["executionLocked"] is True
     assert correction_payload["mutationFrozen"] is True
-    assert correction_payload["pendingPlan"] is True
+    assert correction_payload["pendingPlan"] is False
+    assert correction_payload["correctionSaved"] is True
     assert obsolete_id in correction_payload["cancelledTaskIds"]
     assert discovery_id in correction_payload["taintedEffectIds"]
     assert correction_payload.get("preservedCompletedTaskIds", []) == []
@@ -212,9 +187,50 @@ def main() -> int:
     assert queue_interrupted[obsolete_id]["status"] == "cancelled"
     assert queue_interrupted[discovery_id].get("tainted") is True
 
-    # Process 2b: approve revised checkpoint → pending replacement plan executes.
+    # Construct the synthetic replacement only after reading the corrected
+    # intent. This fixture exercises the protocol; no live model is called.
+    _, plan_packet, _, _ = run_engine(["plan-packet", "--session", session_id], env=env)
+    assert plan_packet["source"]["checkpointId"] == correction_payload["newCheckpoint"]["checkpoint_id"]
+    assert plan_packet["source"]["intentHash"] != approved_payload["authorizedIntentHash"]
+    replacement_plan = {
+        "planId": "instruction-fidelity-corrected-v1",
+        "source": plan_packet["source"],
+        "tasks": [
+            # Discovery is regenerated under the corrected direction, not reused as untainted evidence.
+            {
+                "key": "discovery",
+                "title": "Inspect project and probe executable SI adapters",
+                "queue": "discovery",
+                "kind": "discovery",
+                "tags": ["discovery", "capability_probing"],
+            },
+            {
+                "key": "verified_status",
+                "title": "Implement verified capability status view with adapter provenance",
+                "queue": "ready",
+                "kind": "worker",
+                "dependencies": ["discovery"],
+                "tags": ["verified_capabilities", "adapter_provenance", "status_view"],
+                "acceptanceRefs": ["correction: verified adapters only"],
+                "invalidationConditions": ["verified adapter contract changes"],
+            },
+        ],
+    }
+
+    replacement_plan_path = run_root / "replacement_plan.json"
+    write_json(replacement_plan_path, replacement_plan)
+    _, staged_payload, _, _ = run_engine(
+        ["stage-plan", "--session", session_id, "--plan", str(replacement_plan_path)], env=env,
+    )
+    assert staged_payload["executionLocked"] is True
+    assert staged_payload["generationAuthority"] is False
+    assert staged_payload["pendingPlan"] == replacement_plan
+
+    # Process 2b: approve the reviewed replacement checkpoint.
     _, resumed_payload, _, _ = run_engine(
-        ["approve", "--session", session_id],
+        ["approve", "--session", session_id,
+         "--checkpoint", staged_payload["currentCheckpoint"]["checkpoint_id"],
+         "--intent-hash", staged_payload["currentCheckpoint"]["intent_hash"]],
         env=env,
     )
     assert resumed_payload["executionLocked"] is False
@@ -281,14 +297,17 @@ def main() -> int:
         assert payload["adapterInvocationStatus"] == "NOT_INVOKED"
         denial_records[name] = payload
 
-    # Current agent supplies a generic structured worker packet; SI validates and
-    # applies it through the production adapter. The first version is genuinely
-    # wrong so the real verification command must fail.
+    # A synthetic result is constructed from this worker packet. The first
+    # implementation is intentionally wrong so real verification must fail;
+    # passing provenance checks alone must not certify its contents.
     tests_source = '''import unittest\n\nfrom app import status_view\n\n\nclass StatusViewContract(unittest.TestCase):\n    def test_every_displayed_capability_has_adapter_provenance(self):\n        view = status_view()\n        self.assertIn("verified_capabilities", view)\n        self.assertNotIn("status", view)\n        for capability in view["verified_capabilities"]:\n            self.assertTrue(capability["verified_by_adapter"])\n            self.assertTrue(capability["adapter_id"])\n            self.assertTrue(capability["probe_evidence"])\n\n\nif __name__ == "__main__":\n    unittest.main()\n'''
     buggy_artifact = {
+        **{field: worker_packet[field] for field in (
+            "sessionId", "taskId", "authorized_checkpoint_id", "authorized_intent_hash",
+        )},
         "producer": {
             "adapterId": "structured_worker_packet",
-            "surface": "current_reasoning_agent",
+            "surface": "synthetic_vertical_fixture",
             "generatedAt": now(),
         },
         "files": {
@@ -317,6 +336,11 @@ def main() -> int:
     repair_task = failed_payload["repairTask"]
     repair_id = repair_task["taskId"]
 
+    # Obtain the repair task's own packet BEFORE generating its new result.
+    _, repair_packet, _, _ = run_engine(
+        ["packet", "--session", session_id, "--task", repair_id], env=env,
+    )
+    assert repair_packet["taskId"] != worker_packet["taskId"]
     # Build the correct view from probe-verified capabilities only.
     show_code, show_payload, _, _ = run_engine(["show", "--session", session_id], env=env)
     assert show_code == 0
@@ -335,9 +359,12 @@ def main() -> int:
             )
     repaired_source = "VERIFIED_CAPABILITIES = " + repr(verified_caps) + "\n\n\ndef status_view():\n    return {'verified_capabilities': VERIFIED_CAPABILITIES}\n"
     repaired_artifact = {
+        **{field: repair_packet[field] for field in (
+            "sessionId", "taskId", "authorized_checkpoint_id", "authorized_intent_hash",
+        )},
         "producer": {
             "adapterId": "structured_worker_packet",
-            "surface": "current_reasoning_agent_repair",
+            "surface": "synthetic_vertical_repair_fixture",
             "generatedAt": now(),
         },
         "files": {"app.py": repaired_source},
@@ -383,11 +410,12 @@ def main() -> int:
     assert discovery_attempts[0].get("authorized_checkpoint_id") == final_payload.get("authorizedCheckpointId")
 
     evidence = {
-        "schemaVersion": "si.instruction_fidelity_evidence.v2",
+        "schemaVersion": "si.instruction_fidelity_evidence.v3",
         "classification": "PRODUCTION_MODULE_PATH_PASS",
         "qualification": (
-            "The replacement canonical SI modules were exercised through separate CLI processes. "
-            "This proves the patch implementation, not that it has already been applied to the remote repository."
+            "Canonical SI modules and real adapters were exercised through separate CLI processes "
+            "with synthetic plans and results. This is not installed-client, live-model, "
+            "external-worker shutdown, or remote-publication proof."
         ),
         "runRoot": str(run_root),
         "sessionId": session_id,
@@ -401,6 +429,9 @@ def main() -> int:
         "invalidatedTaskIds": correction_payload.get("invalidatedTaskIds", correction_payload["cancelledTaskIds"]),
         "preservedCompletedTaskIds": correction_payload.get("preservedCompletedTaskIds", []),
         "workerPacket": worker_packet,
+        "planPacket": plan_packet,
+        "stagedPlan": staged_payload,
+        "repairPacket": repair_packet,
         "deniedActions": denial_records,
         "failedVerification": failed_payload["commandEvidence"],
         "passedVerification": passed_payload["commandEvidence"],
