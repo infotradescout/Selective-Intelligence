@@ -386,6 +386,23 @@ def make_plan_packet(*, session_id: str) -> dict[str, Any]:
     }
 
 
+def stage_plan(*, session_id: str, plan: dict[str, Any]) -> dict[str, Any]:
+    """Persist a fresh proposal for review without granting execution authority."""
+    session = LS.load_session(session_id)
+    if not session:
+        raise EngineError("session not found")
+    _stage_pending_plan(session, plan)
+    LS.record_event(session, "plan.proposed", {"planHash": _plan_hash(plan)})
+    LS.save_session(session)
+    return {
+        "sessionId": session_id,
+        "currentCheckpoint": CP.checkpoint_public_view(CP.current_checkpoint(session)),
+        "pendingPlan": copy.deepcopy(session["pendingPlan"]),
+        "executionLocked": session.get("executionLocked"),
+        "generationAuthority": session.get("generationAuthority"),
+    }
+
+
 def add_plan_tasks(session: dict[str, Any], plan: dict[str, Any]) -> dict[str, str]:
     try:
         CP.require_authorized_checkpoint(session)
@@ -751,17 +768,38 @@ def apply_worker_artifact(
         raise EngineError(str(exc)) from exc
     if task["status"] not in {"ready", "repairing"}:
         raise EngineError(f"task is not executable: {task['status']}")
+    guard = _guard(session)
+    workspace = Path(session["workspace"]).resolve()
+    prepared: list[tuple[Path, Path, str]] = []
+    targets: set[Path] = set()
+    for relative_name, content in artifact["files"].items():
+        relative = _safe_relative(relative_name)
+        target = (workspace / relative).resolve()
+        decision = guard.authorize(
+            session_id=session_id, task_id=task_id,
+            action={"kind": "filesystem.write", "path": str(target)},
+        )
+        if not decision["allowed"]:
+            raise PolicyDenied(decision)
+        if target in targets:
+            raise EngineError("multiple file names resolve to the same target")
+        if target.exists() and not target.is_file():
+            raise EngineError("file target is an existing directory or special file")
+        if any(parent.exists() and not parent.is_dir() for parent in target.parents):
+            raise EngineError("file target has a non-directory parent")
+        targets.add(target)
+        prepared.append((relative, target, content))
+    if any(parent in targets for target in targets for parent in target.parents):
+        raise EngineError("file targets conflict with another file's parent directory")
+    # This is preflight, not a concurrent filesystem transaction. The write
+    # adapter still authorizes each write; later I/O or races remain fallible.
     ok, reason = LS.transition_task(session, task_id, "running")
     if not ok:
         raise EngineError(reason)
 
-    guard = _guard(session)
-    workspace = Path(session["workspace"]).resolve()
     written: list[dict[str, Any]] = []
     try:
-        for relative_name, content in artifact["files"].items():
-            relative = _safe_relative(relative_name)
-            target = workspace / relative
+        for relative, target, content in prepared:
             decision, evidence = guarded_write_text(
                 target,
                 content,
@@ -1095,70 +1133,79 @@ def cmd_text_gate(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_interrupt(args: argparse.Namespace) -> int:
+def _cmd_correction(args: argparse.Namespace, *, interrupt_only: bool = False) -> int:
+    # Optional model/file inputs must not suppress the person's plain correction.
+    # Invalid attachments are reported separately from the persisted correction.
+    attachment_errors: dict[str, str] = {}
+    structured = None
+    if args.intent_override:
+        try:
+            structured = _load_json(args.intent_override)
+            IC.validate_override(structured)
+        except (EngineError, ValueError, OSError) as exc:
+            structured = None
+            attachment_errors["intent_override"] = str(exc)
     try:
-        structured = _load_json(args.intent_override) if args.intent_override else None
-        session, result = interrupt_project(
-            session_id=args.session,
-            correction=args.correction,
-            structured_intent=structured,
-            disliked_checkpoint_id=args.checkpoint,
-        )
-    except (EngineError, ValueError, OSError, json.JSONDecodeError) as exc:
-        print(json.dumps({"error": str(exc), "code": "interrupt_failed"}))
+        if interrupt_only:
+            session, result = interrupt_project(
+                session_id=args.session, correction=args.correction,
+                structured_intent=structured, disliked_checkpoint_id=args.checkpoint,
+            )
+        else:
+            session, result = correct_project(
+                session_id=args.session, correction=args.correction,
+                structured_intent=structured,
+            )
+    except (EngineError, ValueError, OSError) as exc:
+        print(json.dumps({"error": str(exc), "code": "correction_failed", "correctionSaved": False}))
         return 2
-    print(
-        json.dumps(
-            {
-                "sessionId": session["sessionId"],
-                **{k: v for k, v in result.items() if k != "newCheckpoint"},
-                "newCheckpoint": CP.checkpoint_public_view(result["newCheckpoint"]),
-                "state": LS.global_state(session),
-                "executionLocked": session.get("executionLocked"),
-                "mutationFrozen": session.get("mutationFrozen"),
-                "queue": list(session["queue"].values()),
-            },
-            indent=2,
-        )
-    )
-    return 0
+
+    # Read replacement files only after interrupt_project has saved the correction.
+    # Old plans are never stamped with the fresh checkpoint to make them pass.
+    if not interrupt_only and args.plan:
+        try:
+            replacement = _load_json(args.plan)
+            _stage_pending_plan(session, replacement)
+            LS.record_event(session, "plan.pending_after_correction", {
+                "planId": replacement.get("planId"), "note": "not authoritative until checkpoint approve",
+            })
+            LS.save_session(session)
+        except (EngineError, ValueError, OSError) as exc:
+            attachment_errors["replacement_plan"] = str(exc)
+    payload = {
+        "sessionId": session["sessionId"],
+        **{key: value for key, value in result.items() if key != "newCheckpoint"},
+        "newCheckpoint": CP.checkpoint_public_view(result["newCheckpoint"]),
+        "state": LS.global_state(session),
+        "executionLocked": session.get("executionLocked"),
+        "mutationFrozen": session.get("mutationFrozen"),
+        "pendingPlan": bool(session.get("pendingPlan")),
+        "queue": list(session["queue"].values()),
+        "correctionSaved": True,
+        "planPacket": make_plan_packet(session_id=session["sessionId"]),
+        "nextAction": "generate_fresh_plan_then_stage_for_approval",
+    }
+    if attachment_errors:
+        payload.update(code="correction_saved_attachment_rejected", attachmentErrors=attachment_errors)
+    print(json.dumps(payload, indent=2))
+    return 2 if attachment_errors else 0
+
+
+def cmd_interrupt(args: argparse.Namespace) -> int:
+    return _cmd_correction(args, interrupt_only=True)
 
 
 def cmd_correct(args: argparse.Namespace) -> int:
-    try:
-        replacement = _load_json(args.plan) if args.plan else None
-        structured = _load_json(args.intent_override) if args.intent_override else None
-        session, result = correct_project(
-            session_id=args.session,
-            correction=args.correction,
-            replacement_plan=replacement,
-            structured_intent=structured,
-        )
-    except (EngineError, ValueError, OSError, json.JSONDecodeError) as exc:
-        print(json.dumps({"error": str(exc), "code": "correction_failed"}))
-        return 2
-    print(
-        json.dumps(
-            {
-                "sessionId": session["sessionId"],
-                **{k: v for k, v in result.items() if k != "newCheckpoint"},
-                "newCheckpoint": CP.checkpoint_public_view(result["newCheckpoint"]) if result.get("newCheckpoint") else None,
-                "state": LS.global_state(session),
-                "executionLocked": session.get("executionLocked"),
-                "mutationFrozen": session.get("mutationFrozen"),
-                "pendingPlan": bool(session.get("pendingPlan")),
-                "queue": list(session["queue"].values()),
-            },
-            indent=2,
-        )
-    )
-    return 0
+    return _cmd_correction(args)
 
 
 def cmd_apply(args: argparse.Namespace) -> int:
     try:
         artifact = _load_json(args.artifact)
-        result = apply_worker_artifact(session_id=args.session, task_id=args.task, artifact=artifact)
+        # The compatibility build route supplies no task override. Route using
+        # the returned result itself; never infer or manufacture its bindings.
+        task_id = args.task if args.task is not None else artifact.get("taskId")
+        result = apply_worker_artifact(session_id=args.session, task_id=task_id, artifact=artifact)
     except PolicyDenied as exc:
         print(json.dumps({"error": str(exc), "decision": exc.decision, "code": "policy_denied"}, indent=2))
         return 3
@@ -1218,6 +1265,16 @@ def cmd_plan_packet(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_stage_plan(args: argparse.Namespace) -> int:
+    try:
+        result = stage_plan(session_id=args.session, plan=_load_json(args.plan))
+    except (EngineError, ValueError, OSError) as exc:
+        print(json.dumps({"error": str(exc), "code": "stage_plan_failed"}))
+        return 2
+    print(json.dumps(result, indent=2))
+    return 0
+
+
 def cmd_packet(args: argparse.Namespace) -> int:
     try:
         packet = make_worker_packet(session_id=args.session, task_id=args.task)
@@ -1241,52 +1298,39 @@ def cmd_show(args: argparse.Namespace) -> int:
     return 0
 
 
-# Compatibility aliases for the evolved Platynum plan/build contract. They no
-# longer impose a global provider key. ``plan`` creates the authoritative
-# session and returns the bounded worker task; ``build`` requires a validated
-# worker artifact and applies it through the same policy/evidence path.
+# Compatibility transport uses the same authority and result validation owners.
+# Planning alone is not approval. External callers must follow the emitted
+# checkpoint and submit a fresh source-bound plan/result, not relabel old work.
 def cmd_plan(args: argparse.Namespace) -> int:
-    class Compat:
-        request = args.idea
-        workspace = args.workspace
-        canonical_root = args.canonical_root
-        plan = args.plan
-        intent_override = None
-        auto_approve = True  # compatibility path still needs an executable session
-    return cmd_start(Compat())
+    return cmd_start(argparse.Namespace(
+        request=args.idea, workspace=args.workspace, canonical_root=args.canonical_root,
+        plan=args.plan, intent_override=None, auto_approve=False,
+    ))
 
 
 def cmd_build(args: argparse.Namespace) -> int:
-    session = LS.load_session(args.session)
-    if not session:
-        print(json.dumps({"error": "invalid or expired session", "code": "invalid_session"}))
-        return 4
-    task = _first_ready_worker(session)
-    if not task:
-        print(json.dumps({"error": "no ready worker task", "code": "no_ready_task"}))
-        return 4
-    if not args.artifact:
+    if args.artifact:
+        return cmd_apply(argparse.Namespace(session=args.session, task=None, artifact=args.artifact))
+    try:
+        session = LS.load_session(args.session)
+        if not session:
+            print(json.dumps({"error": "invalid or expired session", "code": "invalid_session"}))
+            return 4
+        task = _first_ready_worker(session)
+        if not task:
+            print(json.dumps({"error": "no ready worker task", "code": "no_ready_task"}))
+            return 4
         packet = make_worker_packet(session_id=session["sessionId"], task_id=task["taskId"])
-        print(
-            json.dumps(
-                {
-                    "sessionId": session["sessionId"],
-                    "code": "worker_input_required",
-                    "task": task,
-                    "workerPacket": packet,
-                    "humanActions": [],
-                    "state": LS.global_state(session),
-                    "note": "Send this provider-neutral packet to any available user intelligence surface and return the validated artifact.",
-                },
-                indent=2,
-            )
-        )
-        return 3
-    class ApplyCompat:
-        session = args.session
-        task = task["taskId"]
-        artifact = args.artifact
-    return cmd_apply(ApplyCompat())
+    except (EngineError, ValueError, OSError) as exc:
+        print(json.dumps({"error": str(exc), "code": "build_handoff_failed"}))
+        return 2
+    print(json.dumps({
+        "sessionId": session["sessionId"], "code": "worker_input_required",
+        "task": task, "workerPacket": packet, "humanActions": [],
+        "state": LS.global_state(session),
+        "note": "Generate from this packet; return its unchanged bindings with the actual result.",
+    }, indent=2))
+    return 3
 
 
 def main() -> int:
@@ -1337,7 +1381,7 @@ def main() -> int:
     correct = sub.add_parser("correct")
     correct.add_argument("--session", required=True)
     correct.add_argument("--correction", required=True)
-    correct.add_argument("--plan", help="Source-bound replacement only; after correction use plan-packet then approve --plan")
+    correct.add_argument("--plan", help="Legacy input: cannot delay correction; use its fresh plan packet then stage-plan")
     correct.add_argument("--intent-override")
     correct.set_defaults(func=cmd_correct)
 
@@ -1368,6 +1412,11 @@ def main() -> int:
     plan_packet = sub.add_parser("plan-packet")
     plan_packet.add_argument("--session", required=True)
     plan_packet.set_defaults(func=cmd_plan_packet)
+
+    stage = sub.add_parser("stage-plan", help="Store a fresh source-bound proposal without approving or executing it")
+    stage.add_argument("--session", required=True)
+    stage.add_argument("--plan", required=True)
+    stage.set_defaults(func=cmd_stage_plan)
 
     packet = sub.add_parser("packet")
     packet.add_argument("--session", required=True)
