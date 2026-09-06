@@ -7,6 +7,7 @@ external call may proceed until an approved checkpoint version exists.
 """
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import uuid
@@ -66,19 +67,29 @@ def emit_checkpoint(
     """Emit a versioned intent checkpoint. Status defaults to proposed (not authority)."""
     if status not in CHECKPOINT_STATUSES:
         raise CheckpointError(f"invalid checkpoint status: {status}")
-    intent = dict(active_intent or session.get("activeIntent") or {})
+    source = active_intent if active_intent is not None else session.get("activeIntent")
+    if source is None:
+        # Legacy callers without a contract may propose their original objective.
+        # An explicit empty corrected contract must never restore that objective.
+        source = {"product_intent": session.get("objective") or ""}
+    if not isinstance(source, dict):
+        raise CheckpointError("active intent must be an object")
+    intent = copy.deepcopy(source)
     version = int(session.get("checkpointVersion", 0)) + 1
     checkpoint = {
         "schemaVersion": CHECKPOINT_SCHEMA,
         "checkpoint_id": _id("cp"),
         "session_id": session["sessionId"],
         "version": version,
-        "intent_summary": intent.get("product_intent") or session.get("objective") or "",
+        "intent_summary": intent.get("product_intent") or "",
         "scope": list(intent.get("scope") or ([intent.get("product_intent")] if intent.get("product_intent") else [])),
         "non_goals": list(intent.get("non_goals") or intent.get("superseded_concepts") or []),
         "constraints": list(intent.get("constraints") or []),
         "prohibitions": list(intent.get("prohibitions") or []),
-        "planned_next_actions": list(planned_next_actions or intent.get("process_directives") or []),
+        "planned_next_actions": list(
+            planned_next_actions if planned_next_actions is not None
+            else intent.get("process_directives") or []
+        ),
         "evidence_basis": list(evidence_basis or []),
         "intent_hash": compute_intent_hash(intent),
         "status": status,
@@ -138,6 +149,30 @@ def current_checkpoint(session: dict[str, Any]) -> dict[str, Any] | None:
     return get_checkpoint(session, cid)
 
 
+def _assert_current_intent(session: dict[str, Any], checkpoint: dict[str, Any]) -> None:
+    """Check actual intent material, not two copies of a cached hash.
+
+    Old checkpoints whose previously unhashed assumptions/refinements changed
+    must be reconciled rather than silently inheriting execution authority.
+    No actor, adapter, or checkpoint flag is a replacement for this comparison.
+    """
+    if checkpoint.get("session_id") != session.get("sessionId"):
+        raise CheckpointError("checkpoint belongs to a different session")
+    if checkpoint.get("checkpoint_id") != session.get("currentCheckpointId"):
+        raise CheckpointError("checkpoint is no longer current")
+    snapshot = checkpoint.get("active_intent_snapshot")
+    active = session.get("activeIntent")
+    if not isinstance(snapshot, dict) or not isinstance(active, dict):
+        raise CheckpointError("missing authoritative intent snapshot; reconcile before execution")
+    expected = checkpoint.get("intent_hash")
+    if not expected or compute_intent_hash(snapshot) != expected:
+        raise CheckpointError("checkpoint intent snapshot changed; reconcile before execution")
+    if compute_intent_hash(active) != expected:
+        raise CheckpointError("active intent changed after checkpoint; reconcile before execution")
+    if checkpoint.get("intent_summary") != (snapshot.get("product_intent") or ""):
+        raise CheckpointError("checkpoint summary differs from its intent snapshot")
+
+
 def authorized_checkpoint(session: dict[str, Any]) -> dict[str, Any] | None:
     cid = session.get("authorizedCheckpointId")
     if not cid:
@@ -146,6 +181,12 @@ def authorized_checkpoint(session: dict[str, Any]) -> dict[str, Any] | None:
     if not checkpoint or checkpoint.get("status") != "approved":
         return None
     if checkpoint.get("intent_hash") != session.get("authorizedIntentHash"):
+        return None
+    if session.get("generationAuthority") is not True or checkpoint.get("generation_authority") is not True:
+        return None
+    try:
+        _assert_current_intent(session, checkpoint)
+    except CheckpointError:
         return None
     return checkpoint
 
@@ -166,6 +207,7 @@ def approve_checkpoint(
         raise CheckpointError("stale authorized_intent_hash; fail closed")
     if checkpoint["status"] not in {"proposed", "correction_mode"}:
         raise CheckpointError(f"checkpoint cannot be approved from status {checkpoint['status']}")
+    _assert_current_intent(session, checkpoint)
     # Supersede any previously approved checkpoint.
     for prior in session.get("checkpoints", []):
         if prior["status"] == "approved" and prior["checkpoint_id"] != checkpoint_id:
@@ -280,8 +322,10 @@ def assert_binding(session: dict[str, Any], obj: dict[str, Any]) -> None:
     )
     if session.get("authorizedCheckpointId") != cid:
         raise CheckpointError("object bound to superseded or unapproved checkpoint")
-    if obj.get("status") in {"superseded", "disliked", "correction_mode"}:
+    if obj.get("status") in {"superseded", "disliked", "correction_mode", "cancelled", "invalidated"}:
         raise CheckpointError("object status forbids execution")
+    if obj.get("tainted") or obj.get("cancelRequested"):
+        raise CheckpointError("tainted or cancellation-requested work cannot execute")
 
 
 def mark_tainted_effects(
@@ -424,6 +468,17 @@ def interrupt(
     session["authorizedCheckpointId"] = None
     session["authorizedIntentHash"] = None
 
+    # An old pending proposal must not inherit the next checkpoint's approval.
+    # Preserve evidence separately; do not reuse or silently rebind the old plan.
+    pending_plan = session.pop("pendingPlan", None)
+    if pending_plan is not None:
+        session.setdefault("invalidatedPlans", []).append({
+            "plan": copy.deepcopy(pending_plan),
+            "checkpoint_id": rejected_id,
+            "reason": "intent correction invalidated the pending plan",
+            "invalidated_at": _now(),
+        })
+
     cancel_result = _cancel_or_request_cancel(
         session,
         reason="interrupt: rejected checkpoint interpretation",
@@ -444,8 +499,11 @@ def interrupt(
         raise CheckpointError("correction missing intent operation")
 
     session.setdefault("intentEvents", []).append(intent_event)
-    prior_intent = dict(session.get("activeIntent") or {})
+    prior_intent = copy.deepcopy(session.get("activeIntent") or {})
     session["activeIntent"] = merge_active_contract(session.get("activeIntent"), intent_event)
+    # Consumers such as worker packets must not see the rejected original goal.
+    # Raw requests remain in intentEvents and the prior checkpoint snapshots.
+    session["objective"] = session["activeIntent"].get("product_intent") or ""
     diff = session["activeIntent"].get("lastOperationDiff") or {}
 
     new_checkpoint = emit_checkpoint(
@@ -512,7 +570,7 @@ def compile_correction_transition(
         session,
         correction=correction,
         structured_intent=structured_intent,
-        disliked_checkpoint_id=session.get("authorizedCheckpointId") or session.get("currentCheckpointId"),
+        disliked_checkpoint_id=session.get("currentCheckpointId"),
     )
 
 
@@ -547,8 +605,8 @@ def side_effect_allowed(session: dict[str, Any], kind: str) -> bool:
 
 
 def checkpoint_public_view(checkpoint: dict[str, Any]) -> dict[str, Any]:
-    """Stable public fields for product wiring (Platynum dislike → SI interrupt)."""
-    return {
+    """Stable detached public fields; views cannot mutate approval evidence."""
+    return copy.deepcopy({
         "checkpoint_id": checkpoint["checkpoint_id"],
         "session_id": checkpoint["session_id"],
         "version": checkpoint["version"],
@@ -564,4 +622,4 @@ def checkpoint_public_view(checkpoint: dict[str, Any]) -> dict[str, Any]:
         "user_decision": checkpoint["user_decision"],
         "supersedes_checkpoint_id": checkpoint["supersedes_checkpoint_id"],
         "created_at": checkpoint["created_at"],
-    }
+    })
