@@ -74,7 +74,7 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
             "context budget cannot preserve the bounded outcome; unresolved references or local dependencies remain"
         )
     packet = {
-        "schemaVersion": "si.worker_packet.v2",
+        "schemaVersion": "si.worker_packet.v3",
         "packetId": f"packet-{uuid.uuid4().hex}",
         "createdAt": _now(),
         "sessionId": session_id,
@@ -107,10 +107,23 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
         "contextBundle": context_bundle,
         "requiredOutput": {
             "type": "object",
-            "required": ["producer", "files"],
+            "required": [
+                "producer", "files", "sessionId", "taskId",
+                "authorized_checkpoint_id", "authorized_intent_hash",
+            ],
+            "binding": {
+                "sessionId": session_id,
+                "taskId": task_id,
+                "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
+                "authorized_intent_hash": session.get("authorizedIntentHash"),
+            },
             "producerRequired": ["adapterId", "surface", "generatedAt"],
             "files": "object mapping safe relative paths to UTF-8 text content",
-            "notes": "Do not include commands, secrets, absolute paths, or changes outside the bounded task.",
+            "notes": (
+                "Return the binding fields unchanged at the top level. "
+                "Do not relabel results from another task or an older checkpoint. "
+                "Do not include commands, secrets, absolute paths, or changes outside the bounded task."
+            ),
         },
     }
     event = LS.record_event(
@@ -542,6 +555,11 @@ def correct_project(
     return session, result
 
 def validate_worker_artifact(artifact: dict[str, Any]) -> None:
+    if not isinstance(artifact, dict):
+        raise EngineError("worker artifact must be an object")
+    for field in ("sessionId", "taskId", "authorized_checkpoint_id", "authorized_intent_hash"):
+        if not isinstance(artifact.get(field), str) or not artifact[field].strip():
+            raise EngineError(f"worker artifact {field} is required; regenerate from the current packet")
     files = artifact.get("files")
     producer = artifact.get("producer")
     if not isinstance(files, dict) or not files:
@@ -568,8 +586,14 @@ def apply_worker_artifact(
     task = session["queue"].get(task_id)
     if not task:
         raise EngineError("task not found")
+    # Check the returned result itself, not only the receiving task. These
+    # identifiers correlate work with authority; they are not a cryptographic
+    # signature or proof that the generated content satisfies the task.
+    if artifact["sessionId"] != session_id or artifact["taskId"] != task_id:
+        raise EngineError("worker artifact belongs to another session or task")
     try:
         CP.assert_binding(session, task)
+        CP.assert_binding(session, artifact)
     except CP.CheckpointError as exc:
         raise EngineError(str(exc)) from exc
     if task["status"] not in {"ready", "repairing"}:
