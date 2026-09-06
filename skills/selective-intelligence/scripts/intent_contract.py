@@ -67,8 +67,11 @@ def _norm(text: str) -> str:
 
 def _expand_contractions(text: str) -> str:
     """Normalize informal negation so keyword parsers cannot miss repudiations."""
-    out = text.lower()
+    out = text.lower().replace("\u2019", "'").replace("\u2018", "'")
     replacements = (
+        (r"\bi(?:'m|m)\b", "i am"),
+        (r"\bwe're\b", "we are"),
+        (r"\bthat(?:'s|s)\b", "that is"),
         (r"\bdidnt\b", "did not"),
         (r"\bdidn't\b", "did not"),
         (r"\bdont\b", "do not"),
@@ -162,10 +165,46 @@ def _extract_required_concepts(clause: str) -> list[str]:
     return concepts
 
 
+
+def _rejected_product_models(text: str) -> list[str]:
+    """Recognize explicit SaaS-model repudiations, not every mention of SaaS.
+
+    This is a bounded deterministic fallback, not a general semantic classifier.
+    Keep the short target ``saas``: expanding it into separate software/service
+    tokens would overreach into unrelated approved work. A rejected business
+    model does not itself revoke memberships, billing, or external providers.
+    """
+    model = r"(?:saas|software[ -]+as[ -]+a[ -]+service)"
+    article = r"(?:(?:a|an|generic|traditional)\s+)*"
+    direct = (
+        rf"^(?:i am|we are)\s+not\s+(?:building|creating|selling)\s+{article}{model}\b",
+        rf"^(?:this|it|the (?:product|project|ecosystem|business))\s+is\s+not\s+{article}{model}\b",
+    )
+    assumed = (
+        rf"\bassum(?:e|ed|es|ing)\s+(?:that\s+)?"
+        rf"(?:i am|i was|we are|we were)\s+(?:building|creating|selling)\s+{article}{model}\b"
+    )
+    for clause in _clauses(_expand_contractions(text)):
+        if any(re.search(pattern, clause) for pattern in direct):
+            return ["saas"]
+        # Anchor the complaint to the speaker/assistant. Quoted examples and
+        # third-party descriptions are not a new governing product decision.
+        complaint = re.match(
+            r"^(?:you\s+(?:keep\s+)?assum|"
+            r"(?:(?:another|the)\s+)?problem\s+is\s+(?:the\s+)?(?:ai|assistant|you)\b)",
+            clause,
+        )
+        disavowed = re.search(r"\b(?:that is|this is)\s+(?:not correct|wrong|incorrect)\b", clause)
+        direct_you = re.match(r"^you\s+(?:keep\s+)?assum(?:e|ed|es|ing)\b", clause)
+        if complaint and re.search(assumed, clause) and (direct_you or disavowed):
+            return ["saas"]
+    return []
+
+
 def _extract_retracted_targets(text: str) -> list[str]:
     """Pull the concepts the user is repudiating from correction language."""
     lowered = _expand_contractions(text)
-    targets: list[str] = []
+    targets: list[str] = _rejected_product_models(text)
     patterns = (
         r"(?:did not|do not)\s+(?:say|tell|ask|request|want|mean)\s+(?:to\s+)?(.+?)(?:\s+did\s+i|\s*\?|$|,|\.|!)",
         r"(?:that|this)\s+(?:was|is)\s+never\s+(?:said|given|requested|an?\s+instruction)\b",
@@ -204,7 +243,7 @@ def _is_standalone_negation(text: str) -> bool:
 
 def _is_repudiation_utterance(text: str) -> bool:
     lowered = _expand_contractions(text)
-    if _is_standalone_negation(lowered):
+    if _is_standalone_negation(lowered) or _rejected_product_models(lowered):
         return True
     patterns = (
         r"\bdid not\s+(?:say|tell|ask|request|want|mean)\b",
@@ -259,8 +298,11 @@ def _detect_operation(
         targets = list(structured_override.get("operation_targets") or [])
         if not all(isinstance(t, str) for t in targets):
             raise ValueError("operation_targets override must be a list of strings")
-        if text_derived and text_derived[0] == "RETRACT" and op != "RETRACT":
-            return text_derived
+        if text_derived and text_derived[0] == "RETRACT":
+            if op != "RETRACT":
+                return text_derived
+            # An adapter agreeing on RETRACT still cannot erase raw-text targets.
+            return "RETRACT", _dedupe(text_derived[1] + targets)
         return op, targets
 
     if text_derived:
