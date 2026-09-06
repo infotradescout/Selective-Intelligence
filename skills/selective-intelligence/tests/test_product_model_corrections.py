@@ -113,5 +113,29 @@ class ProductModelCorrectionTests(unittest.TestCase):
         self.assertIn("saas", merged["non_goals"])
 
 
+class ProductModelPropagationGaps(unittest.TestCase):
+    """Real failing acceptance tests. Keep this repair draft until resolved."""
+
+    def test_rejected_product_summary_must_not_remain_active(self):
+        active = intent.merge_active_contract(None, intent.classify_intent("Build a SaaS platform."))
+        merged = intent.merge_active_contract(active, intent.classify_intent("I'm not building SaaS."))
+        self.assertNotEqual(merged["product_intent"], "Build a SaaS platform.")
+
+    def test_adapter_must_not_restore_rejected_required_concept(self):
+        event = intent.classify_intent(
+            "I'm not building SaaS.",
+            structured_override={"operation": "RETRACT", "required_concepts": ["SaaS subscription tiers"]},
+        )
+        self.assertNotIn("SaaS subscription tiers", event["required_concepts"])
+
+    def test_model_rejection_must_preserve_approved_external_provider(self):
+        approved = "Keep the approved external SaaS email provider."
+        active = intent.merge_active_contract(None, intent.classify_intent(
+            "Connect real businesses.", structured_override={"constraints": [approved]},
+        ))
+        merged = intent.merge_active_contract(active, intent.classify_intent("I'm not building SaaS."))
+        self.assertIn(approved, merged["constraints"])
+
+
 if __name__ == "__main__":
     unittest.main()
