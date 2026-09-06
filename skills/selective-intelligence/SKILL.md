@@ -40,6 +40,12 @@ Stop there. Read [references/activation-and-adoption.md](references/activation-a
 - Keep website work in its existing repository and host. Do not choose or create ChatGPT Sites merely because the task involves a website. Use Sites only when the user explicitly asks for Sites for that task.
 - Ask only about material outcome, authority, safety, cost, privacy, or irreversible choices.
 
+## Product identity before templates
+
+Software is an implementation medium, not proof of a SaaS business model. Ground the product's purpose, people, human responsibilities, ownership, business relationships, economics, and ecosystem role in current approved intent. Do not infer subscription tiers, seat billing, tenant boundaries, dashboards, upgrade funnels, or a replacement product category from familiar software patterns.
+
+A rejected product model is a correction, not a new feature or a wording-only change. Reconcile affected assumptions, plans, summaries, and proof before continuing dependent work; carry the correction through checkpoints and handoffs. Preserve its scope: rejecting SaaS does not revoke explicitly approved memberships, fees, existing providers, or shared services. Recover the actual product definition from authoritative context instead of inventing a replacement or asking the person to repeat settled direction. Keep this public skill product-neutral.
+
 ## Lean execution is the default
 
 Use one capable context:
