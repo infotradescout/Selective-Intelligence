@@ -1,90 +1,82 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260906T193417Z-product-model-repair",
-  "createdAt": "2026-09-06T19:34:17+00:00",
-  "outcome": "Repair product-model assumption drift inside existing Selective Intelligence, beginning with explicit rejection of SaaS framing",
+  "checkpointId": "progress-20260906-product-model-checkpoint-repair",
+  "createdAt": "2026-09-06",
+  "outcome": "Continue the existing product-model correction repair through checkpoint authority and stale pending-plan invalidation",
   "scope": [
-    "Existing canonical intent classifier and correction-target preservation",
-    "Canonical product-identity instructions",
-    "Synthetic regression tests and exact unresolved propagation failures"
+    "Existing intent classifier and scope-aware correction propagation",
+    "Existing checkpoint snapshots, approval integrity, and pending plans",
+    "Synthetic regression proof and remote preservation on draft 45"
   ],
   "prohibitions": [
-    "Do not equate software implementation with a SaaS business model",
-    "Do not replace the user's ecosystem definition with another invented category",
-    "Do not revoke approved memberships, fees, or external providers merely because SaaS framing was rejected",
-    "Do not merge, release, submit a plugin, deploy, alter protected branches, or claim installed-client enforcement from this checkpoint",
-    "Do not use the user's PC or production data",
-    "Do not rely on GitHub Actions as a verification gate",
-    "Keep public skill and synthetic tests product-neutral; do not publish private business data"
+    "Do not substitute SaaS or another invented category for approved product intent",
+    "Do not revoke approved memberships, fees, external providers, or shared services merely because the product is not SaaS",
+    "Do not report this focused proof as full-repository, installed-client, or real-model verification",
+    "Do not use the user's computer, production data, new hosted services, third-party storage, or recurring automation",
+    "Do not use GitHub Actions as a gate or bypass a tool safety denial",
+    "Preserve unrelated work and existing operational permission boundaries"
   ],
   "progress": {
     "completedVerified": [
-      "Canonical source snapshot matched GitHub blob c360350e707715f4b76dfadefb5a099ec5abdbbb exactly, 23846 bytes",
-      "Reproduced loss of explicit product-model corrections in the existing classifier",
-      "Implemented a bounded SaaS-model repudiation fallback, informal/curly contraction normalization, and raw-target preservation against agreeing or conflicting operation overrides",
-      "Original 17-test regression set: baseline 5 passed and 12 failed; repaired source 17 passed",
-      "Expanded 20-test focused suite: 17 passed and 3 failed, exit code 1; no failures are skipped or marked expected",
-      "Python compilation and git diff whitespace checks passed for the focused executable changes",
-      "Remote executable blob c73ebc3cfe167a6148de547d3186c449ce3deda8 matches tested bytes",
-      "Remote test blob 786efcc37096e685c527d08c8fb04741fbf99841 matches tested bytes"
+      "Verified every checksum in the recovered repair archive and freshly reran its 42 passing tests",
+      "Reconstructed checkpoint.py from authenticated repository reads and verified original blob 85738d23664337866e717d82b5448ad1e15ac9a2 before editing",
+      "Repaired rejected-summary fallback, current objective continuity, explicit empty contract/action handling, detached checkpoint snapshots and public views",
+      "Approval and execution checks now recompute the active and saved intent rather than trusting matching cached hashes",
+      "Intent hashes now include nonempty refinements, assumptions, unknowns, and contradictions; hashes without these additions remain compatible",
+      "Corrections retire pending plans into detached historical evidence; old plans are not rebound to the next approval",
+      "Cancelled, invalidated, tainted, cancellation-requested, and stale-bound objects are denied by the existing binding check",
+      "Original remote source on the expanded 70-test suite: 30 passed methods, 40 failed methods, 64 failure reports including subtests, zero errors or skips",
+      "Recovered 42-test repair plus original checkpoint on the same 70-test suite: 49 passed methods, 21 failed methods, 32 failure reports including subtests",
+      "Current repaired modules on the same suite: all 70 passed, zero failures, errors, skips, or expected failures",
+      "Compilation and focused whitespace checks passed",
+      "Ordinary connected GitHub source writes now succeed. Both source files and both test files were saved remotely; each Git blob matches the tested local bytes"
     ],
     "changedUnverified": [
-      "Canonical product-identity instruction is written but not verified across running models or installed skills",
-      "RELEASE BLOCKER: rejected SaaS product summary can remain active after retraction",
-      "RELEASE BLOCKER: structured override can reinsert rejected required concepts",
-      "RELEASE BLOCKER: newly recognized retraction reaches existing broad token matching and drops an approved external SaaS provider constraint",
-      "Full repository test suite, scoped dispatch/approval effects, independent review, cross-client behavior, adapter generation, release inventory, and plugin packaging not verified",
-      "Existing draft PR 6 overlaps correction propagation; draft PR 33 covers completion binding. Both were observed nonmergeable and were left unchanged"
+      "Full repository compatibility and existing checkpoint/build-engine test suites have not run in this partial-source workspace",
+      "Worker artifact provenance and pending replacement-plan import paths need execution-level review; focused checkpoint tests do not establish full dispatch safety",
+      "Concurrent session persistence and live worker cancellation are not proved",
+      "Adapter generation, supported package builds, release inventory, real-model behavior, and installed client loading remain unverified",
+      "Canonical instructions were not demonstrated active across running clients",
+      "Other overlapping draft repairs were not merged or modified"
     ],
     "proof": [
-      "Executed: python -m unittest discover -s skills/selective-intelligence/tests -p test_product_model_corrections.py -v",
-      "20 tests, 17 passed, 3 failed, 0 errors; this is deterministic source execution, not a real-model behavior run",
-      "Failing test: ProductModelPropagationGaps.test_rejected_product_summary_must_not_remain_active",
-      "Failing test: ProductModelPropagationGaps.test_adapter_must_not_restore_rejected_required_concept",
-      "Failing test: ProductModelPropagationGaps.test_model_rejection_must_preserve_approved_external_provider",
-      "The canonical instruction update is blob 53c6903006c33eba6c206cdfbccfe3aa4c980e8d",
-      "Full clone failed because the execution container could not resolve GitHub; connector materialization was unavailable. Exact source bytes were reconstructed from authenticated repository reads and verified against the Git blob before testing"
+      "70-test comparison used the same two product-model test files for all three source stages",
+      "Original intent source blob c73ebc3cfe167a6148de547d3186c449ce3deda8; original checkpoint source blob 85738d23664337866e717d82b5448ad1e15ac9a2",
+      "Current source/test revision before this progress record: 6c9495ed1b39e9300574e950ace3ee1bd6c20095",
+      "Intent source blob 3403050a9766c26748d2d7f66c974f914f61b2b2; checkpoint source blob 510c0e269d28e630b4f2bfcb817642fe9ce5c2e6",
+      "Correction tests blob a71321ebc7b7cb49ca80d7369bedbeffac6db15b; checkpoint tests blob 5a4631857729309be15ce9d39d235a38eddd8848",
+      "Execution container cannot resolve GitHub and connector materialization is unavailable. This was exact partial-source execution, not a full checkout"
     ],
     "externalEffects": [
-      "Created task branch from main revision 63c57fa7288e4489ef34db875ff32e19089e4a5b",
-      "Saved source, tests, and instructions remotely through connected GitHub file writes; latest pre-checkpoint revision e39b4db9612258886ac4dfd5f6684bf0ccbbdb91",
-      "No merge, release, deployment, plugin submission, production mutation, or user-computer access"
+      "Published the recovered propagation repair and checkpoint extension through ordinary GitHub update_file/create_file actions on the existing task branch",
+      "No merge, release, deployment, plugin submission, production access, user-computer access, new hosted service, or recurring automation"
     ],
     "doNotRepeat": [
-      "Do not report 17 passing tests without also reporting the three failing propagation tests",
-      "Do not call the SaaS correction or the year-long SI repair complete",
-      "Do not ship the parser-only change before scope-aware propagation is fixed",
-      "Do not overwrite unrelated work or automatically merge overlapping old drafts",
-      "Do not replace this concrete repair with another standalone workflow document"
+      "Do not repeat the obsolete claim that source publication is still blocked",
+      "Do not report the original three propagation failures as still present in this repaired source",
+      "Do not turn 70 passing targeted tests into a claim that the year-long SI problem is solved",
+      "Do not silently trust older checkpoint hashes that omitted active assumptions or refinements",
+      "Do not replace implementation with a handoff or ask the product owner to edit or install code"
     ],
-    "nextSafeAction": "Resolve the three failing propagation tests in the existing intent and dispatch owners. Reconcile overlapping PR 6 before changing shared retraction semantics. Prove rejection applies to product identity rather than every occurrence of SaaS, invalidate stale summaries and dependent plans without inventing a replacement identity, and reject conflicting model-required concepts. Then run the full suite, rebuild adapters and package inventory, verify real-session loading and behavior, and seek separate release authority."
+    "nextSafeAction": "Prove pending-plan import and worker-artifact provenance using the existing build-engine owner. Run broader compatibility checks, reconcile affected schemas and supported generators, then verify packages and actual installed behavior before claiming a release. Continue within existing task authority without asking the product owner to repeat settled decisions."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "repair/product-model-corrections-2026-09-06",
-    "headBefore": "e39b4db9612258886ac4dfd5f6684bf0ccbbdb91",
+    "headBefore": "6c9495ed1b39e9300574e950ace3ee1bd6c20095",
     "checkpointCommit": "containing_commit",
     "pushRequested": false,
     "pushRemote": null,
     "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [
-      " M skills/selective-intelligence/scripts/intent_contract.py",
-      " A skills/selective-intelligence/tests/test_product_model_corrections.py",
-      " M skills/selective-intelligence/SKILL.md",
-      " M .selective-intelligence/progress/latest.json"
-    ],
+    "selectedStatusBefore": [],
     "unrelatedChangeCountExcluded": 0
   },
   "savedFiles": [
-    {
-      "path": "skills/selective-intelligence/scripts/intent_contract.py",
-      "sha256": "25aa2a25a0b13554f176039c70fc0d76ad60eed4c0e63c6db8c1790e61c8d283"
-    },
-    {
-      "path": "skills/selective-intelligence/tests/test_product_model_corrections.py",
-      "sha256": "36dad094d659cecd7f1f8ec9abae864b1b4b1d9bb0cead1fe49794e3c65f3024"
-    }
+    {"path": "skills/selective-intelligence/scripts/intent_contract.py", "sha256": "a3bcb84336179e5dc9e18f55c7f02c27bbe777a116aa0942bee807ea82eb58a6"},
+    {"path": "skills/selective-intelligence/scripts/checkpoint.py", "sha256": "841a5b16ef422edf0fc1c20235244825ddfa5da08f5eaa713ff208dad401a95e"},
+    {"path": "skills/selective-intelligence/tests/test_product_model_corrections.py", "sha256": "462dce157ccc04ca0fd92ed8e8f5c11d6db154591ada02502a6b8ec36e14c470"},
+    {"path": "skills/selective-intelligence/tests/test_product_model_checkpoint.py", "sha256": "ad74952ea084dde7fc818b64944fd872802bc72b605fffc52d831966c1d2d431"}
   ],
-  "privacyBoundary": "Bounded repair summaries and synthetic tests only; no secrets, absolute local paths, raw private prompts, private business prices, or unrelated project data"
+  "privacyBoundary": "Bounded repair summaries and synthetic examples only; no credentials, private business prices, absolute user-computer paths, or unrelated data"
 }
