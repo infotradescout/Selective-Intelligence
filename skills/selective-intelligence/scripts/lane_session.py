@@ -446,7 +446,13 @@ def record_verification(session: dict[str, Any], task_id: str, evidence_id: str,
         "commandEvidenceId": evidence_id,
         "passed": passed,
         "timestamp": _now(),
+        "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
+        "authorized_intent_hash": session.get("authorizedIntentHash"),
     }
+    checkpoint = CP.authorized_checkpoint(session) or {}
+    attempt["task_content_hash"] = checkpoint.get("task_content_bindings", {}).get(task_id, {}).get("hash")
+    evidence = next((item for item in session.get("commandEvidence", []) if item.get("evidenceId") == evidence_id), None)
+    attempt["command_evidence_hash"] = CP._material_hash(evidence) if evidence is not None else None
     session["verificationAttempts"].append(attempt)
     record_event(session, "verification.completed", attempt)
     return attempt
@@ -556,6 +562,52 @@ def session_human_actions(session: dict[str, Any]) -> list[dict[str, Any]]:
     return result
 
 
+def _verified_task(session: dict[str, Any], task: dict[str, Any], seen: set[str] | None = None) -> bool:
+    """Require current task-bound proof, not an unrelated historical success."""
+    seen = set(seen or ())
+    task_id = task.get("taskId")
+    if task_id in seen or task.get("status") != "complete":
+        return False
+    seen.add(task_id)
+    try:
+        CP.assert_binding(session, task)
+    except (CP.CheckpointError, TypeError, ValueError):
+        return False
+    checkpoint = CP.authorized_checkpoint(session) or {}
+    binding = {"authorized_checkpoint_id": checkpoint.get("checkpoint_id"),
+               "authorized_intent_hash": checkpoint.get("intent_hash")}
+    def matches(item):
+        return all(item.get(key) == value for key, value in binding.items())
+    if task.get("metadata", {}).get("kind") == "discovery":
+        return any(a.get("type") == "capability_discovery" and matches(a)
+                   and isinstance(a.get("verifiedAdapterIds"), list) for a in task.get("attempts", []))
+    attempts = [a for a in session.get("verificationAttempts", [])
+                if a.get("taskId") == task_id and matches(a)]
+    if attempts:
+        attempt = attempts[-1]
+        evidence = next((item for item in session.get("commandEvidence", [])
+                         if item.get("evidenceId") == attempt.get("commandEvidenceId")), None)
+        expected_task = checkpoint.get("task_content_bindings", {}).get(task_id, {}).get("hash")
+        if (attempt.get("passed") is True and expected_task
+                and attempt.get("task_content_hash") == expected_task
+                and isinstance(evidence, dict) and matches(evidence)
+                and evidence.get("sessionId") == session.get("sessionId") and evidence.get("taskId") == task_id
+                and evidence.get("exitCode") == 0 and not evidence.get("cancelled") and not evidence.get("invalidated")
+                and attempt.get("command_evidence_hash") == CP._material_hash(evidence)):
+            return True
+    for completion in reversed(session.get("completionEvidence", [])):
+        if completion.get("originalTaskId") != task_id or not matches(completion):
+            continue
+        repair = session.get("queue", {}).get(completion.get("repairTaskId"))
+        if (repair and repair.get("metadata", {}).get("originalTaskId") == task_id
+                and any(a.get("verificationId") == completion.get("verificationId")
+                        and a.get("commandEvidenceId") == completion.get("commandEvidenceId")
+                        and a.get("taskId") == repair["taskId"] for a in session.get("verificationAttempts", []))
+                and _verified_task(session, repair, seen)):
+            return True
+    return False
+
+
 def global_state(session: dict[str, Any]) -> str:
     tasks = list(session.get("queue", {}).values())
     active = [task for task in tasks if task["status"] not in {"complete", "invalidated", "cancelled"}]
@@ -566,7 +618,12 @@ def global_state(session: dict[str, Any]) -> str:
     if any(task["status"] == "failed" for task in active):
         return "FAILED"
     if not active and tasks:
-        passed = any(v.get("passed") for v in session.get("verificationAttempts", []))
+        checkpoint = CP.authorized_checkpoint(session)
+        if not checkpoint:
+            return "AWAITING_VERIFICATION"
+        current = [task for task in tasks if task.get("authorized_checkpoint_id") == checkpoint["checkpoint_id"]]
+        passed = (bool(current) and any(t.get("metadata", {}).get("kind") != "discovery" for t in current)
+                  and all(_verified_task(session, task) for task in current))
         return "VERIFIED_COMPLETE" if passed else "AWAITING_VERIFICATION"
     lanes = list(session.get("lanes", {}).values())
     if lanes:
