@@ -19,6 +19,8 @@ import copy
 import hashlib
 import json
 import os
+import tempfile
+from functools import wraps
 import sys
 import uuid
 from datetime import UTC, datetime
@@ -42,6 +44,22 @@ class EngineError(RuntimeError):
     pass
 
 
+def _serialized_session(function):
+    """Serialize short SI state/effect transactions; never hold across a process.
+
+    This is cooperative local ordering, not hostile-writer or crash protection.
+    """
+    @wraps(function)
+    def run(*args, **kwargs):
+        try:
+            with LS.session_lock(kwargs["session_id"]):
+                return function(*args, **kwargs)
+        except LS.SessionConflictError as exc:
+            raise EngineError(str(exc)) from exc
+    return run
+
+
+@_serialized_session
 def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
     session = LS.load_session(session_id)
     if not session:
@@ -386,6 +404,7 @@ def make_plan_packet(*, session_id: str) -> dict[str, Any]:
     }
 
 
+@_serialized_session
 def stage_plan(*, session_id: str, plan: dict[str, Any]) -> dict[str, Any]:
     """Persist a fresh proposal for review without granting execution authority."""
     session = LS.load_session(session_id)
@@ -567,6 +586,7 @@ def start_project(
     return session
 
 
+@_serialized_session
 def approve_project(
     *,
     session_id: str,
@@ -650,6 +670,7 @@ def apply_text_gate(
         "resumeRequiresApproval": True,
     }
 
+@_serialized_session
 def interrupt_project(
     *,
     session_id: str,
@@ -686,6 +707,7 @@ def interrupt_project(
     return session, result
 
 
+@_serialized_session
 def correct_project(
     *,
     session_id: str,
@@ -743,11 +765,25 @@ def validate_worker_artifact(artifact: dict[str, Any]) -> None:
             raise EngineError(f"worker artifact producer.{field} is required")
 
 
+def _replace_bytes(target: Path, content: bytes, mode: int | None = None) -> None:
+    """Replace one file atomically; multi-file rollback is handled by the caller."""
+    descriptor, name = tempfile.mkstemp(prefix=".si-restore-", dir=target.parent)
+    temporary = Path(name)
+    try:
+        with os.fdopen(descriptor, "wb") as handle:
+            handle.write(content)
+            handle.flush()
+            os.fsync(handle.fileno())
+        if mode is not None:
+            temporary.chmod(mode)
+        os.replace(temporary, target)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+@_serialized_session
 def apply_worker_artifact(
-    *,
-    session_id: str,
-    task_id: str,
-    artifact: dict[str, Any],
+    *, session_id: str, task_id: str, artifact: dict[str, Any],
 ) -> dict[str, Any]:
     validate_worker_artifact(artifact)
     session = LS.load_session(session_id)
@@ -756,9 +792,6 @@ def apply_worker_artifact(
     task = session["queue"].get(task_id)
     if not task:
         raise EngineError("task not found")
-    # Check the returned result itself, not only the receiving task. These
-    # identifiers correlate work with authority; they are not a cryptographic
-    # signature or proof that the generated content satisfies the task.
     if artifact["sessionId"] != session_id or artifact["taskId"] != task_id:
         raise EngineError("worker artifact belongs to another session or task")
     try:
@@ -770,15 +803,13 @@ def apply_worker_artifact(
         raise EngineError(f"task is not executable: {task['status']}")
     guard = _guard(session)
     workspace = Path(session["workspace"]).resolve()
-    prepared: list[tuple[Path, Path, str]] = []
+    prepared: list[dict[str, Any]] = []
     targets: set[Path] = set()
     for relative_name, content in artifact["files"].items():
         relative = _safe_relative(relative_name)
         target = (workspace / relative).resolve()
-        decision = guard.authorize(
-            session_id=session_id, task_id=task_id,
-            action={"kind": "filesystem.write", "path": str(target)},
-        )
+        decision = guard.authorize(session_id=session_id, task_id=task_id,
+                                   action={"kind": "filesystem.write", "path": str(target)})
         if not decision["allowed"]:
             raise PolicyDenied(decision)
         if target in targets:
@@ -788,64 +819,129 @@ def apply_worker_artifact(
         if any(parent.exists() and not parent.is_dir() for parent in target.parents):
             raise EngineError("file target has a non-directory parent")
         targets.add(target)
-        prepared.append((relative, target, content))
+        prepared.append({"relative": relative, "target": target, "content": content,
+                         "before": target.read_bytes() if target.exists() else None,
+                         "mode": target.stat().st_mode & 0o777 if target.exists() else None})
     if any(parent in targets for target in targets for parent in target.parents):
         raise EngineError("file targets conflict with another file's parent directory")
-    # This is preflight, not a concurrent filesystem transaction. The write
-    # adapter still authorizes each write; later I/O or races remain fallible.
-    ok, reason = LS.transition_task(session, task_id, "running")
-    if not ok:
-        raise EngineError(reason)
 
+    # Stage the complete batch before replacing any original. Keep preimages
+    # until the session save succeeds; recover caught failures without claiming
+    # crash-atomicity, isolation across different sessions, or external writers.
+    stages: list[Path] = []
+    committed: list[dict[str, Any]] = []
+    created_dirs: list[Path] = []
     written: list[dict[str, Any]] = []
+    original_revision = session.get("persistenceRevision", 0)
     try:
-        for relative, target, content in prepared:
-            decision, evidence = guarded_write_text(
-                target,
-                content,
-                guard=guard,
-                session_id=session_id,
-                task_id=task_id,
-            )
+        ok, reason = LS.transition_task(session, task_id, "running")
+        if not ok:
+            raise EngineError(reason)
+        for item in prepared:
+            target = item["target"]
+            missing = []
+            parent = target.parent
+            while not parent.exists():
+                missing.append(parent)
+                parent = parent.parent
+            for parent in reversed(missing):
+                parent.mkdir()
+                created_dirs.append(parent)
+            descriptor, name = tempfile.mkstemp(prefix=".si-stage-", dir=target.parent)
+            os.close(descriptor)
+            stage = Path(name)
+            stages.append(stage)
+            decision, evidence = guarded_write_text(stage, item["content"], guard=guard,
+                                                   session_id=session_id, task_id=task_id)
+            if stage.is_symlink() or stage.read_bytes() != item["content"].encode("utf-8"):
+                raise EngineError("staged bytes differ from the supplied file content")
+            if item["mode"] is not None:
+                stage.chmod(item["mode"])
+            item.update(stage=stage, evidence=evidence, decision=decision)
+        current = LS.load_session(session_id)
+        if not current or current.get("persistenceRevision", 0) != original_revision:
+            raise EngineError("session changed during file staging; no new authority inherited")
+        CP.assert_binding(current, artifact)
+        for item in prepared:
+            target = item["target"]
+            actual = target.read_bytes() if target.exists() else None
+            if (target.is_symlink() or actual != item["before"]
+                    or (item["mode"] is not None and target.stat().st_mode & 0o777 != item["mode"])):
+                raise EngineError("file changed during staging; refusing to overwrite other work")
+            decision = guard.authorize(session_id=session_id, task_id=task_id,
+                                       action={"kind": "filesystem.write", "path": str(target)})
+            if not decision["allowed"]:
+                raise PolicyDenied(decision)
+            os.replace(item["stage"], target)
+            committed.append(item)
+            evidence = item["evidence"]
             LS.record_policy_decision(session, decision)
-            record = {
-                "artifactId": evidence["evidenceId"],
-                "taskId": task_id,
-                "artifactType": "file",
-                "relativePath": relative.as_posix(),
-                "absolutePath": str(target),
-                "sha256": evidence["sha256"],
-                "bytes": evidence["bytes"],
-                "producer": artifact["producer"],
-                "createdAt": evidence["timestamp"],
-                "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
-                "authorized_intent_hash": session.get("authorizedIntentHash"),
-            }
+            record = {"artifactId": evidence["evidenceId"], "taskId": task_id,
+                      "artifactType": "file", "relativePath": item["relative"].as_posix(),
+                      "absolutePath": str(target), "sha256": evidence["sha256"],
+                      "bytes": evidence["bytes"], "producer": artifact["producer"],
+                      "createdAt": evidence["timestamp"],
+                      "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
+                      "authorized_intent_hash": session.get("authorizedIntentHash")}
             LS.record_artifact(session, record)
             written.append(record)
-    except PolicyDenied as exc:
-        LS.record_policy_decision(session, exc.decision)
-        LS.transition_task(session, task_id, "failed", reason=exc.decision["reason"])
-        LS.save_session(session)
-        raise
-
-    task["attempts"].append(
-        {
+        task["attempts"].append({
             "attemptId": f"attempt-{len(task['attempts']) + 1}",
-            "type": "structured_worker_artifact",
-            "producer": artifact["producer"],
-            "fileArtifactIds": [record["artifactId"] for record in written],
-            "timestamp": _now(),
+            "type": "structured_worker_artifact", "producer": artifact["producer"],
+            "fileArtifactIds": [record["artifactId"] for record in written], "timestamp": _now(),
             "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
             "authorized_intent_hash": session.get("authorizedIntentHash"),
-        }
-    )
-    ok, reason = LS.transition_task(session, task_id, "verifying")
-    if not ok:
-        raise EngineError(reason)
-    CP.receipt(session, action="filesystem.write", details={"taskId": task_id, "files": [w["relativePath"] for w in written]})
-    LS.save_session(session)
-    return {"session": session, "written": written}
+        })
+        ok, reason = LS.transition_task(session, task_id, "verifying")
+        if not ok:
+            raise EngineError(reason)
+        CP.receipt(session, action="filesystem.write", details={"taskId": task_id, "files": [w["relativePath"] for w in written]})
+        LS.save_session(session)
+        return {"session": session, "written": written}
+    except Exception as exc:
+        unresolved = []
+        for item in reversed(committed):
+            target = item["target"]
+            try:
+                # Never roll back an unrecognized later write by someone else.
+                if target.is_symlink() or target.read_bytes() != item["content"].encode("utf-8"):
+                    raise OSError("target changed after SI wrote it")
+                if item["before"] is None:
+                    target.unlink()
+                else:
+                    _replace_bytes(target, item["before"], item["mode"])
+            except OSError:
+                unresolved.append(item["relative"].as_posix())
+        try:
+            current = LS.load_session(session_id)
+            if current:
+                current_task = current.get("queue", {}).get(task_id)
+                if current_task and current.get("authorizedCheckpointId") == artifact["authorized_checkpoint_id"]:
+                    current_task["status"] = "failed"
+                for record in current.get("artifacts", []):
+                    if record.get("artifactId") in {w["artifactId"] for w in written}:
+                        record.update(tainted=True, rolledBack=record.get("relativePath") not in unresolved)
+                LS.record_event(current, "filesystem.batch_failed", {
+                    "taskId": task_id, "errorType": type(exc).__name__,
+                    "rollbackComplete": not unresolved, "unresolvedPaths": unresolved,
+                    "authorized_checkpoint_id": artifact["authorized_checkpoint_id"],
+                })
+                LS.save_session(current)
+        except (OSError, ValueError, LS.SessionConflictError):
+            unresolved.append("session recovery record could not be saved")
+        if unresolved:
+            raise EngineError("file application failed; recovery incomplete: " + "; ".join(unresolved)) from exc
+        if isinstance(exc, (PolicyDenied, EngineError)):
+            raise
+        raise EngineError("file application failed; earlier changes were restored: " + str(exc)) from exc
+    finally:
+        for stage in stages:
+            stage.unlink(missing_ok=True)
+        for parent in reversed(created_dirs):
+            try:
+                parent.rmdir()
+            except OSError:
+                pass
 
 
 def _normalize_command(command: dict[str, Any], workspace: Path) -> tuple[list[str], Path]:
@@ -865,157 +961,155 @@ def _normalize_command(command: dict[str, Any], workspace: Path) -> tuple[list[s
 
 
 def verify_task(
-    *,
-    session_id: str,
-    task_id: str,
-    command: dict[str, Any],
+    *, session_id: str, task_id: str, command: dict[str, Any],
 ) -> dict[str, Any]:
-    session = LS.load_session(session_id)
-    if not session:
-        raise EngineError("session not found")
-    task = session["queue"].get(task_id)
-    if not task:
-        raise EngineError("task not found")
-    try:
-        CP.assert_binding(session, task)
-    except CP.CheckpointError as exc:
-        raise EngineError(str(exc)) from exc
-    if task["status"] != "verifying":
-        raise EngineError(f"task is not awaiting verification: {task['status']}")
-    workspace = Path(session["workspace"]).resolve()
-    argv, cwd = _normalize_command(command, workspace)
-    guard = _guard(session)
+    # Reserve one attempt under the session lock, then release it so a person's
+    # correction can cancel SI's verification process while it is running.
+    with LS.session_lock(session_id):
+        session = LS.load_session(session_id)
+        if not session:
+            raise EngineError("session not found")
+        task = session["queue"].get(task_id)
+        if not task:
+            raise EngineError("task not found")
+        try:
+            CP.assert_binding(session, task)
+        except CP.CheckpointError as exc:
+            raise EngineError(str(exc)) from exc
+        if task["status"] != "verifying":
+            raise EngineError(f"task is not awaiting verification: {task['status']}")
+        if task.get("activeVerification"):
+            raise EngineError("verification is already running; reconcile an abandoned attempt before retrying")
+        workspace = Path(session["workspace"]).resolve()
+        argv, cwd = _normalize_command(command, workspace)
+        guard = _guard(session)
+        binding = {"sessionId": session_id, "taskId": task_id,
+                   "authorized_checkpoint_id": session["authorizedCheckpointId"],
+                   "authorized_intent_hash": session["authorizedIntentHash"]}
+        attempt_id = f"verification-run-{uuid.uuid4().hex}"
+        task["activeVerification"] = {**binding, "attemptId": attempt_id, "startedAt": _now()}
+        LS.save_session(session)
+
+    def current_attempt(current):
+        if not current:
+            return False
+        current_task = current.get("queue", {}).get(task_id) or {}
+        if (current_task.get("activeVerification") or {}).get("attemptId") != attempt_id:
+            return False
+        try:
+            CP.assert_binding(current, binding)
+        except CP.CheckpointError:
+            return False
+        return current_task.get("status") == "verifying"
 
     def interrupted() -> bool:
-        current = LS.load_session(session_id)
-        if not current:
+        try:
+            return not current_attempt(LS.load_session(session_id))
+        except (OSError, ValueError):
             return True
-        current_task = current.get("queue", {}).get(task_id) or {}
-        return bool(
-            current.get("siActive") is not True
-            or current.get("governanceMode") != "always_on_after_activation"
-            or current.get("generationAuthority") is not True
-            or current.get("executionLocked")
-            or current_task.get("cancelRequested")
-            or current_task.get("status") == "cancelled"
-        )
 
     try:
-        decision, evidence = guarded_run(
-            argv,
-            cwd=cwd,
-            guard=guard,
-            session_id=session_id,
-            task_id=task_id,
-            cancel_check=interrupted,
-        )
-    except PolicyDenied as exc:
-        LS.record_policy_decision(session, exc.decision)
-        LS.transition_task(session, task_id, "failed", reason=exc.decision["reason"])
-        _record_feedback(session, "material_blocker", cause="safety_privacy")
-        LS.save_session(session)
-        raise
+        decision, evidence = guarded_run(argv, cwd=cwd, guard=guard, session_id=session_id,
+                                        task_id=task_id, cancel_check=interrupted)
+    except Exception as exc:
+        with LS.session_lock(session_id):
+            current = LS.load_session(session_id)
+            if current:
+                current_task = current.get("queue", {}).get(task_id) or {}
+                owns_attempt = (current_task.get("activeVerification") or {}).get("attemptId") == attempt_id
+                valid = current_attempt(current)
+                if owns_attempt:
+                    current_task.pop("activeVerification", None)
+                if valid:
+                    LS.transition_task(current, task_id, "failed", reason="verification process did not return evidence")
+                if isinstance(exc, PolicyDenied):
+                    LS.record_policy_decision(current, exc.decision)
+                LS.record_event(current, "verification.process_failed", {
+                    **binding, "attemptId": attempt_id, "errorType": type(exc).__name__,
+                })
+                LS.save_session(current)
+        if isinstance(exc, PolicyDenied):
+            raise
+        raise EngineError("verification process failed: " + str(exc)) from exc
 
-    current = LS.load_session(session_id)
-    if not current:
-        raise EngineError("session disappeared during verification")
-    session = current
-    task = session.get("queue", {}).get(task_id)
-    if not task:
-        raise EngineError("task disappeared during verification")
-    LS.record_policy_decision(session, decision)
-    evidence = dict(evidence)
-    evidence["authorized_checkpoint_id"] = session.get("authorizedCheckpointId")
-    evidence["authorized_intent_hash"] = session.get("authorizedIntentHash")
-    LS.record_command(session, evidence)
-    if evidence.get("cancelled"):
-        _record_feedback(session, "evidence_invalidated", cause="intent", validation_scope="focused")
+    with LS.session_lock(session_id):
+        session = LS.load_session(session_id)
+        if not session:
+            raise EngineError("session disappeared during verification")
+        task = session.get("queue", {}).get(task_id)
+        if not task:
+            raise EngineError("task disappeared during verification")
+        valid = current_attempt(session)
+        if (task.get("activeVerification") or {}).get("attemptId") == attempt_id:
+            task.pop("activeVerification", None)
+        LS.record_policy_decision(session, decision)
+        evidence = {**evidence, **binding, "verificationRunId": attempt_id}
+        LS.record_command(session, evidence)
+        if evidence.get("cancelled") or not valid:
+            evidence["invalidated"] = True
+            _record_feedback(session, "evidence_invalidated", cause="intent", validation_scope="focused")
+            LS.save_session(session)
+            return {"session": session, "passed": False, "cancelled": True,
+                    "verification": None, "commandEvidence": evidence, "repairTask": None}
+        passed = evidence["exitCode"] == 0
+        verification = LS.record_verification(session, task_id, evidence["evidenceId"], passed)
+        repair_task = None
+        if passed:
+            ok, reason = LS.transition_task(session, task_id, "complete")
+            if not ok:
+                raise EngineError(reason)
+            _record_feedback(session, "validation_passed", cause="unknown", validation_scope="focused")
+        else:
+            ok, reason = LS.transition_task(session, task_id, "repairing", reason="verification command failed")
+            if not ok:
+                raise EngineError(reason)
+            repair_task = LS.add_task(session, title=f"Repair: {task['title']}", queue="repair",
+                dependencies=[], tags=list(task.get("tags", [])) + ["repair"],
+                acceptance_refs=list(task.get("acceptanceRefs", [])),
+                invalidation_conditions=list(task.get("invalidationConditions", [])),
+                metadata={"kind": "repair", "originalTaskId": task_id,
+                          "verificationCommand": command, "failureEvidenceId": evidence["evidenceId"]})
+            _record_feedback(session, "validation_failed", cause="unknown", validation_scope="focused")
+        CP.receipt(session, action="process.run", details={"taskId": task_id, "passed": passed})
         LS.save_session(session)
-        return {
-            "session": session,
-            "passed": False,
-            "cancelled": True,
-            "verification": None,
-            "commandEvidence": evidence,
-            "repairTask": None,
-        }
-    try:
-        CP.assert_binding(session, task)
-    except CP.CheckpointError as exc:
-        LS.save_session(session)
-        raise EngineError(f"verification completed after authority changed: {exc}") from exc
-    passed = evidence["exitCode"] == 0
-    verification = LS.record_verification(session, task_id, evidence["evidenceId"], passed)
-    verification["authorized_checkpoint_id"] = session.get("authorizedCheckpointId")
-    verification["authorized_intent_hash"] = session.get("authorizedIntentHash")
-    repair_task: dict[str, Any] | None = None
-    if passed:
-        ok, reason = LS.transition_task(session, task_id, "complete")
-        if not ok:
-            raise EngineError(reason)
-        _record_feedback(session, "validation_passed", cause="unknown", validation_scope="focused")
-    else:
-        ok, reason = LS.transition_task(session, task_id, "repairing", reason="verification command failed")
-        if not ok:
-            raise EngineError(reason)
-        repair_task = LS.add_task(
-            session,
-            title=f"Repair: {task['title']}",
-            queue="repair",
-            dependencies=[],
-            tags=list(task.get("tags", [])) + ["repair"],
-            acceptance_refs=list(task.get("acceptanceRefs", [])),
-            invalidation_conditions=list(task.get("invalidationConditions", [])),
-            metadata={
-                "kind": "repair",
-                "originalTaskId": task_id,
-                "verificationCommand": command,
-                "failureEvidenceId": evidence["evidenceId"],
-            },
-        )
-        _record_feedback(session, "validation_failed", cause="unknown", validation_scope="focused")
-    CP.receipt(session, action="process.run", details={"taskId": task_id, "passed": passed})
-    LS.save_session(session)
-    return {
-        "session": session,
-        "passed": passed,
-        "cancelled": False,
-        "verification": verification,
-        "commandEvidence": evidence,
-        "repairTask": repair_task,
-    }
+        return {"session": session, "passed": passed, "cancelled": False,
+                "verification": verification, "commandEvidence": evidence, "repairTask": repair_task}
 
 
 def verify_repair(
-    *,
-    session_id: str,
-    repair_task_id: str,
-    command: dict[str, Any],
+    *, session_id: str, repair_task_id: str, command: dict[str, Any],
 ) -> dict[str, Any]:
     result = verify_task(session_id=session_id, task_id=repair_task_id, command=command)
     if not result["passed"]:
         return result
-    session = result["session"]
-    repair_task = session["queue"][repair_task_id]
-    original_id = repair_task.get("metadata", {}).get("originalTaskId")
-    if original_id and session["queue"].get(original_id, {}).get("status") == "repairing":
-        ok, reason = LS.transition_task(session, original_id, "complete", reason=f"repair task {repair_task_id} passed verification")
-        if not ok:
-            raise EngineError(reason)
-    session["completionEvidence"].append(
-        {
-            "completionId": f"complete-{len(session['completionEvidence']) + 1}",
-            "timestamp": _now(),
-            "repairTaskId": repair_task_id,
+    with LS.session_lock(session_id):
+        session = LS.load_session(session_id)
+        if not session:
+            raise EngineError("session disappeared after repair verification")
+        repair_task = session["queue"][repair_task_id]
+        try:
+            CP.assert_binding(session, result["commandEvidence"])
+        except CP.CheckpointError as exc:
+            raise EngineError("repair authority changed before completion: " + str(exc)) from exc
+        original_id = repair_task.get("metadata", {}).get("originalTaskId")
+        if original_id and session["queue"].get(original_id, {}).get("status") == "repairing":
+            ok, reason = LS.transition_task(session, original_id, "complete", reason=f"repair task {repair_task_id} passed verification")
+            if not ok:
+                raise EngineError(reason)
+        session["completionEvidence"].append({
+            "completionId": f"complete-{len(session['completionEvidence']) + 1}", "timestamp": _now(),
+            "originalTaskId": original_id, "repairTaskId": repair_task_id,
             "verificationId": result["verification"]["verificationId"],
             "commandEvidenceId": result["commandEvidence"]["evidenceId"],
-        }
-    )
-    LS.save_session(session)
-    result["session"] = session
-    return result
+            "authorized_checkpoint_id": session["authorizedCheckpointId"],
+            "authorized_intent_hash": session["authorizedIntentHash"],
+        })
+        LS.save_session(session)
+        result["session"] = session
+        return result
 
 
+@_serialized_session
 def authorize_only(*, session_id: str, task_id: str, action: dict[str, Any]) -> dict[str, Any]:
     session = LS.load_session(session_id)
     if not session:
@@ -1079,7 +1173,7 @@ def cmd_start(args: argparse.Namespace) -> int:
             structured_intent=structured,
             auto_approve=bool(args.auto_approve),
         )
-    except (EngineError, ValueError, OSError, json.JSONDecodeError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "start_failed"}))
         return 2
     print(json.dumps(LS.summary(session), indent=2))
@@ -1095,7 +1189,7 @@ def cmd_approve(args: argparse.Namespace) -> int:
             intent_hash=getattr(args, "intent_hash", None),
             plan=plan,
         )
-    except (EngineError, ValueError, OSError, json.JSONDecodeError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "approve_failed"}))
         return 2
     print(json.dumps(LS.summary(session), indent=2))
@@ -1110,7 +1204,7 @@ def cmd_text_gate(args: argparse.Namespace) -> int:
             checkpoint_id=args.checkpoint,
             intent_hash=args.intent_hash,
         )
-    except (EngineError, ValueError, OSError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError) as exc:
         code = "text_gate_failed"
         if "invalid text gate" in str(exc).lower() or "execution locked" in str(exc).lower():
             code = "bad_input"
@@ -1142,7 +1236,7 @@ def _cmd_correction(args: argparse.Namespace, *, interrupt_only: bool = False) -
         try:
             structured = _load_json(args.intent_override)
             IC.validate_override(structured)
-        except (EngineError, ValueError, OSError) as exc:
+        except (EngineError, LS.SessionConflictError, ValueError, OSError) as exc:
             structured = None
             attachment_errors["intent_override"] = str(exc)
     try:
@@ -1156,7 +1250,7 @@ def _cmd_correction(args: argparse.Namespace, *, interrupt_only: bool = False) -
                 session_id=args.session, correction=args.correction,
                 structured_intent=structured,
             )
-    except (EngineError, ValueError, OSError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError) as exc:
         print(json.dumps({"error": str(exc), "code": "correction_failed", "correctionSaved": False}))
         return 2
 
@@ -1170,7 +1264,7 @@ def _cmd_correction(args: argparse.Namespace, *, interrupt_only: bool = False) -
                 "planId": replacement.get("planId"), "note": "not authoritative until checkpoint approve",
             })
             LS.save_session(session)
-        except (EngineError, ValueError, OSError) as exc:
+        except (EngineError, LS.SessionConflictError, ValueError, OSError) as exc:
             attachment_errors["replacement_plan"] = str(exc)
     payload = {
         "sessionId": session["sessionId"],
@@ -1209,7 +1303,7 @@ def cmd_apply(args: argparse.Namespace) -> int:
     except PolicyDenied as exc:
         print(json.dumps({"error": str(exc), "decision": exc.decision, "code": "policy_denied"}, indent=2))
         return 3
-    except (EngineError, ValueError, OSError, json.JSONDecodeError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "apply_failed"}))
         return 2
     print(json.dumps({"sessionId": args.session, "written": result["written"], "state": LS.global_state(result["session"])}, indent=2))
@@ -1223,7 +1317,7 @@ def cmd_verify(args: argparse.Namespace) -> int:
     except PolicyDenied as exc:
         print(json.dumps({"error": str(exc), "decision": exc.decision, "code": "policy_denied"}, indent=2))
         return 3
-    except (EngineError, ValueError, OSError, json.JSONDecodeError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "verify_failed"}))
         return 2
     print(json.dumps({"sessionId": args.session, "passed": result["passed"], "commandEvidence": result["commandEvidence"], "repairTask": result["repairTask"], "state": LS.global_state(result["session"])}, indent=2))
@@ -1237,7 +1331,7 @@ def cmd_verify_repair(args: argparse.Namespace) -> int:
     except PolicyDenied as exc:
         print(json.dumps({"error": str(exc), "decision": exc.decision, "code": "policy_denied"}, indent=2))
         return 3
-    except (EngineError, ValueError, OSError, json.JSONDecodeError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "repair_verify_failed"}))
         return 2
     print(json.dumps({"sessionId": args.session, "passed": result["passed"], "commandEvidence": result["commandEvidence"], "state": LS.global_state(result["session"])}, indent=2))
@@ -1248,7 +1342,7 @@ def cmd_authorize(args: argparse.Namespace) -> int:
     try:
         action = _load_json(args.action)
         decision = authorize_only(session_id=args.session, task_id=args.task, action=action)
-    except (EngineError, ValueError, OSError, json.JSONDecodeError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "authorization_failed"}))
         return 2
     print(json.dumps(decision, indent=2))
@@ -1258,7 +1352,7 @@ def cmd_authorize(args: argparse.Namespace) -> int:
 def cmd_plan_packet(args: argparse.Namespace) -> int:
     try:
         packet = make_plan_packet(session_id=args.session)
-    except (EngineError, ValueError, OSError, json.JSONDecodeError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "plan_packet_failed"}))
         return 2
     print(json.dumps(packet, indent=2))
@@ -1268,7 +1362,7 @@ def cmd_plan_packet(args: argparse.Namespace) -> int:
 def cmd_stage_plan(args: argparse.Namespace) -> int:
     try:
         result = stage_plan(session_id=args.session, plan=_load_json(args.plan))
-    except (EngineError, ValueError, OSError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError) as exc:
         print(json.dumps({"error": str(exc), "code": "stage_plan_failed"}))
         return 2
     print(json.dumps(result, indent=2))
@@ -1282,7 +1376,7 @@ def cmd_packet(args: argparse.Namespace) -> int:
             output = Path(args.output).expanduser().resolve()
             output.parent.mkdir(parents=True, exist_ok=True)
             output.write_text(json.dumps(packet, indent=2), encoding="utf-8")
-    except (EngineError, ValueError, OSError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError) as exc:
         print(json.dumps({"error": str(exc), "code": "packet_failed"}))
         return 2
     print(json.dumps(packet, indent=2))
@@ -1321,7 +1415,7 @@ def cmd_build(args: argparse.Namespace) -> int:
             print(json.dumps({"error": "no ready worker task", "code": "no_ready_task"}))
             return 4
         packet = make_worker_packet(session_id=session["sessionId"], task_id=task["taskId"])
-    except (EngineError, ValueError, OSError) as exc:
+    except (EngineError, LS.SessionConflictError, ValueError, OSError) as exc:
         print(json.dumps({"error": str(exc), "code": "build_handoff_failed"}))
         return 2
     print(json.dumps({
