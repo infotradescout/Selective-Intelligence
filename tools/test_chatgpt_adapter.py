@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify that the generated ChatGPT adapter is complete and storeable."""
+"""Verify the generated source projection; platform installation is separate proof."""
 
 from __future__ import annotations
 
@@ -9,6 +9,8 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+
+import build_chatgpt_adapter as BUILD
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -25,7 +27,13 @@ def main() -> int:
     files = sorted(path.relative_to(ADAPTER_ROOT).as_posix() for path in ADAPTER_ROOT.rglob("*") if path.is_file())
     skill_entrypoints = [path for path in files if Path(path).name == "SKILL.md"]
     require(skill_entrypoints == ["SKILL.md"], f"expected one SKILL.md, found {skill_entrypoints}")
-    require(len(files) <= 50, f"runtime adapter is bloated: {len(files)} files")
+    # Keep all 50 existing runtime files and add eight missing execution owners
+    # and dependencies. This is a repository budget, not platform acceptance.
+    require(len(files) <= 58, f"runtime adapter exceeds the explicit delivery budget: {len(files)} files")
+    require(BUILD.EXECUTION_RUNTIME_FILES.issubset(files), "runtime execution dependency is missing")
+    # Re-derive the exact allowlist, bytes and source identities. File count or
+    # version labels alone cannot establish that a repair reached this package.
+    BUILD.validate_adapter(ADAPTER_ROOT)
     require("scripts/project_index.py" in files, "project index tool is missing")
     require("scripts/progress_checkpoint.py" in files, "durable progress and usage guard is missing")
     require("references/project-index-and-reuse-gate.md" in files, "project index reference is missing")
