@@ -1,112 +1,43 @@
 {
-  "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260906-product-model-client-protocol",
-  "createdAt": "2026-09-06T21:28:08.214472+00:00",
-  "outcome": "Carry corrections through the actual CLI, fresh plan review, correctly routed results and real verification without silently approving or relabelling old work",
-  "scope": [
-    "Continue existing draft 45 and existing canonical owners only",
-    "Repair existing CLI transports and file-batch preflight in build_engine.py",
-    "Add 36 real-process integration methods and migrate the existing instruction-fidelity vertical",
-    "Preserve exact tested source on the same draft and retain prior 128 tests"
+  "checkpointId": "product-identity-execution-integrity-v5",
+  "recordedAt": "2026-09-07T00:27:35.083494+00:00",
+  "status": "DRAFT_UNRELEASED_CONTINUING",
+  "branch": "repair/product-model-corrections-2026-09-06",
+  "baseRevision": "d46ec1e34e7f547aab6623dad74b4c3a9ff0baf3",
+  "lastObservedHead": "f5b3c6a6142f2d6a57ba947dba290379612f67d9",
+  "intent": "SI must carry corrections into actual work and preserve approved product identity. Software does not imply SaaS. Do not invent a replacement business category or revoke approved memberships/fees/providers.",
+  "authority": "Continue on existing draft PR45. No merge, release, install, production data, new paid service, user-PC access or Actions gate.",
+  "completed": [
+    "Bind actual task content and execution roots to checkpoint snapshots; runtime-only progress remains mutable.",
+    "Reject stale persisted session revisions with real cooperative thread/process locks; atomically replace individual saved-session files.",
+    "Serialize SI effect and correction transactions; stage complete file batches before replacing targets; rollback tested caught write/save failures.",
+    "Reserve one verification attempt; keep its original authority on returned evidence, invalidate stale results, clear failed claims and preserve correction cancellation.",
+    "Require current task-bound command evidence for verified completion; unrelated and changed historical success cannot certify new work."
   ],
-  "prohibitions": [
-    "Do not infer SaaS or invent another product category from software implementation",
-    "Preserve approved memberships, fees, external providers and shared services",
-    "Do not use user PC, production data, new hosted services, recurring automation or GitHub Actions as a gate",
-    "Do not merge, release, deploy, submit a plugin, mutate protected branches or modify unrelated work",
-    "Do not ask the product owner to write, install or relay code",
-    "Do not relabel old plans or results with current identifiers",
-    "Do not claim full repository, installed-client, live-model or arbitrary external-worker proof from these tests"
-  ],
-  "progress": {
-    "completedVerified": [
-      "Verified recovered v3 manifest and exact pinned dependency sources; prior 128 methods passed again",
-      "Plain corrections persist despite missing, malformed or schema-invalid optional plan/model input; responses distinguish correction saved from attachment rejected",
-      "Fresh source-bound plans can be staged for review without granting execution authority, creating tasks or silently updating old proposals",
-      "Compatibility plan command no longer silently approves; compatibility build command no longer crashes or routes to an unrelated first-ready task",
-      "Build consumes the actual result task ID and checks its unchanged session/checkpoint/intent fields; missing or stale bindings are not fabricated",
-      "All file targets and policy decisions are preflighted before a task transition or the first write; predictable invalid later paths, symlink escapes, duplicate targets and parent conflicts reject the batch without partial writes in tested cases",
-      "36 new methods run actual CLI subprocesses with real persisted sessions, context, feedback, policy, capability probes and file/verification adapters; no mocks in this group",
-      "A full synthetic correction -> new plan -> stage -> explicit text approval -> current worker result -> file write -> actual verification -> reload journey passes",
-      "A correction stops an SI-owned running verification subprocess; the cancelled test never writes its final sentinel",
-      "Existing process vertical migrated to generate synthetic replacements only after correction, and each implementation/repair result from its own current worker packet",
-      "Migrated vertical passes actual failed verification followed by successful repair, four denied operations, final reload and unchanged protected fixture files",
-      "Identical expanded 164-method suite: pre-client source 133 passed / 31 unsuccessful; repaired source 164 passed / zero unsuccessful",
-      "Final rerun after source saving: 164 tests passed, zero failures/errors/skips/expected failures/unexpected successes; changed-source compilation, whitespace and byte-integrity checks passed",
-      "Engine, new process tests, existing worker test adjustment and migrated runner saved remotely; returned or re-read Git blob hashes match exact tested bytes"
-    ],
-    "changedUnverified": [
-      "RELEASE BLOCKER: external supported clients/producers still need migration and proof; only canonical CLI transports and existing synthetic vertical are migrated here",
-      "Full repository compatibility suite not run. The existing production-path test file was read, but only its standalone vertical runner was migrated/executed",
-      "Task-content integrity at dispatch remains unproven; correlation identifiers are not content approval or producer authentication",
-      "File preflight is not atomic multi-file commit or rollback: concurrent changes, disk errors, per-write authority races and session transactions remain unresolved",
-      "Only SI-owned verification-process cancellation was exercised. External model streams, external workers and arbitrary child-process trees were not proved stopped",
-      "Schemas, generated adapters, supported packages, release inventory and actual installed skill activation have not been reconciled or verified",
-      "Real-model behavior, independent review and semantic detection of unlabelled template assumptions remain unverified",
-      "Workspace is exact partial-source reconstruction, not a full clone or complete project index"
-    ],
-    "proof": [
-      "Prior 128 passed; final suite has 42 correction, 28 checkpoint, 16 isolated worker, 42 real-disk plan and 36 real-process CLI methods",
-      "Same expanded baseline: 164 methods, 133 passed, 31 unsuccessful, 26 assertion reports, 5 error reports, zero skips. Absent new APIs and response changes are included; not 31 independent production defects",
-      "Repaired comparison and final post-save rerun: 164 passed, zero failures/errors/skips/expected failures/unexpected successes",
-      "Separate existing runner: PRODUCTION_MODULE_PATH_PASS; failedExitCode=1; passedExitCode=0; deniedActionCount=4; canonicalUnchanged=true; finalState=VERIFIED_COMPLETE",
-      "Reproduce targeted suite: python -m unittest discover -s skills/selective-intelligence/tests -p 'test_product_model*.py' -v",
-      "Reproduce separate process vertical: python skills/selective-intelligence/tests/run_instruction_fidelity_vertical.py",
-      "Raw comparison logs, full synthetic vertical evidence, final rerun, pre-client sources and dependency fingerprints retained in v4 recovery archive",
-      "All process proof uses synthetic fixtures and temporary directories, not actual product membership access or live model generation"
-    ],
-    "externalEffects": [
-      "Four task-owned source/test writes through connected GitHub on the existing draft branch",
-      "Updated existing recovery record and PR status only; no merge/release/deploy/installed-client/user-PC changes"
-    ],
-    "doNotRepeat": [
-      "Do not claim these repairs remain archive-only or source writes are blocked",
-      "Do not report 128 as the current total or say real policy/process integration was never exercised",
-      "Do not call 164 targeted methods a full repository or live-model test",
-      "Do not weaken bindings to accommodate legacy clients; generate fresh plans/results instead",
-      "Do not claim preflight is a concurrent filesystem transaction or SI cancellation stops all external workers",
-      "Do not ask the product owner to install recovery archives or relay code"
-    ],
-    "nextSafeAction": "Trace actual supported external-client call sites and migrate them to correction -> fresh plan packet -> stage/review -> approval -> current task packet -> bound result. Test task-content integrity at dispatch and concurrent authority changes. Execute full compatibility coverage, reconcile generated schemas/packages, and prove installed activation before release. Keep coherent work on the existing draft."
-  },
-  "repository": {
-    "root": ".",
-    "rootKind": "repository_relative",
-    "branch": "repair/product-model-corrections-2026-09-06",
-    "headBefore": "31b8b3039098f67a5a9a2c608ea28be0f2f51e1c",
-    "previousCheckpoint": "e2e834e1b1642d236e04580e1944b7c832386fe1",
-    "checkpointCommit": "containing_commit",
-    "pushRequested": false,
-    "pushRemote": null,
-    "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 0
-  },
-  "savedFiles": [
-    {
-      "path": "skills/selective-intelligence/scripts/build_engine.py",
-      "bytes": 60382,
-      "sha256": "eea4a25b7628a1568de5e6483f9944d797985bfc837eb59f340d9aaf8b7d697a",
-      "git_blob": "5e1a6aa121586ad19cf156771fc893707dc4797b"
-    },
-    {
-      "path": "skills/selective-intelligence/tests/test_product_model_client_protocol.py",
-      "bytes": 24920,
-      "sha256": "fb62a93dc1209596eb30bca0e4fb4212b94c404c08ad0c75ec311823a1c744b7",
-      "git_blob": "d179c01cc9b076be5378f96450a837bccd0d6b80"
-    },
-    {
-      "path": "skills/selective-intelligence/tests/test_product_model_worker_binding.py",
-      "bytes": 10332,
-      "sha256": "6e809d42a8cb026d8687255cef1e5491af3db159cc641f60873389004cfee95f",
-      "git_blob": "68f8ca52071a0069538c807fdee68a459ad8cff1"
-    },
-    {
-      "path": "skills/selective-intelligence/tests/run_instruction_fidelity_vertical.py",
-      "bytes": 21887,
-      "sha256": "153ea6c213db5c34a490e97eb8d99c6eb71647075a6ae5b83b756cb82d7cd745",
-      "git_blob": "36566a9dd2dc18b75478a54290920d14b73d6816"
+  "proof": {
+    "newIntegrity": {"tests": 29, "beforeFailed": 27, "afterPassed": 29},
+    "newTransactions": {"tests": 16, "beforeFailed": 12, "afterPassed": 16},
+    "combinedNonCli": {"tests": 173, "passed": 173, "failed": 0, "errors": 0, "skipped": 0},
+    "cliRerun": {
+      "passed": 24, "remaining": 12,
+      "note": "Real child-process commands with file-backed output capture; assertions not weakened. Earlier broad timeout is not passing evidence."
     }
+  },
+  "files": [
+    {"path": "skills/selective-intelligence/scripts/checkpoint.py", "gitBlob": "3930e60d4e5c392bfea5273bad6eea0245d69a5d"},
+    {"path": "skills/selective-intelligence/scripts/lane_session.py", "gitBlob": "87a3841654607f0c340af79e8afc273808708a7b"},
+    {"path": "skills/selective-intelligence/scripts/build_engine.py", "gitBlob": "914b3cea1e65f1152c9c595449ca4afe6b6c7343"},
+    {"path": "skills/selective-intelligence/tests/test_product_model_execution_integrity.py", "gitBlob": "ad14eba07bf9929bdbb18cccd993a61ff86dba9a"},
+    {"path": "skills/selective-intelligence/tests/test_product_model_transactions.py", "gitBlob": "e9b380d7fb40b93093c706ce21bf19542615dd95"},
+    {"path": "skills/selective-intelligence/tests/test_product_model_worker_binding.py", "gitBlob": "a9e601ebb2eacabfe694d62bbe000673abbeb337"}
   ],
-  "privacyBoundary": "Synthetic product-neutral fixtures; no private prices, credentials, user-PC data or unrelated user records."
+  "localPending": ["File-backed CLI-test capture adjustment is tested in the first 24 cases but not yet remotely saved."],
+  "limitations": [
+    "Exact partial source recovery, not a complete repository checkout or full project index. Full clone/download and connector materialization unavailable.",
+    "No full repository/package or installed-client proof; external producers/IDEs still require migration and tests.",
+    "Locks are advisory for cooperative local SI processes. Cross-session same-workspace writes, hostile writers, crash recovery and Windows paths are not proved.",
+    "Caught rollback is not multi-file crash atomicity; incomplete recovery is reported, not hidden.",
+    "Command execution and content hashes are not model-behavior or semantic acceptance proof. Nonliteral unwanted templates remain broader work."
+  ],
+  "nextAction": "Finish remaining real CLI tests and separate end-to-end runner, save all matching test sources, inspect adapter/package consumers, retain draft until release blockers are resolved."
 }
