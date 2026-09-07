@@ -1,127 +1,89 @@
 {
-  "checkpointId": "product-identity-public-delivery-v8",
-  "status": "DRAFT_PUBLIC_ARCHIVE_TESTED_FULL_RELEASE_INCOMPLETE",
-  "updatedAt": "2026-09-07T15:20:05.429933+00:00",
-  "branch": "repair/product-model-corrections-2026-09-06",
-  "verifiedSourceHead": "8b1d095055b0fc6d8aa6de56ea90d4c5d9f768b4",
-  "verifiedChatGPTDeliveryHead": "20b5ca0a8a0281273499aa81969982ab3dc80268",
+  "checkpointId": "product-identity-public-skill-source-published-v9",
+  "status": "PUBLIC_SKILL_SOURCE_MERGED",
+  "updatedAt": "2026-09-07T16:00:55.373602+00:00",
+  "branch": "main",
+  "verifiedSourceHead": "a9baf93436d097d161053d877333e9ab4ff5df96",
+  "sourceTestedRevision": "30d7ebd4df60041543f34083cc51765402409699",
   "previousCheckpoint": {
-    "id": "product-identity-package-published-v7",
-    "revision": "ae153b6b48dced6d46aad15dc40afc8e2d787681",
+    "id": "product-identity-public-delivery-v8",
+    "revision": "30d7ebd4df60041543f34083cc51765402409699",
     "path": ".selective-intelligence/progress/latest.json",
-    "gitBlob": "982d7999e54689d1be6d60147ab286c51843fccd"
+    "gitBlob": "cbdc455147f48d5d6bcdbb783c92f5d0b78df238"
   },
-  "intent": "Carry the person's actual product and corrections through execution, recovery and delivery. Software does not imply SaaS. Never invent a replacement business category or revoke approved memberships, fees, providers, services or human responsibilities.",
-  "authority": "Continue the existing repair, publish verified task-owned changes to its branch, and complete installation checks where supported. Do not bypass administrator restrictions, require programming work from the owner, add paid services, or represent branch publication as a completed installation. No merge or release is claimed.",
+  "intent": "Carry approved intent and corrections through work. Software does not imply SaaS. Never invent a replacement business category or revoke approved memberships, fees, providers, services or human responsibilities.",
+  "authority": "The user directed making the repaired skill available to other people. SI is a portable skill, not a website. Public source publication is separate from hosting, directory listing updates, and personal installation. Do not require the owner's PC for public skill publication.",
   "completedThisContinuation": [
-    "Reproduced the public-plugin validator rejecting the complete 60-file projection under its stale 55-file budget while accepting a 46-file archive with all 14 execution scripts removed.",
-    "Updated the existing public builder to reuse the existing runtime dependency and safe-path guards, retain the full 58-input runtime plus two plugin wrapper files, require the exact canonical projected names and bytes, and reject omitted, changed, unexpected, unsafe, or symlinked inputs.",
-    "Staged and validated public ZIP output before atomic replacement. The injected ZIP-write and validation failures preserve the prior archive and clean staging. No universal crash recovery or hostile-writer guarantee is claimed.",
-    "Published the builder repair and 14 regression methods to the same draft branch. Returned and independently fetched Git blob identities match the tested local source.",
-    "Built the actual public archive twice from real canonical runtime inputs and confirmed byte-identical output. The extracted public execution engine completes the deliberate failed-work/correction/repair vertical, with four prohibited operations denied and package bytes unchanged."
+    "Re-read the current repair, canonical instructions, repository visibility and available publication actions.",
+    "Executed 288 targeted repair and delivery test methods in separate suites with no failures, errors or skips. The generated adapter validation also passed.",
+    "Matched all 58 runtime source files and all 58 projected files against the remotely re-read delivery manifest.",
+    "Ran the unchanged correction/repair vertical against the extracted actual skill package: wrong work failed, matched repair passed, four prohibited actions were denied, and packaged files stayed unchanged.",
+    "The ready-for-review action returned the repair already merged. Re-read main SKILL.md and the delivery manifest to confirm the tested public source. No separate merge request was issued after that merged result."
   ],
   "proof": {
-    "currentTargetedMethods": 39,
-    "passed": 39,
+    "suiteCounts": {
+      "context_budget": 5,
+      "checkpoint": 28,
+      "client_protocol": 36,
+      "corrections": 42,
+      "execution_integrity": 29,
+      "handoff_completeness": 23,
+      "plan_import": 42,
+      "repair_handoff": 4,
+      "transactions": 16,
+      "worker_binding": 16,
+      "prompt_queue_continuity": 8,
+      "delivery": 39
+    },
+    "distinctTargetedTestMethods": 288,
     "failures": 0,
     "errors": 0,
     "skips": 0,
-    "groups": {
-      "existingChatGPTDeliveryFixtureMethods": 25,
-      "newPublicPluginDeliveryMethods": 14
-    },
-    "baseline": {
-      "methods": 14,
-      "reportedAssertionFailuresIncludingSubtests": 78,
-      "completeArchiveRejected": true,
-      "archiveWithoutExecutionAccepted": true
-    },
-    "commands": [
-      "python -B -m unittest tools.test_chatgpt_execution_delivery tools.test_public_plugin_delivery"
-    ],
-    "extractedPublicPackage": {
-      "finalState": "VERIFIED_COMPLETE",
+    "wholeRepositorySuiteClaimed": false,
+    "initialCombinedDiscovery": "Timed out at 45 seconds and is not counted as a pass. Every recovered test module subsequently completed separately.",
+    "generatedAdapterValidation": "PASS: 58 files, one SKILL.md",
+    "extractedSkillVertical": {
       "failedVerificationExit": 1,
       "repairedVerificationExit": 0,
-      "prohibitedActionsDenied": 4,
-      "packagedFilesUnchanged": true,
-      "archiveUnchanged": true
+      "deniedActions": 4,
+      "finalState": "VERIFIED_COMPLETE",
+      "packageFilesUnchanged": true,
+      "syntheticWorkProject": true
     },
-    "fullRecoveredUnitAttempt": {
-      "status": "TIMED_OUT_NO_PASS_CLAIM",
-      "timeoutSeconds": 60,
-      "completedSummary": false
-    },
-    "qualification": "The 39 methods are 25 existing fixture checks plus 14 new checks using copied real runtime inputs; adversarial input and failure injection are intentional. The separate vertical runs actual extracted public code with controlled projects and supplied work results. This is not full canonical release doctor, all repository tests, platform acceptance, installed-client proof, or actual-model semantic behavior. Earlier 274-method results are historical at the previous checkpoint, not freshly rerun here."
+    "currentMainSkillBlob": "b0251b8ad996272067a463b10fd067ef1b221874",
+    "currentMainDeliveryManifestBlob": "72969d5a5d392f0f18443bfd40a6f9a43849b446",
+    "skillArchiveSha256": "832a52aec7652ab12895305424f47559be20e59e79de8a928969da136ff26fe2"
   },
-  "changedFiles": {
-    "tools/public_plugin.py": {
-      "bytes": 39071,
-      "gitBlob": "f74f9ce1667ec6ce88caad03cec7adefb555e942",
-      "sha256": "436242c1b2a62690863984c5a96ff6a3715d66d68859f360ba9df884e669a861"
-    },
-    "tools/test_public_plugin_delivery.py": {
-      "bytes": 10099,
-      "gitBlob": "31379e55d774932a73d63517243ab14f0e1f2b81",
-      "sha256": "c6326785bbe2a471fd0f1bc6255cb3a681d95bee293725854d30ac503adc77f3"
-    }
-  },
+  "changedFiles": [".selective-intelligence/progress/latest.json"],
   "publicDelivery": {
-    "canonicalRuntimeInputs": 58,
-    "archiveFiles": 60,
-    "archiveSha256": "f293cd40967bc54a33307569d30fe79ccb508b37927d6d88129fec9b3027f75c",
-    "compressedBytes": 253687,
-    "rebuildByteIdentical": true,
-    "zipErrors": [],
-    "releaseAssetPublished": false,
-    "platformSubmitted": false
-  },
-  "chatGPTDelivery": {
-    "runtimeFileCount": 58,
-    "missingRuntimeInputs": 0,
-    "generatedTree": "1aa65edac3875c9f68713471b19ad1225fa45e7f",
-    "metadataGitBlob": "72969d5a5d392f0f18443bfd40a6f9a43849b446",
-    "archiveSha256": "832a52aec7652ab12895305424f47559be20e59e79de8a928969da136ff26fe2",
-    "archiveMatchesPreviousCandidate": true,
-    "generatedFilesSavedRemotely": true,
-    "archivePublishedAsReleaseAsset": false,
-    "previousMissing42InputsBlocker": "RESOLVED; earlier incomplete-build statements are historical, not current.",
-    "priorSourceWriteBlocker": "RESOLVED in this session."
+    "kind": "public_canonical_skill_source",
+    "repository": "https://github.com/infotradescout/Selective-Intelligence",
+    "skillDirectory": "https://github.com/infotradescout/Selective-Intelligence/tree/main/skills/selective-intelligence",
+    "chatgptSkillDirectory": "https://github.com/infotradescout/Selective-Intelligence/tree/main/adapters/chatgpt/selective-intelligence",
+    "pullRequest": 45,
+    "merged": true,
+    "observedMergeCommit": "a9baf93436d097d161053d877333e9ab4ff5df96",
+    "directoryListingUpdated": false,
+    "githubReleaseAssetPublished": false
   },
   "currentAccess": {
-    "githubReadAndTaskBranchWrite": "WORKING",
-    "connectedComputer": "OFFLINE",
+    "githubRead": "WORKING",
+    "githubReadyForReview": "RETURNED_MERGED",
     "computerAccessed": false,
-    "supportedSavedSkillReplacementAction": "NOT_AVAILABLE_IN_CURRENT_ENABLED_TOOLS",
-    "priorAdminRestriction": "Historical finding retained at previous checkpoint; current directory search did not expose a replacement action."
+    "computerOnlineStatus": "NOT_RECHECKED; not a prerequisite for public source publication",
+    "savedSkillInstallationAttempted": false,
+    "mainProtection": "Pull request required. A direct checkpoint-only write was rejected; no restriction was bypassed."
   },
-  "remainingReleaseBlockers": [
-    "Run the remaining complete-repository and supported release/plugin checks; this source snapshot is not a complete checkout.",
-    "Confirm platform acceptance and migrate/prove actual IDE/plugin/client consumers. No saved personal skill or desktop installation was changed; the computer is offline and saved-skill management is not available through the enabled tools.",
-    "Reconcile pre-existing task/repair records that already lost requirements without inventing their missing history.",
-    "Prove external-worker cancellation separately from SI-owned verification cancellation; assess Start Pack control-path parity.",
-    "Run actual-model semantic behavior tests for unwanted business templates that never use the word SaaS.",
-    "Cross-session same-workspace writes, hostile writers, crash recovery, Windows behavior, nonexistent required inputs outside explicit acceptance references, and multi-level repair completion remain unproved."
+  "remainingValidationAndDistributionWork": [
+    "Complete original portable-release, repository-wide and directory checks. The local recovery snapshot still lacks 45 non-runtime release inputs; do not claim those checks passed.",
+    "Check actual platform acceptance and installed-client behavior separately. No personal installation or directory listing was updated.",
+    "Reconcile legacy tasks that previously lost requirements without inventing history.",
+    "Assess external-worker cancellation and Start Pack parity separately from the tested SI-owned verification cancellation.",
+    "Run actual-model checks for unwanted business assumptions that never use the word SaaS.",
+    "Retain the preceding checkpoint's unproved concurrency, hostile-writer, crash-recovery, Windows, missing-input and multilevel-repair cases."
   ],
-  "completeReleaseSnapshot": {
-    "listedReleaseFiles": 113,
-    "missingNonRuntimeReleaseInputs": 45,
-    "missingRuntimeInputs": 0,
-    "qualification": "The 45 are absent from this local recovery snapshot, not established absent from the repository. No stand-in documents or scripts were used to claim a complete release."
-  },
   "localSourcePending": [],
-  "nextAction": "Recover the remaining actual portable-release and repository validation inputs, run the canonical release doctor and supported existing checks, then perform permitted client installation and loaded-copy verification. Do not re-repair the resolved runtime retrieval, queue null-default, 60-file public budget, exact archive-content validation, or tested archive rollback. Do not call an archive a complete release or installation.",
+  "nextAction": "Do not repeat source publication: the tested repair is on public main. Keep broader validation work visible. Treat a directory update or installed-copy check as distinct distribution work. Do not invent a hosted service, require the owner's PC for publication, bypass repository protection, or claim existing copies update automatically.",
   "installationState": "UNCHANGED_UNVERIFIED",
-  "releaseState": "NOT_MERGED_NOT_RELEASED",
-  "evidenceSha256": {
-    "public-plugin-baseline.json": "3e6cbaed06cef1103b0721339b0885828a6b06d0bc9a4caca1e208290c432a37",
-    "public-plugin-tests-before.log": "81d9914f3b24a5cc99a6328a40cab873c7c43cd4df041de0aac3b3de31212d10",
-    "public-plugin-tests-after.log": "c724d01ee8465d1480e9c0a9122331c886141a9b4cd64343b84b9aa5fa60e5d4",
-    "adapter-delivery-regressions.log": "6f2f3f489189106b649f4190bbb90659cdb242d70fe67f57c41885d77267d5a1",
-    "core-regressions.log": "6d0ab613d0bf996dbdba20bd3abf90694a212b6f0df3c93fbab771ef0c98cd97",
-    "public-extracted-summary.json": "2130814a34e4fa805aa63961a7a5397548b4472120a915671876a9aa1f3f1fcc",
-    "public-extracted.log": "fc3ed3f99244ca7f932f7d35be34fce30be3c836090b0c445c8afd654f6e241e",
-    "public-vertical-evidence.json": "a5aeb4af752356b23171373e4740267341c43cea7c86100554d131de3b60e3ce",
-    "changed-identities.json": "8bb922892628b68d06d724aeeb4dce3c4a33438cc6a0566508f9662317b3deeb"
-  }
+  "releaseState": "PUBLIC_SOURCE_MERGED; CATALOGUE_AND_EXISTING_INSTALLATIONS_NOT_UPDATED"
 }
