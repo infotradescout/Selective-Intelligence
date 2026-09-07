@@ -54,13 +54,17 @@ def write_json(path: Path, value: Any) -> None:
 
 
 def run_engine(args: list[str], *, env: dict[str, str], expect: set[int] = {0}) -> tuple[int, dict[str, Any], str, str]:
-    proc = subprocess.run(
-        [sys.executable, str(ENGINE), *args],
-        capture_output=True,
-        text=True,
-        env=env,
-        check=False,
-    )
+    # Keep real commands and assertions, but do not let large JSON responses
+    # fill a pipe while an execution host waits for process completion.
+    with tempfile.TemporaryFile(mode="w+b") as out, tempfile.TemporaryFile(mode="w+b") as err:
+        proc = subprocess.run(
+            [sys.executable, str(ENGINE), *args],
+            stdout=out, stderr=err, env=env, check=False, timeout=30,
+        )
+        out.seek(0)
+        err.seek(0)
+        proc.stdout = out.read().decode("utf-8")
+        proc.stderr = err.read().decode("utf-8")
     try:
         payload = json.loads(proc.stdout)
     except json.JSONDecodeError as exc:
