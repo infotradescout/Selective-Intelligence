@@ -1074,6 +1074,7 @@ def verify_task(
                 acceptance_refs=list(task.get("acceptanceRefs", [])),
                 invalidation_conditions=list(task.get("invalidationConditions", [])),
                 metadata={"kind": "repair", "originalTaskId": task_id,
+                          "originalTask": CP._task_material(task),
                           "verificationCommand": command, "failureEvidenceId": evidence["evidenceId"]})
             _record_feedback(session, "validation_failed", cause="unknown", validation_scope="focused")
         CP.receipt(session, action="process.run", details={"taskId": task_id, "passed": passed})
