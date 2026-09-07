@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "skill": "selective-intelligence",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "component_versions": {
-    "skill": "1.0.7",
+    "skill": "1.0.8",
     "start_pack_validator": "0.1.1",
     "start_pack_schema": "0.1.1",
     "council_protocol": "0.3.0"
@@ -54,6 +54,7 @@
   "master_trigger": "Selective Intelligence",
   "direct_activation": {
     "conditions": [
+      "standing_user_adoption",
       "exact_phrase_in_current_user_input",
       "unmistakable_named_responsibility_request_in_current_request_or_active_conversation_context",
       "user_correction_dissatisfaction_or_failure_feedback_in_any_conversation"
@@ -122,13 +123,13 @@
   ],
   "portable_source_path": "skills/selective-intelligence",
   "recommended_vendored_path": ".agents/skills/selective-intelligence",
-  "archive_name": "selective-intelligence-1.0.7.zip",
+  "archive_name": "selective-intelligence-1.0.8.zip",
   "public_plugin": {
     "status": "submission_candidate",
     "submission_type": "skills_only",
     "manifest_source": "plugin-submission/plugin.json",
     "archive_manifest_path": ".codex-plugin/plugin.json",
-    "archive_name": "selective-intelligence-plugin-1.0.7.zip",
+    "archive_name": "selective-intelligence-plugin-1.0.8.zip",
     "website_url": "https://infotradescout.github.io/Selective-Intelligence/",
     "support_url": "https://github.com/infotradescout/Selective-Intelligence/issues",
     "privacy_policy_url": "https://github.com/infotradescout/Selective-Intelligence/blob/main/PRIVACY.md",
@@ -155,6 +156,7 @@
     "references/architecture-reuse.md",
     "references/continuity-and-impact.md",
     "references/durable-progress-and-recovery.md",
+    "references/evidence-and-completion.md",
     "references/failure-patterns-and-gates.md",
     "references/feedback-and-learning-loop.md",
     "references/first-checkpoint.md",
@@ -314,7 +316,11 @@
     "tests/test_product_model_execution_integrity.py",
     "tests/test_product_model_plan_import.py",
     "tests/test_product_model_transactions.py",
-    "tests/test_product_model_worker_binding.py"
+    "tests/test_product_model_worker_binding.py",
+    "tests/test_product_model_handoff_completeness.py",
+    "tests/test_product_model_repair_handoff.py",
+    "tests/test_prompt_queue_continuity.py",
+    "evals/results-1.0.8.json"
   ],
   "whole_run_usage_governor": {
     "scope": "entire_run",
@@ -355,5 +361,10 @@
     "consumer_behavior_required": true,
     "anti_scam_and_fraud_required": true,
     "silent_by_default": true
+  },
+  "standing_adoption": {
+    "instruction": "Always use Selective Intelligence",
+    "scope": "every_task_until_user_changes_instruction",
+    "repeat_adoption_question": false
   }
 }

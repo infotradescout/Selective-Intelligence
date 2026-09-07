@@ -51,6 +51,7 @@ class DiscoveryBridgeTests(unittest.TestCase):
         self.assertEqual(
             set(self.manifest["activation"]["direct_conditions"]),
             {
+                "standing_user_adoption",
                 "exact_phrase_in_current_user_input",
                 "unmistakable_named_responsibility_request_in_current_request_or_active_conversation_context",
                 "user_correction_dissatisfaction_or_failure_feedback_in_any_conversation",

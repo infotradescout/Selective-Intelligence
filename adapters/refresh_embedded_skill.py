@@ -7,8 +7,8 @@ from pathlib import Path
 import sys
 import urllib.request
 
-UTILITY_URL = "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/44b0c59ef908cbbae0a23f73719235b01cf75c07/tools/refresh_embedded_skill.py"
-UTILITY_SHA256 = "0f503dab7fec84a1fa162a16fe880e31ee72c0fa5bc8769bdefc114a3195799b"
+UTILITY_URL = "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/3428aa4c13706ab95d3453b4089a0f873a818b57/tools/refresh_embedded_skill.py"
+UTILITY_SHA256 = "70bea6ebf6d37d6739a165a53d00df5a6e881c18fa5fe64588fe2c745d0e0e72"
 MAX_UTILITY = 65536
 
 

@@ -448,6 +448,7 @@ def build_manifest() -> dict:
             "inspect_existing_context_first": True,
             "do_not_ask_generic_setup_question": True,
             "always_on_after_activation_or_approved_adoption": True,
+            "standing_adoption": distribution["standing_adoption"],
             "text_client_without_skill_loader_uses_strict_ai_guide": True,
             "strict_guide_is_user_selected_by_direct_trigger_not_self_activating": True,
             "empty_context_final": EMPTY_CONTEXT,

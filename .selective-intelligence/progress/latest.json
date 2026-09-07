@@ -1,89 +1,47 @@
 {
-  "checkpointId": "product-identity-public-skill-source-published-v9",
-  "status": "PUBLIC_SKILL_SOURCE_MERGED",
-  "updatedAt": "2026-09-07T16:00:55.373602+00:00",
-  "branch": "main",
-  "verifiedSourceHead": "a9baf93436d097d161053d877333e9ab4ff5df96",
-  "sourceTestedRevision": "30d7ebd4df60041543f34083cc51765402409699",
-  "previousCheckpoint": {
-    "id": "product-identity-public-delivery-v8",
-    "revision": "30d7ebd4df60041543f34083cc51765402409699",
-    "path": ".selective-intelligence/progress/latest.json",
-    "gitBlob": "cbdc455147f48d5d6bcdbb783c92f5d0b78df238"
-  },
-  "intent": "Carry approved intent and corrections through work. Software does not imply SaaS. Never invent a replacement business category or revoke approved memberships, fees, providers, services or human responsibilities.",
-  "authority": "The user directed making the repaired skill available to other people. SI is a portable skill, not a website. Public source publication is separate from hosting, directory listing updates, and personal installation. Do not require the owner's PC for public skill publication.",
-  "completedThisContinuation": [
-    "Re-read the current repair, canonical instructions, repository visibility and available publication actions.",
-    "Executed 288 targeted repair and delivery test methods in separate suites with no failures, errors or skips. The generated adapter validation also passed.",
-    "Matched all 58 runtime source files and all 58 projected files against the remotely re-read delivery manifest.",
-    "Ran the unchanged correction/repair vertical against the extracted actual skill package: wrong work failed, matched repair passed, four prohibited actions were denied, and packaged files stayed unchanged.",
-    "The ready-for-review action returned the repair already merged. Re-read main SKILL.md and the delivery manifest to confirm the tested public source. No separate merge request was issued after that merged result."
+  "schemaVersion": "si.progress-checkpoint.v1",
+  "checkpointId": "progress-canonical-publication-1.0.8",
+  "createdAt": "2026-09-07T17:19:56.385828+00:00",
+  "outcome": "One canonical SI Work-mode bootstrap, version 1.0.8",
+  "scope": [
+    "Selective-Intelligence canonical source and generated client/plugin distribution only."
   ],
-  "proof": {
-    "suiteCounts": {
-      "context_budget": 5,
-      "checkpoint": 28,
-      "client_protocol": 36,
-      "corrections": 42,
-      "execution_integrity": 29,
-      "handoff_completeness": 23,
-      "plan_import": 42,
-      "repair_handoff": 4,
-      "transactions": 16,
-      "worker_binding": 16,
-      "prompt_queue_continuity": 8,
-      "delivery": 39
-    },
-    "distinctTargetedTestMethods": 288,
-    "failures": 0,
-    "errors": 0,
-    "skips": 0,
-    "wholeRepositorySuiteClaimed": false,
-    "initialCombinedDiscovery": "Timed out at 45 seconds and is not counted as a pass. Every recovered test module subsequently completed separately.",
-    "generatedAdapterValidation": "PASS: 58 files, one SKILL.md",
-    "extractedSkillVertical": {
-      "failedVerificationExit": 1,
-      "repairedVerificationExit": 0,
-      "deniedActions": 4,
-      "finalState": "VERIFIED_COMPLETE",
-      "packageFilesUnchanged": true,
-      "syntheticWorkProject": true
-    },
-    "currentMainSkillBlob": "b0251b8ad996272067a463b10fd067ef1b221874",
-    "currentMainDeliveryManifestBlob": "72969d5a5d392f0f18443bfd40a6f9a43849b446",
-    "skillArchiveSha256": "832a52aec7652ab12895305424f47559be20e59e79de8a928969da136ff26fe2"
-  },
-  "changedFiles": [".selective-intelligence/progress/latest.json"],
-  "publicDelivery": {
-    "kind": "public_canonical_skill_source",
-    "repository": "https://github.com/infotradescout/Selective-Intelligence",
-    "skillDirectory": "https://github.com/infotradescout/Selective-Intelligence/tree/main/skills/selective-intelligence",
-    "chatgptSkillDirectory": "https://github.com/infotradescout/Selective-Intelligence/tree/main/adapters/chatgpt/selective-intelligence",
-    "pullRequest": 45,
-    "merged": true,
-    "observedMergeCommit": "a9baf93436d097d161053d877333e9ab4ff5df96",
-    "directoryListingUpdated": false,
-    "githubReleaseAssetPublished": false
-  },
-  "currentAccess": {
-    "githubRead": "WORKING",
-    "githubReadyForReview": "RETURNED_MERGED",
-    "computerAccessed": false,
-    "computerOnlineStatus": "NOT_RECHECKED; not a prerequisite for public source publication",
-    "savedSkillInstallationAttempted": false,
-    "mainProtection": "Pull request required. A direct checkpoint-only write was rejected; no restriction was bypassed."
-  },
-  "remainingValidationAndDistributionWork": [
-    "Complete original portable-release, repository-wide and directory checks. The local recovery snapshot still lacks 45 non-runtime release inputs; do not claim those checks passed.",
-    "Check actual platform acceptance and installed-client behavior separately. No personal installation or directory listing was updated.",
-    "Reconcile legacy tasks that previously lost requirements without inventing history.",
-    "Assess external-worker cancellation and Start Pack parity separately from the tested SI-owned verification cancellation.",
-    "Run actual-model checks for unwanted business assumptions that never use the word SaaS.",
-    "Retain the preceding checkpoint's unproved concurrency, hostile-writer, crash-recovery, Windows, missing-input and multilevel-repair cases."
+  "prohibitions": [
+    "No account settings, permissions, production runtime, or unrelated product changes; no alternate personal doctrine."
   ],
-  "localSourcePending": [],
-  "nextAction": "Do not repeat source publication: the tested repair is on public main. Keep broader validation work visible. Treat a directory update or installed-copy check as distinct distribution work. Do not invent a hosted service, require the owner's PC for publication, bypass repository protection, or claim existing copies update automatically.",
-  "installationState": "UNCHANGED_UNVERIFIED",
-  "releaseState": "PUBLIC_SOURCE_MERGED; CATALOGUE_AND_EXISTING_INSTALLATIONS_NOT_UPDATED"
+  "progress": {
+    "completedVerified": [
+      "Canonical standing adoption, authority order, source-owner routing, seven delivery states, active-objective continuation, cold-start SI-root repair; generated ChatGPT/native/web projections and exact embedded refresh pins.",
+      "User explicitly approved public push and ordinary merge. Canonical source published at 26606d51cffec17607802ded4d758b35d0086058 with exactly the tested candidate tree. Refresh utility published at 3428aa4c13706ab95d3453b4089a0f873a818b57; source tree and utility blob read back through GitHub."
+    ],
+    "changedUnverified": [
+      "Final ordinary PR integration, managed installation refresh, public plugin-directory publication, and outside-runtime adoption are separate pending states."
+    ],
+    "proof": [
+      "81 canonical deterministic controls pass; local release doctor ready with117files; ChatGPT adapter59files one entrypoint passes;80focused tests yielded79passes and one identity-link assertion corrected/retested pass; refresh-loader5tests pass.",
+      "Validated public candidate archive61files SHA256 0c5e4f0a7a417a8838ba9c6771b4bfe21a12f4161a000d0188bd62d9f03e45d3. Full repeated model/client behavior remains not_run.",
+      "19 refresh/loader tests pass after binding to actual public commit identities; behavioral/runtime skill tree remains 818a5cddd3fa082922b4b551083041fc64a70429."
+    ],
+    "externalEffects": [
+      "Earlier automatic review rejection was superseded by explicit user approval. Git HTTPS transport lacked credentials; authenticated GitHub connector successfully published the task branch without force or protection changes."
+    ],
+    "doNotRepeat": [
+      "Do not recreate or republish the accepted source commits. Inspect current branch and PR state before retrying any external action."
+    ],
+    "nextSafeAction": "Merge the exact task-branch head through an ordinary PR after verifying its tree and current main, then verify integrated source and refresh supported installations; public directory and offline clients remain separate evidence."
+  },
+  "repository": {
+    "root": ".",
+    "rootKind": "repository_relative",
+    "branch": "repair/si-canonical-work-mode-bootstrap",
+    "headBefore": "3428aa4c13706ab95d3453b4089a0f873a818b57",
+    "checkpointCommit": "containing_commit",
+    "pushRequested": true,
+    "pushRemote": "origin",
+    "protectedBranchAuthorized": false,
+    "selectedStatusBefore": [],
+    "unrelatedChangeCountExcluded": 0
+  },
+  "savedFiles": [],
+  "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
 }

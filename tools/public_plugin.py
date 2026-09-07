@@ -38,9 +38,9 @@ MAX_UNCOMPRESSED = 512 * 1024 * 1024
 MAX_ENTRY = 100 * 1024 * 1024
 MAX_SEGMENTS = 20
 MAX_PATH_BYTES = 1_024
-# 58 canonical runtime inputs plus the plugin manifest and public icon.
+# 59 canonical runtime inputs (including delivery evidence) plus manifest and icon.
 # Keep the byte budget and exact-content checks; never omit execution to fit.
-MAX_RUNTIME_ENTRIES = 60
+MAX_RUNTIME_ENTRIES = 61
 MAX_RUNTIME_UNCOMPRESSED = 1 * 1024 * 1024
 SUPPORTED_CATEGORIES = {
     "Productivity",

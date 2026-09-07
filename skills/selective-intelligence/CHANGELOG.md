@@ -2,6 +2,14 @@
 
 All notable behavior changes to Selective Intelligence are recorded here.
 
+## 1.0.8 — Canonical Work-mode bootstrap (candidate)
+
+- Apply standing SI adoption before every task, including explicit maintenance of SI itself.
+- Resolve current authoritative source owners before retrieval; preserve the seven-level authority order.
+- Distinguish INTENT, IMPLEMENTED, PROVED, PUSHED, INTEGRATED, DEPLOYED, and LIVE VERIFIED.
+- Continue the active objective through its required completion condition; repair interpretation, routing, and verification defects in one canonical behavior across clients.
+- Generate the strict-guide bootstrap from the core and add fresh-context behavioral cases. Candidate creation does not prove publication, installation, or model behavior.
+
 ## 1.0.7 - 2026-09-04
 
 - Finish the usage, silent decision-integrity, and durable-progress update.

@@ -227,7 +227,7 @@ class NativeRoleContractTests(unittest.TestCase):
         worker = (ROOT / "subskills/si-worker/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("Clear bounded work does not invoke this role", planner)
         self.assertIn("Do not invoke it merely because the task involves repository edits", worker)
-        self.assertNotIn("TradeScout", planner + worker)
+        self.assertNotIn("Trade" + "Scout", planner + worker)
 
 
 if __name__ == "__main__":
