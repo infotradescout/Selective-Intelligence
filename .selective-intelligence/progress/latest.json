@@ -1,118 +1,91 @@
 {
-  "checkpointId": "product-identity-complete-handoffs-v6",
-  "status": "DRAFT_UNRELEASED_CONTINUING",
+  "checkpointId": "product-identity-package-published-v7",
+  "status": "DRAFT_PACKAGE_PUBLISHED_INSTALLATION_BLOCKED",
+  "updatedAt": "2026-09-07T13:18:08+00:00",
   "branch": "repair/product-model-corrections-2026-09-06",
-  "startingHead": "327cb7bb7e35ad2a5cf4427afbda03baa6e20053",
-  "verifiedSourceHead": "c7eee875cfd53e6471a1b7f6346763eb6323f440",
+  "verifiedSourceHead": "5385997e815756d9e3803ec3076b8e246621c6e6",
+  "verifiedDeliveryHead": "20b5ca0a8a0281273499aa81969982ab3dc80268",
   "previousCheckpoint": {
-    "id": "product-identity-execution-and-delivery-v5",
-    "revision": "327cb7bb7e35ad2a5cf4427afbda03baa6e20053",
+    "id": "product-identity-complete-handoffs-v6",
+    "revision": "96075bd9b84a82ec312a1ad368f9a771ba2e7b55",
     "path": ".selective-intelligence/progress/latest.json",
-    "gitBlob": "095069da476c04eab3cd79fa0165e8946a9697f8"
+    "gitBlob": "2fb72d2f1017bc2cf9a75fc4f3dac591f5b78148"
   },
   "intent": "Carry the person's actual product and corrections through execution, recovery and delivery. Software does not imply SaaS. Never invent a replacement business category or revoke approved memberships, fees, providers, services or human responsibilities.",
-  "authority": "Continue existing draft PR45 and preserve task-owned source remotely. No merge, release, installation, production data, new paid service, user-PC access or Actions gate.",
+  "authority": "Continue the existing repair, publish verified task-owned changes to its branch, and complete installation checks where supported. Do not bypass administrator restrictions, require programming work from the owner, add paid services, or represent branch publication as a completed installation. No merge or release is claimed.",
   "completedThisContinuation": [
-    "Export all immutable current task material bound by the existing checkpoint, not only title/tags/acceptance references. Include nested requirements, operations, dependencies and invalidation conditions without changing result binding or permissions.",
-    "Select source context from nested current task instructions; report named existing required files excluded for budget/safety as incomplete; exclude runtime attempt history from evidence selection.",
-    "Bind the context digest to current objective, task requirements and acceptance references as well as selected source files. Runtime-only progress does not change this identity.",
-    "Reject oversized instruction payloads instead of truncating them. Block tested credential shapes in task instructions and keep permitted provider references usable. These are bounded safeguards, not universal secret detection.",
-    "Align the existing planner and worker role instructions with the canonical correction-first/source-bound protocol, preserving Lean activation and existing Start Pack ownership.",
-    "Preserve the original immutable task inside each newly created verification-repair task. Keep routing ownership separate, preserve instructions through a second failed repair, and deny changed inherited instructions under the old approval.",
-    "Recover five unchanged runtime files and the existing five-case context test directly from the pinned repository source, verify exact Git blob hashes, and execute the real registry for the two recovered lanes."
+    "Published the queue optional-position correction and its eight actual command-line regression tests; absent and null positions default to the first eligible item without weakening owner, branch, or explicit-position checks.",
+    "Freshly reran all 249 recovered source test methods and 25 delivery fixture methods, with no failures, errors, skips, or expected failures.",
+    "Built the actual 58-file ChatGPT adapter from recovered canonical inputs, ran its compatibility validator, and confirmed the resulting archive exactly matches the prior tested candidate.",
+    "Published all generated adapter files and matching source/projection manifests in one commit. Reused 55 existing canonical Git blobs and generated only the three actual transformed files. The returned subtree identity exactly matches the locally tested generated tree.",
+    "Freshly exercised 36 client-protocol and eight queue tests from the extracted real archive. The separate failed-work/repair vertical passes, four prohibited actions remain denied, and packaged files remain unchanged.",
+    "Confirmed GitHub file and tree writes work in this session. Confirmed the connected computer remains offline and the directory-listed saved-skill management integration is disabled by an administrator. No installation was attempted through an unsupported or restricted route."
   ],
   "proof": {
-    "targetedMethods": 266,
-    "passed": 266,
-    "failed": 0,
+    "uniqueTargetedMethods": 274,
+    "passed": 274,
+    "failures": 0,
     "errors": 0,
-    "skipped": 0,
+    "skips": 0,
     "expectedFailures": 0,
     "groups": {
-      "productExecutionAndRepair": 236,
-      "existingContextCompatibility": 5,
-      "deliveryAndEntry": 25
+      "recoveredSourceTests": 249,
+      "deliveryFixtureTests": 25
     },
-    "newHandoff": {
-      "methods": 23,
-      "baseline": "Expanded pre-change suite fails; individual assertion/subtest failures are not method counts.",
-      "afterPassed": 23
-    },
-    "newRepairHandoff": {
-      "methods": 4,
-      "beforeFailed": 4,
-      "afterPassed": 4
-    },
-    "separateVertical": {
-      "classification": "PRODUCTION_MODULE_PATH_PASS",
-      "intentionallyIncorrectImplementationExit": 1,
-      "correctedImplementationExit": 0,
+    "commands": [
+      "python -B -m unittest discover -s skills/selective-intelligence/tests -p test_*.py -v",
+      "python -B -m unittest discover -s tools -p test_chatgpt_execution_delivery.py -v",
+      "python -B tools/build_chatgpt_adapter.py --archive",
+      "python -B tools/test_chatgpt_adapter.py"
+    ],
+    "extractedPackage": {
+      "clientProtocolTests": 36,
+      "queueContinuityTests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "countQualification": "These 44 repeat a subset of the 274 against the extracted runtime; do not add them to the unique total.",
+      "separateVertical": "PASS",
       "prohibitedActionsDenied": 4,
-      "protectedFixturesUnchanged": true,
-      "finalState": "VERIFIED_COMPLETE"
+      "finalState": "VERIFIED_COMPLETE",
+      "packagedFilesUnchanged": true,
+      "helpers": "Project-index and progress self-tests pass. Start Pack init/validate/resume pass; unresolved seal and overwrite attempts are blocked without changing files."
     },
-    "remoteIdentity": "Fresh GitHub blob reads at verifiedSourceHead match the exact six changed source/test files below. Changed Python source/tests also passed syntax parsing.",
-    "qualification": "Executed bounded tests from exact partial source recovery, not the full repository. The 27 new tests include three structural role-instruction checks; the other new tests use actual sessions, checkpoint authority, context selection, registry, file application and guarded child processes as applicable, with synthetic products/results. Earlier isolated tests retain their documented doubles. Delivery tests retain synthetic supporting files and optional-registry fallback; they are not the complete adapter. No running model or installed client is proved."
+    "qualification": "Controlled projects and supplied work results, not live model behavior or installed-client proof. The 25 delivery methods use fixtures. The actual package build, validator, and extracted-runtime checks use the real 58 canonical inputs without substitutes. This is not the complete repository or all supported plugin/release quality suite."
   },
-  "files": [
-    {
-      "path": "skills/selective-intelligence/scripts/build_engine.py",
-      "bytes": 68342,
-      "gitBlob": "5b0d3962bb6b3f75c54fb75707ea96d8a77dcac3",
-      "sha256": "43ae7ab80c2a7e0a55e5e29cf2890019b52bde2964c551ce402e6caecba215dd"
-    },
-    {
-      "path": "skills/selective-intelligence/scripts/context_budget.py",
-      "bytes": 17928,
-      "gitBlob": "31ab1b515b4ff62394bac1400f1629a1d41f0ff8",
-      "sha256": "3594b83716242d000d868857e7b7fc07703358703f17efe956c6bc986d8e7353"
-    },
-    {
-      "path": "skills/selective-intelligence/subskills/si-worker/SKILL.md",
-      "bytes": 2786,
-      "gitBlob": "30dc11c364b6fc472b85e4101413aa00a1261d4e",
-      "sha256": "d53d69ba98c734aa6e035a119e42cbf3b353fd9652c7d40d8937412415a0c1bc"
-    },
-    {
-      "path": "skills/selective-intelligence/subskills/si-planner/SKILL.md",
-      "bytes": 2523,
-      "gitBlob": "802fc8f01c285141f0ea3a41e595aa59739cef45",
-      "sha256": "5c36d354272e89e1c26dc15a236b4af183ca55d7494b2a8023259dcb08c6b8fa"
-    },
-    {
-      "path": "skills/selective-intelligence/tests/test_product_model_handoff_completeness.py",
-      "bytes": 14032,
-      "gitBlob": "842079a19ecc2b53b6bddc88179aef03ca824be4",
-      "sha256": "9a869647cf7418a3a4f68a6979e208473949388a4e066df2488faaac4d3fe6d6"
-    },
-    {
-      "path": "skills/selective-intelligence/tests/test_product_model_repair_handoff.py",
-      "bytes": 5786,
-      "gitBlob": "9ee3497de79504c403cb23bceb7a859a154acfc5",
-      "sha256": "f87326dc74b7060d79fe6aa6be0c39be61b1a9c9cbb6fe41bf891438b1fe8592"
-    }
-  ],
-  "localSourcePending": [],
-  "fullDistributionAttempt": {
-    "result": "BLOCKED_INCOMPLETE_LOCAL_SOURCE",
-    "command": "python -B tools/build_chatgpt_adapter.py --archive",
-    "exit": 1,
-    "firstMissingLocalInput": "skills/selective-intelligence/VERSION",
-    "declaredRuntimeFiles": 58,
-    "unrecoveredRuntimeFiles": 42,
-    "archiveProduced": false,
-    "qualification": "This is a local retrieval gap, not evidence that the repository lacks those files. No synthetic files were substituted for this full-build attempt."
+  "delivery": {
+    "runtimeFileCount": 58,
+    "missingRuntimeInputs": 0,
+    "generatedTree": "1aa65edac3875c9f68713471b19ad1225fa45e7f",
+    "metadataGitBlob": "72969d5a5d392f0f18443bfd40a6f9a43849b446",
+    "archiveSha256": "832a52aec7652ab12895305424f47559be20e59e79de8a928969da136ff26fe2",
+    "archiveMatchesPreviousCandidate": true,
+    "generatedFilesSavedRemotely": true,
+    "archivePublishedAsReleaseAsset": false,
+    "previousMissing42InputsBlocker": "RESOLVED; earlier incomplete-build statements are historical, not current.",
+    "priorSourceWriteBlocker": "RESOLVED in this session."
   },
   "remainingReleaseBlockers": [
-    "Recover the remaining 42 unchanged runtime inputs and complete repository context; the local tree is not a full checkout. The exact missing-input list is in the recovery evidence.",
-    "Build the complete actual adapter, run its existing full quality/compatibility suite, confirm platform acceptance, reconcile all supported projections and rebuild release/plugin packages.",
-    "Migrate and prove actual IDE/plugin/client consumers and establish which installed copy is loaded. Source commits and synthetic archives do not update installed SI.",
-    "Reconcile pre-existing task/repair records that already lost requirements; this continuation preserves newly exported complete tasks and newly generated repair tasks, not automatic reconstruction of missing historical instructions.",
-    "Prove external-worker cancellation separately from SI-owned verification cancellation, and assess existing Start Pack control-path parity separately.",
-    "Run semantic behavior tests against actual models for unwanted business templates without the word SaaS. Complete source transport and literal rejection checks do not prove obedience.",
-    "Cross-session same-workspace writes, hostile writers, crash recovery and Windows behavior remain unproved. Required nonexistent input detection outside explicit acceptance references and multi-level repair completion require further validation."
+    "Run the remaining complete-repository and supported release/plugin checks; this source snapshot is not a complete checkout.",
+    "Confirm platform acceptance and migrate/prove actual IDE/plugin/client consumers. No saved personal skill or desktop installation was changed; the computer is offline and saved-skill management is not available through the enabled tools.",
+    "Reconcile pre-existing task/repair records that already lost requirements without inventing their missing history.",
+    "Prove external-worker cancellation separately from SI-owned verification cancellation; assess Start Pack control-path parity.",
+    "Run actual-model semantic behavior tests for unwanted business templates that never use the word SaaS.",
+    "Cross-session same-workspace writes, hostile writers, crash recovery, Windows behavior, nonexistent required inputs outside explicit acceptance references, and multi-level repair completion remain unproved."
   ],
-  "nextAction": "Continue from verifiedSourceHead. Recover the missing actual distribution inputs, build and test the real package, then prove existing-client migration and installed behavior. Do not re-run settled investigations or treat counts as release proof.",
+  "localSourcePending": [],
+  "nextAction": "Continue from verifiedDeliveryHead. Do not repeat runtime-input retrieval or the already proved queue fix. Complete remaining repository/client gates and install through an authorized available management path; inspect the loaded version before claiming active behavior.",
   "installationState": "UNCHANGED_UNVERIFIED",
-  "releaseState": "NOT_MERGED_NOT_RELEASED"
+  "releaseState": "NOT_MERGED_NOT_RELEASED",
+  "evidenceSha256": {
+    "all-recovered-tests-fresh.log": "2dbaaef9f69e805f87685541b0960ef4086ac9322ff24a6fa266afbdddc79e1b",
+    "delivery-tests-fresh.log": "c9dd2ef5967021b3c598ddd56da99053568f3d50d8f41f3e3be4157f0cbeaa6f",
+    "package-build-fresh.json": "8aa847e9f72f1adf9df56d6103e59b1c881e77f481b3ba89aecf1188f4e62eec",
+    "package-compatibility-fresh.json": "ba4d8532ec4005f3d37c9414e762f0371377e310fa27b5428f122f377949027d",
+    "extracted-proof-fresh/summary.json": "416adb74b24af17c7c8384340dccf737f9e4cf66ab401c9e8c0d115b7136c3c2",
+    "extracted-proof-fresh/client_protocol.log": "8ded4674d70ac65a44222b534bbbfc9a93a698cd92642dbf53b0ee22d61043b7",
+    "extracted-proof-fresh/queue_continuity.log": "d92ca136c2d2afaaa0d812cf41a3bbb72b379ab0ffdd34e1198b3e103dbb554b",
+    "extracted-proof-fresh/vertical.log": "348feeefa101721f13bc279a77112ec464074d4c7bd7b492f5d591030e6c2651",
+    "extracted-proof-fresh/vertical-evidence.json": "41705f7a886c1755aa9a52f24569112f0df198d055d8e5244dba7c599c74f1c1"
+  }
 }
