@@ -7,6 +7,7 @@ concurrency, full-repository, filesystem-policy, or model-behavior proof.
 from __future__ import annotations
 
 import copy
+from contextlib import nullcontext
 import hashlib
 import importlib.util
 import json
@@ -40,6 +41,8 @@ class WorkerBindingTests(unittest.TestCase):
         policy.guarded_write_text = mock.Mock(side_effect=self.write_file)
         self.writer = policy.guarded_write_text
         self.storage = modules["lane_session"]
+        self.storage.session_lock = lambda session_id: nullcontext()
+        self.storage.SessionConflictError = type("SessionConflictError", (RuntimeError,), {})
         self.storage.load_session = mock.Mock(side_effect=self.load)
         self.storage.save_session = mock.Mock(side_effect=self.save)
         self.storage.transition_task = mock.Mock(side_effect=self.transition)
