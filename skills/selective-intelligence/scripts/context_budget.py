@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import copy
 import hashlib
 import json
 import posixpath
@@ -52,24 +53,45 @@ def _terms(value: object) -> set[str]:
     return {term.lower() for term in TOKEN_RE.findall(text) if term.lower() not in STOP_WORDS}
 
 
-def _task_text(task: Mapping[str, Any] | str | None) -> str:
-    if isinstance(task, str):
+# These fields describe execution progress, not fresh repository instructions.
+# Approval and mutation authority remain exclusively owned by checkpoint.py.
+_CONTEXT_PROGRESS_FIELDS = frozenset({
+    "status", "attempts", "createdAt", "updatedAt", "completedAt",
+    "invalidatedByEventId", "invalidationReason", "tainted", "cancelRequested",
+    "statusReasons", "activeVerification",
+})
+
+
+def _task_material(task: Mapping[str, Any] | str | None) -> dict[str, Any] | str | None:
+    if isinstance(task, str) or task is None:
         return task
     if not isinstance(task, Mapping):
-        return ""
+        return None
+    return copy.deepcopy({key: value for key, value in task.items()
+                          if key not in _CONTEXT_PROGRESS_FIELDS})
+
+
+def _task_text(task: Mapping[str, Any] | str | None) -> str:
+    """Include nested instructions without recruiting old execution output.
+
+    This selects evidence; it never makes task metadata an approval source.
+    Key/value text also lets the existing secret-content guard inspect values
+    attached to credential-like keys, rather than silently exporting them.
+    """
     values: list[str] = []
-    for key in ("title", "key"):
-        value = task.get(key)
+
+    def collect(value: Any, key: str = "") -> None:
         if isinstance(value, str):
-            values.append(value)
-    for key in ("tags", "intentRefs"):
-        value = task.get(key)
-        if isinstance(value, list):
-            values.extend(item for item in value if isinstance(item, str))
-    metadata = task.get("metadata")
-    if isinstance(metadata, Mapping) and isinstance(metadata.get("planKey"), str):
-        values.append(metadata["planKey"])
-    return " ".join(values)
+            values.append(f"{key}={value}" if key else value)
+        elif isinstance(value, Mapping):
+            for name, child in sorted(value.items()):
+                collect(child, str(name))
+        elif isinstance(value, (list, tuple)):
+            for child in value:
+                collect(child, key)
+
+    collect(_task_material(task))
+    return "\n".join(values)
 
 
 def _acceptance_refs(task: Mapping[str, Any] | str | None, refs: Sequence[str] | None) -> list[str]:
@@ -211,8 +233,11 @@ def select_context(
             raise ValueError(f"{name} must be a non-negative integer")
 
     workspace = Path(workspace).resolve()
-    task_text = _task_text(task)
-    refs = _acceptance_refs(task, acceptance_refs)
+    task_material = _task_material(task)
+    task_text = _task_text(task_material)
+    if SENSITIVE_CONTENT.search(task_text):
+        raise ValueError("task instructions contain potential secret material; use an authorized reference")
+    refs = _acceptance_refs(task_material, acceptance_refs)
     query_terms = _terms(" ".join([objective, task_text, *refs]))
     candidates: list[dict[str, Any]] = []
     excluded: list[dict[str, Any]] = []
@@ -224,7 +249,7 @@ def select_context(
             continue
         relative_path = path.relative_to(workspace)
         relative = relative_path.as_posix()
-        if any(_contains_path(ref, relative) for ref in refs):
+        if any(_contains_path(ref, relative) for ref in [objective, task_text, *refs]):
             referenced_workspace_paths.add(relative)
         if path.is_symlink():
             excluded.append({"path": relative, "reason": "symlink excluded"})
@@ -371,7 +396,11 @@ def select_context(
         {key: item[key] for key in ("path", "sha256", "bytes", "selectionReason")}
         for item in selected
     ]
-    context_digest = _sha256(json.dumps(digest_payload, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+    context_digest = _sha256(json.dumps({
+        "schema": "si.context.v2", "objective": objective, "task": task_material,
+        "acceptanceRefs": refs, "selected": digest_payload,
+    }, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+        allow_nan=False).encode("utf-8"))
     excluded.sort(key=lambda item: item["path"])
     return {
         "selected": selected,
@@ -385,6 +414,7 @@ def select_context(
         },
         "estimatedTokens": {"selected": selected_tokens, "avoided": avoided_tokens},
         "contextDigest": context_digest,
+        "contextDigestSchema": "si.context.v2",
         "outcomeCoverage": {
             "complete": not unresolved_paths and not unmatched_references,
             "requiredPaths": sorted(required_paths),
