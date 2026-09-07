@@ -1,33 +1,47 @@
 {
-  "checkpointId": "product-identity-execution-and-delivery-v5",
+  "checkpointId": "product-identity-complete-handoffs-v6",
   "status": "DRAFT_UNRELEASED_CONTINUING",
   "branch": "repair/product-model-corrections-2026-09-06",
-  "baseRevision": "d46ec1e34e7f547aab6623dad74b4c3a9ff0baf3",
-  "verifiedSourceHead": "6a50849c616b2447815ef0d9166fcf9d36ce3dd7",
-  "intent": "Carry the person's actual product and corrections through execution, recovery and delivery. Software does not imply SaaS. Never invent a replacement business category or revoke approved memberships, fees, providers or services.",
-  "authority": "Continue existing draft PR45. Preserve task-owned work remotely. No merge, release, install, production data, new paid service, user-PC access or Actions gate.",
-  "completed": [
-    "Bind actual task content and execution roots to checkpoint snapshots; runtime progress remains mutable without rewriting the approved contract.",
-    "Reject stale persisted revisions with cooperative thread/process locks; atomically replace individual saved-session files.",
-    "Serialize SI effect/correction transactions; stage complete file batches and restore earlier changes for tested caught write/save failures.",
-    "Reserve one verification attempt, prevent duplicate execution, preserve original authority on evidence and invalidate results after correction.",
-    "Require current task-bound command evidence for verified completion; unrelated, altered or historical success cannot certify current work.",
-    "Preserve all 50 existing runtime files and add eight omitted execution dependencies to the 58-file packaging recipe.",
-    "Preflight the complete source projection before replacing a prior package; validate exact bytes and preserve prior copies or recovery material on tested failures.",
-    "Reject stale/missing/changed package contents; create archives without truncating a prior archive and check bytes actually written into the ZIP.",
-    "Keep the actual generated entry within its existing word/character budget. Preserve the previous detailed product rule verbatim in the existing model-neutral execution reference.",
-    "Document the actual corrected client sequence in that canonical reference without creating another control owner or requiring approval before every harmless authorized edit."
+  "startingHead": "327cb7bb7e35ad2a5cf4427afbda03baa6e20053",
+  "verifiedSourceHead": "c7eee875cfd53e6471a1b7f6346763eb6323f440",
+  "previousCheckpoint": {
+    "id": "product-identity-execution-and-delivery-v5",
+    "revision": "327cb7bb7e35ad2a5cf4427afbda03baa6e20053",
+    "path": ".selective-intelligence/progress/latest.json",
+    "gitBlob": "095069da476c04eab3cd79fa0165e8946a9697f8"
+  },
+  "intent": "Carry the person's actual product and corrections through execution, recovery and delivery. Software does not imply SaaS. Never invent a replacement business category or revoke approved memberships, fees, providers, services or human responsibilities.",
+  "authority": "Continue existing draft PR45 and preserve task-owned source remotely. No merge, release, installation, production data, new paid service, user-PC access or Actions gate.",
+  "completedThisContinuation": [
+    "Export all immutable current task material bound by the existing checkpoint, not only title/tags/acceptance references. Include nested requirements, operations, dependencies and invalidation conditions without changing result binding or permissions.",
+    "Select source context from nested current task instructions; report named existing required files excluded for budget/safety as incomplete; exclude runtime attempt history from evidence selection.",
+    "Bind the context digest to current objective, task requirements and acceptance references as well as selected source files. Runtime-only progress does not change this identity.",
+    "Reject oversized instruction payloads instead of truncating them. Block tested credential shapes in task instructions and keep permitted provider references usable. These are bounded safeguards, not universal secret detection.",
+    "Align the existing planner and worker role instructions with the canonical correction-first/source-bound protocol, preserving Lean activation and existing Start Pack ownership.",
+    "Preserve the original immutable task inside each newly created verification-repair task. Keep routing ownership separate, preserve instructions through a second failed repair, and deny changed inherited instructions under the old approval.",
+    "Recover five unchanged runtime files and the existing five-case context test directly from the pinned repository source, verify exact Git blob hashes, and execute the real registry for the two recovered lanes."
   ],
   "proof": {
-    "targetedMethods": 234,
-    "passed": 234,
+    "targetedMethods": 266,
+    "passed": 266,
     "failed": 0,
     "errors": 0,
     "skipped": 0,
+    "expectedFailures": 0,
     "groups": {
-      "coreAndIntegrity": 173,
-      "realCommandLine": 36,
+      "productExecutionAndRepair": 236,
+      "existingContextCompatibility": 5,
       "deliveryAndEntry": 25
+    },
+    "newHandoff": {
+      "methods": 23,
+      "baseline": "Expanded pre-change suite fails; individual assertion/subtest failures are not method counts.",
+      "afterPassed": 23
+    },
+    "newRepairHandoff": {
+      "methods": 4,
+      "beforeFailed": 4,
+      "afterPassed": 4
     },
     "separateVertical": {
       "classification": "PRODUCTION_MODULE_PATH_PASS",
@@ -37,45 +51,68 @@
       "protectedFixturesUnchanged": true,
       "finalState": "VERIFIED_COMPLETE"
     },
-    "entry": {
-      "projectedWords": 1187,
-      "projectedCharacters": 9240,
-      "unchangedWordBudget": 1200,
-      "unchangedCharacterBudget": 10000,
-      "originalDetailedProductRulePreserved": true
-    },
-    "remoteIdentity": "Fresh GitHub blob reads at verifiedSourceHead match all 14 changed source/test files below. Python sources also passed syntax parsing.",
-    "qualification": "Executed bounded tests from an exact partial source recovery, not a full repository run. Earlier worker/plan test doubles remain as documented. CLI tests and the separate vertical use actual processes and saved sessions with synthetic plans/results. Delivery tests use actual nine core execution scripts with explicit synthetic supporting files and an optional-registry fallback. Two delivery tests inspect the actual entry/reference structurally. No live model or installed client is proved. Earlier timeouts are not passing evidence."
+    "remoteIdentity": "Fresh GitHub blob reads at verifiedSourceHead match the exact six changed source/test files below. Changed Python source/tests also passed syntax parsing.",
+    "qualification": "Executed bounded tests from exact partial source recovery, not the full repository. The 27 new tests include three structural role-instruction checks; the other new tests use actual sessions, checkpoint authority, context selection, registry, file application and guarded child processes as applicable, with synthetic products/results. Earlier isolated tests retain their documented doubles. Delivery tests retain synthetic supporting files and optional-registry fallback; they are not the complete adapter. No running model or installed client is proved."
   },
   "files": [
-    {"path": "skills/selective-intelligence/scripts/checkpoint.py", "gitBlob": "3930e60d4e5c392bfea5273bad6eea0245d69a5d"},
-    {"path": "skills/selective-intelligence/scripts/lane_session.py", "gitBlob": "87a3841654607f0c340af79e8afc273808708a7b"},
-    {"path": "skills/selective-intelligence/scripts/build_engine.py", "gitBlob": "914b3cea1e65f1152c9c595449ca4afe6b6c7343"},
-    {"path": "skills/selective-intelligence/tests/test_product_model_execution_integrity.py", "gitBlob": "ad14eba07bf9929bdbb18cccd993a61ff86dba9a"},
-    {"path": "skills/selective-intelligence/tests/test_product_model_transactions.py", "gitBlob": "e9b380d7fb40b93093c706ce21bf19542615dd95"},
-    {"path": "skills/selective-intelligence/tests/test_product_model_worker_binding.py", "gitBlob": "a9e601ebb2eacabfe694d62bbe000673abbeb337"},
-    {"path": "skills/selective-intelligence/tests/test_product_model_client_protocol.py", "gitBlob": "959e591faee90e348311c73c2a48767554841f88"},
-    {"path": "skills/selective-intelligence/tests/run_instruction_fidelity_vertical.py", "gitBlob": "a1e16cc0cbbcd37fe40818064e1a727fa8c7683b"},
-    {"path": "skills/selective-intelligence/SKILL.md", "gitBlob": "b0251b8ad996272067a463b10fd067ef1b221874"},
-    {"path": "skills/selective-intelligence/references/model-neutral-execution.md", "gitBlob": "6e2c255851fe63b13f379d454f569820e28ca72e"},
-    {"path": "skills/selective-intelligence/metadata/distribution.json", "gitBlob": "97108e4d114ff2a2c1101b467bc216e6eefc468c"},
-    {"path": "tools/build_chatgpt_adapter.py", "gitBlob": "9f3d4573a8c8d8388b120c8766de369283d33c04"},
-    {"path": "tools/test_chatgpt_execution_delivery.py", "gitBlob": "0aa56cc7d4815d6be644e30f65475a584736c9bd"},
-    {"path": "tools/test_chatgpt_adapter.py", "gitBlob": "0468430c48156e0bbd42e92f430a8e23c7118cd7"}
+    {
+      "path": "skills/selective-intelligence/scripts/build_engine.py",
+      "bytes": 68342,
+      "gitBlob": "5b0d3962bb6b3f75c54fb75707ea96d8a77dcac3",
+      "sha256": "43ae7ab80c2a7e0a55e5e29cf2890019b52bde2964c551ce402e6caecba215dd"
+    },
+    {
+      "path": "skills/selective-intelligence/scripts/context_budget.py",
+      "bytes": 17928,
+      "gitBlob": "31ab1b515b4ff62394bac1400f1629a1d41f0ff8",
+      "sha256": "3594b83716242d000d868857e7b7fc07703358703f17efe956c6bc986d8e7353"
+    },
+    {
+      "path": "skills/selective-intelligence/subskills/si-worker/SKILL.md",
+      "bytes": 2786,
+      "gitBlob": "30dc11c364b6fc472b85e4101413aa00a1261d4e",
+      "sha256": "d53d69ba98c734aa6e035a119e42cbf3b353fd9652c7d40d8937412415a0c1bc"
+    },
+    {
+      "path": "skills/selective-intelligence/subskills/si-planner/SKILL.md",
+      "bytes": 2523,
+      "gitBlob": "802fc8f01c285141f0ea3a41e595aa59739cef45",
+      "sha256": "5c36d354272e89e1c26dc15a236b4af183ca55d7494b2a8023259dcb08c6b8fa"
+    },
+    {
+      "path": "skills/selective-intelligence/tests/test_product_model_handoff_completeness.py",
+      "bytes": 14032,
+      "gitBlob": "842079a19ecc2b53b6bddc88179aef03ca824be4",
+      "sha256": "9a869647cf7418a3a4f68a6979e208473949388a4e066df2488faaac4d3fe6d6"
+    },
+    {
+      "path": "skills/selective-intelligence/tests/test_product_model_repair_handoff.py",
+      "bytes": 5786,
+      "gitBlob": "9ee3497de79504c403cb23bceb7a859a154acfc5",
+      "sha256": "f87326dc74b7060d79fe6aa6be0c39be61b1a9c9cbb6fe41bf891438b1fe8592"
+    }
   ],
   "localSourcePending": [],
+  "fullDistributionAttempt": {
+    "result": "BLOCKED_INCOMPLETE_LOCAL_SOURCE",
+    "command": "python -B tools/build_chatgpt_adapter.py --archive",
+    "exit": 1,
+    "firstMissingLocalInput": "skills/selective-intelligence/VERSION",
+    "declaredRuntimeFiles": 58,
+    "unrecoveredRuntimeFiles": 42,
+    "archiveProduced": false,
+    "qualification": "This is a local retrieval gap, not evidence that the repository lacks those files. No synthetic files were substituted for this full-build attempt."
+  },
   "remainingReleaseBlockers": [
-    "Recover the remaining 47 unchanged runtime files and complete repository context. The local tree is not a full checkout.",
-    "Generate the complete actual 58-file adapter and run the existing full adapter quality check; that complete suite has not run.",
-    "Verify platform acceptance of the complete bundle. The 58-file guard is a repository budget, not established platform acceptance.",
-    "Run full repository compatibility checks, reconcile supported projections and rebuild release/plugin packages without claiming fixture archives are the actual distribution.",
-    "Migrate and prove actual IDE/plugin/client consumers. A source recipe and an extracted test archive do not update installed SI.",
-    "Prove the installed copy is loaded and follows the corrected sequence; prove external worker cancellation separately from SI-owned verification cancellation.",
-    "Assess existing Start Pack control-path parity separately. Engine tests must not be presented as proof of all control owners.",
-    "Extend semantic model-behavior checks for unwanted business templates that never use the word SaaS. Literal correction and source hashes alone are insufficient.",
-    "Cross-session same-workspace writes, hostile writers, crash recovery and Windows behavior remain unproved."
+    "Recover the remaining 42 unchanged runtime inputs and complete repository context; the local tree is not a full checkout. The exact missing-input list is in the recovery evidence.",
+    "Build the complete actual adapter, run its existing full quality/compatibility suite, confirm platform acceptance, reconcile all supported projections and rebuild release/plugin packages.",
+    "Migrate and prove actual IDE/plugin/client consumers and establish which installed copy is loaded. Source commits and synthetic archives do not update installed SI.",
+    "Reconcile pre-existing task/repair records that already lost requirements; this continuation preserves newly exported complete tasks and newly generated repair tasks, not automatic reconstruction of missing historical instructions.",
+    "Prove external-worker cancellation separately from SI-owned verification cancellation, and assess existing Start Pack control-path parity separately.",
+    "Run semantic behavior tests against actual models for unwanted business templates without the word SaaS. Complete source transport and literal rejection checks do not prove obedience.",
+    "Cross-session same-workspace writes, hostile writers, crash recovery and Windows behavior remain unproved. Required nonexistent input detection outside explicit acceptance references and multi-level repair completion require further validation."
   ],
-  "nextAction": "Continue delivery from the existing owner: recover missing source, build the full actual adapter, run its full checks, then prove real client adoption before release. Do not re-run already settled investigations or present test counts as installed behavior.",
+  "nextAction": "Continue from verifiedSourceHead. Recover the missing actual distribution inputs, build and test the real package, then prove existing-client migration and installed behavior. Do not re-run settled investigations or treat counts as release proof.",
   "installationState": "UNCHANGED_UNVERIFIED",
   "releaseState": "NOT_MERGED_NOT_RELEASED"
 }
