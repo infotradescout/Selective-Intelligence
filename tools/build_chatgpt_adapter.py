@@ -45,7 +45,7 @@ def rewrite_text(relative: str, text: str, mapping: dict[str, str]) -> str:
         anchor = "<!-- SELECTIVE_INTELLIGENCE_RUNTIME_PROJECTION -->"
         addition = """
 
-ChatGPT adapter rule: this bundle intentionally contains exactly one `SKILL.md`. The seven Council role instructions are preserved as `subskills/*/ROLE.md` reference files. Before assigning a bounded Intake, Planner, Worker, Queue Manager, Objector, Aligner, or Verifier role, read that role's reference file and pass only its bounded packet. These role references are part of this one skill; they are not independently invocable skills.
+ChatGPT adapter: this bundle has one `SKILL.md`; the seven Council roles are `subskills/*/ROLE.md` references, not independently invocable skills. Read the selected role before assigning it and pass only its bounded packet.
 """
         if anchor not in text:
             raise ValueError("master skill adapter anchor is missing")
