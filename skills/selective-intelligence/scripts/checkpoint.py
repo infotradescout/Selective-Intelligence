@@ -51,6 +51,57 @@ def _id(prefix: str) -> str:
     return f"{prefix}-{uuid.uuid4().hex[:12]}"
 
 
+# Only execution progress is mutable under an existing task approval. Unknown
+# fields remain part of the contract so new instruction fields fail closed.
+_TASK_RUNTIME_FIELDS = frozenset({
+    "status", "attempts", "createdAt", "updatedAt", "completedAt",
+    "invalidatedByEventId", "invalidationReason", "tainted", "cancelRequested",
+    "statusReasons", "activeVerification",
+})
+
+
+def _material_hash(value: Any) -> str:
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":"),
+                         ensure_ascii=False, allow_nan=False).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _execution_scope(session: dict[str, Any]) -> dict[str, Any]:
+    return copy.deepcopy({key: session.get(key) for key in (
+        "workspace", "canonicalRoots", "writableRoots",
+    )})
+
+
+def _task_material(task: dict[str, Any]) -> dict[str, Any]:
+    return copy.deepcopy({key: value for key, value in task.items()
+                          if key not in _TASK_RUNTIME_FIELDS})
+
+
+def _assert_task_content(session: dict[str, Any], obj: dict[str, Any]) -> None:
+    task_id = obj.get("taskId")
+    if not task_id:
+        return
+    checkpoint = authorized_checkpoint(session)
+    binding = (checkpoint or {}).get("task_content_bindings", {}).get(task_id)
+    if not isinstance(binding, dict) or not isinstance(binding.get("snapshot"), dict):
+        raise CheckpointError("missing task content snapshot; reconcile before execution")
+    expected = binding.get("hash")
+    if not expected or _material_hash(binding["snapshot"]) != expected:
+        raise CheckpointError("task content snapshot changed; reconcile before execution")
+    owner = session.get("queue", {}).get(task_id)
+    if owner is None:
+        # Sparse bound work objects are supported, but a returned file result
+        # cannot stand in for the authoritative task that it claims to answer.
+        if "files" in obj or "producer" in obj:
+            raise CheckpointError("returned work has no authoritative task")
+        owner = obj
+    if _material_hash(_task_material(owner)) != expected:
+        raise CheckpointError("task content changed after authorization; reconcile before execution")
+    if obj is not owner and "files" not in obj and ("title" in obj or "queue" in obj):
+        if _material_hash(_task_material(obj)) != expected:
+            raise CheckpointError("work object differs from the authorized task content")
+
+
 def compute_intent_hash(active_intent: dict[str, Any]) -> str:
     return intent_hash(active_intent)
 
@@ -97,6 +148,9 @@ def emit_checkpoint(
         "supersedes_checkpoint_id": supersedes_checkpoint_id,
         "created_at": _now(),
         "active_intent_snapshot": intent,
+        "execution_scope_snapshot": _execution_scope(session),
+        "execution_scope_hash": _material_hash(_execution_scope(session)),
+        "task_content_bindings": {},
         "generation_authority": status == "approved",
         "mutation_frozen": status != "approved",
     }
@@ -171,6 +225,11 @@ def _assert_current_intent(session: dict[str, Any], checkpoint: dict[str, Any]) 
         raise CheckpointError("active intent changed after checkpoint; reconcile before execution")
     if checkpoint.get("intent_summary") != (snapshot.get("product_intent") or ""):
         raise CheckpointError("checkpoint summary differs from its intent snapshot")
+    scope = checkpoint.get("execution_scope_snapshot")
+    if not isinstance(scope, dict) or _material_hash(scope) != checkpoint.get("execution_scope_hash"):
+        raise CheckpointError("missing or changed execution scope snapshot; reconcile before execution")
+    if _execution_scope(session) != scope:
+        raise CheckpointError("execution scope changed after checkpoint; reconcile before execution")
 
 
 def authorized_checkpoint(session: dict[str, Any]) -> dict[str, Any] | None:
@@ -301,9 +360,20 @@ def require_authorized_checkpoint(
 def bind_authorization(session: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
     """Stamp authorized_checkpoint_id + authorized_intent_hash onto a work object."""
     checkpoint = require_authorized_checkpoint(session)
-    payload = dict(payload)
+    payload = copy.deepcopy(payload)
     payload["authorized_checkpoint_id"] = checkpoint["checkpoint_id"]
     payload["authorized_intent_hash"] = checkpoint["intent_hash"]
+    task_id = payload.get("taskId")
+    if task_id:
+        if not isinstance(task_id, str):
+            raise CheckpointError("task identity must be a string")
+        material = _task_material(payload)
+        binding = {"hash": _material_hash(material), "snapshot": material}
+        bindings = checkpoint.setdefault("task_content_bindings", {})
+        previous = bindings.get(task_id)
+        if previous is not None and previous != binding:
+            raise CheckpointError("cannot rebind changed task content under the same approval")
+        bindings[task_id] = binding
     return payload
 
 
@@ -326,6 +396,7 @@ def assert_binding(session: dict[str, Any], obj: dict[str, Any]) -> None:
         raise CheckpointError("object status forbids execution")
     if obj.get("tainted") or obj.get("cancelRequested"):
         raise CheckpointError("tainted or cancellation-requested work cannot execute")
+    _assert_task_content(session, obj)
 
 
 def mark_tainted_effects(
