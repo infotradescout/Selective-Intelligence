@@ -46,6 +46,8 @@ For production-facing work, finish only at the required live behavior unless the
 
 Store enough provenance to revisit material claims: source URL or file, retrieval context, and relevant date. For software proof, also bind evidence to the exact source revision or build artifact, environment, configuration, role, data fixture, timestamp, expected result, actual result, and relevant dependency versions. Flaky, skipped, quarantined, stale, or fixture-only checks cannot close a requirement.
 
+A device-list status reports the connector's view of a registered endpoint. Keep physical power/network state, connector or agent reachability, endpoint identity, and observation freshness distinct. Verify that an endpoint represents the user's current computer before attributing its status. Record retrieval time separately from any last-seen time; missing timestamps stay unknown. After a user corrects an overclaim, retract it and refresh the narrowly relevant authorized status. An unavailable route does not identify its cause or prove that the computer is off or disconnected from its network.
+
 ## Source weighting
 
 Weight sources by authority, recency, specificity, internal consistency, and proximity to the subject. A first-party page is usually stronger than a directory, but an obviously abandoned first-party page may be weaker than a recent verified record. Do not resolve conflicts through source count alone.

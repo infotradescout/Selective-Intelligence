@@ -1,53 +1,84 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-canonical-integration-1.0.8",
-  "createdAt": "2026-09-07T17:25:22.159086+00:00",
-  "outcome": "SI 1.0.8 canonical source integrated and reachable saved installation verified; public-directory and outside-client distribution remain incomplete.",
+  "checkpointId": "progress-20260907T174654Z-fb263391",
+  "createdAt": "2026-09-07T17:46:54.931820+00:00",
+  "outcome": "Corrected SI connector evidence is implemented and locally validated on the 1.0.8 candidate; ordinary source integration, pinned refresh publication, and saved-installation refresh remain pending.",
   "scope": [
-    "Selective-Intelligence canonical source and generated client/plugin distribution only."
+    "Canonical SI evidence rule, one semantic regression, generated projections, and existing refresh pins only."
   ],
   "prohibitions": [
-    "No account settings, permissions, production runtime, or unrelated product changes; no alternate personal doctrine."
+    "No device/account/configuration changes, new edition, release-number change, protection bypass, or force push."
   ],
   "progress": {
     "completedVerified": [
-      "One canonical SI 1.0.8 behavior includes standing adoption, authority order, source-owner routing, seven delivery states, active-objective continuation, and cold-start SI-root repair. Generated client projections share that governing behavior.",
-      "PR 48 merged through the ordinary GitHub API after explicit user push-and-merge approval. Integration commit 019119650db8c471db122a62b409208f445748b3 and its tree 5f36c1cebcd3b2e4d374655be13c052fc3347fec were read back successfully.",
-      "Tested governing skill tree 818a5cddd3fa082922b4b551083041fc64a70429 is integrated unchanged. Published refresh pins reference source 26606d51cffec17607802ded4d758b35d0086058 and utility 3428aa4c13706ab95d3453b4089a0f873a818b57; remote identities were verified.",
-      "The reachable saved SI 1.0.8 installation was verified after reconciliation: all 57 governing and execution files match the canonical adapter. Platform-owned presentation normalization does not change doctrine."
+      "Connector status is bound to endpoint identity, observed reachability, and observation time; physical device power/network state and failure causes are not inferred.",
+      "Canonical source routing preserves its existing owners within the ChatGPT 1200-word entrypoint ceiling; native and ChatGPT projections are regenerated."
     ],
     "changedUnverified": [
-      "At the latest checked account, the public plugin directory remains at version 1.0.5 and legitimate SI publisher/update controls are unavailable. Repository integration does not update that listing.",
-      "Outside-client and offline-computer installations remain unverified. Full repeated cross-client model behavior is not established."
+      "Public plugin directory and outside-client installations remain unverified. The registered remote-computer connector route is unavailable; physical PC state and endpoint-to-current-PC mapping are unknown to the tools.",
+      "A semantic regression is declared; the full repeated cross-client behavior suite remains not_run."
     ],
     "proof": [
-      "81 canonical deterministic controls pass; local release doctor ready with117files; ChatGPT adapter59files one entrypoint passes;80focused tests yielded79passes and one identity-link assertion corrected/retested pass; refresh-loader5tests pass.",
-      "Validated public candidate archive61files SHA256 0c5e4f0a7a417a8838ba9c6771b4bfe21a12f4161a000d0188bd62d9f03e45d3. Full repeated model/client behavior remains not_run.",
-      "19 refresh/loader tests pass after binding to actual public commit identities; behavioral/runtime skill tree remains 818a5cddd3fa082922b4b551083041fc64a70429."
+      "Local release doctor passes with 117 files; behavioral case schema passes with 14 cases; ChatGPT adapter check passes with 59 files and one entrypoint; seven native-pointer checks pass.",
+      "One independent scenario response retracted the physical-PC claim, separated the fresh retrieval from last seen, left identity and cause unknown, and asked for endpoint confirmation. This is a limited scenario check, not full-suite evidence."
     ],
     "externalEffects": [
-      "The earlier automatic approval rejection is historical and was superseded by explicit user approval. Public source push and ordinary PR 48 merge succeeded without force, protection changes, or admin bypass.",
-      "Canonical 1.0.8 source integration and reachable saved-installation verification succeeded. No public-directory update or outside-client refresh is claimed."
+      "Earlier source push-and-merge authorization remains applicable; this new correction has not yet been published."
     ],
     "doNotRepeat": [
-      "Do not rebuild or request the already supplied source push-and-merge approval again merely to resume this task.",
-      "Do not reopen PR 48 or republish its accepted commits. Inspect current authoritative state before retrying any external action.",
-      "Do not substitute another behavioral edition or consumer installation controls for the legitimate publisher update workflow."
+      "Do not repeat the already-granted ordinary source push-and-merge approval or claim source integration updates the public plugin directory."
     ],
-    "nextSafeAction": "Use the legitimate publisher account/workflow to update the public plugin from the validated canonical 1.0.8 package, then verify the actual published listing and each reachable installed client. Obtain only genuinely missing publisher/computer access; keep inaccessible outside-client states unverified."
+    "nextSafeAction": "Publish the prepared source commit through the authorized ordinary PR path, bind the existing refresh utility and loader to verified published commit identities, then verify integration and refresh the reachable saved installation."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
-    "branch": "main",
-    "headBefore": "019119650db8c471db122a62b409208f445748b3",
+    "branch": "fix/connector-observation-scope",
+    "headBefore": "f2694fa8eed06f8515d4ec2e47f313278b92acce",
     "checkpointCommit": "containing_commit",
-    "pushRequested": true,
-    "pushRemote": "origin",
+    "pushRequested": false,
+    "pushRemote": null,
     "protectedBranchAuthorized": false,
-    "selectedStatusBefore": [],
-    "unrelatedChangeCountExcluded": 0
+    "selectedStatusBefore": [
+      " M adapters/chatgpt/metadata/chatgpt-adapter.json",
+      " M adapters/chatgpt/selective-intelligence/SKILL.md",
+      " M adapters/chatgpt/selective-intelligence/references/evidence-and-completion.md",
+      " M skills/selective-intelligence/AI-GUIDE.md",
+      " M skills/selective-intelligence/SKILL.md",
+      " M skills/selective-intelligence/evals/behavior-cases.json",
+      " M skills/selective-intelligence/references/evidence-and-completion.md"
+    ],
+    "unrelatedChangeCountExcluded": 1
   },
-  "savedFiles": [],
+  "savedFiles": [
+    {
+      "path": "skills/selective-intelligence/SKILL.md",
+      "sha256": "e136aa94184f7f0823d823525714a392d874ad8d8f23f17ab726cd65b714a60d"
+    },
+    {
+      "path": "skills/selective-intelligence/AI-GUIDE.md",
+      "sha256": "8b729836b9277204dda880bfdf2303bbe2e6d218a696eca490d5216e956b19b7"
+    },
+    {
+      "path": "skills/selective-intelligence/references/evidence-and-completion.md",
+      "sha256": "f05424d0e1b8c68624aab05d3e03361e312a08a92bc3b3338b86e29a1971569f"
+    },
+    {
+      "path": "skills/selective-intelligence/evals/behavior-cases.json",
+      "sha256": "08faf0f170088b4c8323641b0020fcb0103585480ab6e0b3d4fef895a9e38c39"
+    },
+    {
+      "path": "adapters/chatgpt/selective-intelligence/SKILL.md",
+      "sha256": "a698efcdd76129cb561d606ddd2f96b08ea3b611177ca92899d13ee347ab0c22"
+    },
+    {
+      "path": "adapters/chatgpt/selective-intelligence/references/evidence-and-completion.md",
+      "sha256": "f05424d0e1b8c68624aab05d3e03361e312a08a92bc3b3338b86e29a1971569f"
+    },
+    {
+      "path": "adapters/chatgpt/metadata/chatgpt-adapter.json",
+      "sha256": "7cd4a2588f357c4389aa9d774e885dc44924fef8c76b7fec1e596a65d900d220"
+    }
+  ],
   "privacyBoundary": "bounded summaries and selected file identities only; absolute paths, unrelated file names, raw prompts, and secrets are excluded"
 }
