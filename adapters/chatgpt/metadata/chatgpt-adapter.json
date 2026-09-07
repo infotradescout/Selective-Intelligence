@@ -20,7 +20,7 @@
   "behavioral_contract": "source_preserved_not_installed_behavior_proof",
   "source_manifest_sha256": "e1a569d7f2c6cccae1d652b81011100db01790ae3168da9d43a5d2a23e05abc7",
   "source_file_sha256": {
-    "SKILL.md": "bafe37b72b6b580e473306e01a24b4a8787bb0369633d94e7a4512ea5565f967",
+    "SKILL.md": "e136aa94184f7f0823d823525714a392d874ad8d8f23f17ab726cd65b714a60d",
     "VERSION": "326dd5d8641f399990de42def50ac29eb4c9222601c0a0a3fc3c947dd3bec65d",
     "agents/openai.yaml": "5090139b222271205759e9c1cd34fbe154a0aae91221cb9fea47e7ecaf29e56c",
     "assets/icon.svg": "bbd2fc7be4ae81f8ff16bd26e26eab6d8547ef3ba1d6d7e49ba970c9a28fc77f",
@@ -33,7 +33,7 @@
     "references/architecture-reuse.md": "5d1c4d09ca8e7407d19c7fc9d68587b2ea0b61be61e5c3448890af2c8766138d",
     "references/continuity-and-impact.md": "78f93ccaaed14e58544c5a0c78b6bf933922b4c576a597b13d63ac74d0de53e0",
     "references/durable-progress-and-recovery.md": "1457eed72572aa6e0f34ab6773b81735e3f1ee22e5427e44a238619b034a609d",
-    "references/evidence-and-completion.md": "68526962493190312cd26e966bffe6561a31068f6d94639af8046aa27715fbc1",
+    "references/evidence-and-completion.md": "f05424d0e1b8c68624aab05d3e03361e312a08a92bc3b3338b86e29a1971569f",
     "references/failure-patterns-and-gates.md": "90b4b2fc15069a33cdef3fc39d653b718f4ef4e27345c0db5dab3d7fca5408b5",
     "references/feedback-and-learning-loop.md": "5e25a722d5f28b4a91f5d29d1e623c8a3c182057ce671cdc3e94bb3fd3cf7db9",
     "references/first-checkpoint.md": "383ca9161be9cc93878354bbbb5a15ced98752a5d352f7d0dd6fa6243ea64724",
@@ -81,7 +81,7 @@
     "subskills/si-worker/SKILL.md": "d53d69ba98c734aa6e035a119e42cbf3b353fd9652c7d40d8937412415a0c1bc"
   },
   "projected_file_sha256": {
-    "SKILL.md": "cbf55dab5f7c2971f2e2bb9a7ed86a35f698a6aa2d0a52281b93b96ce00f83a0",
+    "SKILL.md": "a698efcdd76129cb561d606ddd2f96b08ea3b611177ca92899d13ee347ab0c22",
     "VERSION": "326dd5d8641f399990de42def50ac29eb4c9222601c0a0a3fc3c947dd3bec65d",
     "agents/openai.yaml": "5090139b222271205759e9c1cd34fbe154a0aae91221cb9fea47e7ecaf29e56c",
     "assets/icon.svg": "bbd2fc7be4ae81f8ff16bd26e26eab6d8547ef3ba1d6d7e49ba970c9a28fc77f",
@@ -94,7 +94,7 @@
     "references/architecture-reuse.md": "5d1c4d09ca8e7407d19c7fc9d68587b2ea0b61be61e5c3448890af2c8766138d",
     "references/continuity-and-impact.md": "78f93ccaaed14e58544c5a0c78b6bf933922b4c576a597b13d63ac74d0de53e0",
     "references/durable-progress-and-recovery.md": "1457eed72572aa6e0f34ab6773b81735e3f1ee22e5427e44a238619b034a609d",
-    "references/evidence-and-completion.md": "68526962493190312cd26e966bffe6561a31068f6d94639af8046aa27715fbc1",
+    "references/evidence-and-completion.md": "f05424d0e1b8c68624aab05d3e03361e312a08a92bc3b3338b86e29a1971569f",
     "references/failure-patterns-and-gates.md": "90b4b2fc15069a33cdef3fc39d653b718f4ef4e27345c0db5dab3d7fca5408b5",
     "references/feedback-and-learning-loop.md": "5e25a722d5f28b4a91f5d29d1e623c8a3c182057ce671cdc3e94bb3fd3cf7db9",
     "references/first-checkpoint.md": "383ca9161be9cc93878354bbbb5a15ced98752a5d352f7d0dd6fa6243ea64724",
