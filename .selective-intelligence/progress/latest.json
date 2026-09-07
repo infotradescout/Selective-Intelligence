@@ -1,8 +1,8 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-20260907T171020Z-dc4cf293",
-  "createdAt": "2026-09-07T17:10:20.841719+00:00",
-  "outcome": "One canonical SI Work-mode bootstrap, candidate1.0.8",
+  "checkpointId": "progress-canonical-publication-1.0.8",
+  "createdAt": "2026-09-07T17:19:56.385828+00:00",
+  "outcome": "One canonical SI Work-mode bootstrap, version 1.0.8",
   "scope": [
     "Selective-Intelligence canonical source and generated client/plugin distribution only."
   ],
@@ -11,31 +11,33 @@
   ],
   "progress": {
     "completedVerified": [
-      "Canonical standing adoption, authority order, source-owner routing, seven delivery states, active-objective continuation, cold-start SI-root repair; generated ChatGPT/native/web projections and exact embedded refresh pins."
+      "Canonical standing adoption, authority order, source-owner routing, seven delivery states, active-objective continuation, cold-start SI-root repair; generated ChatGPT/native/web projections and exact embedded refresh pins.",
+      "User explicitly approved public push and ordinary merge. Canonical source published at 26606d51cffec17607802ded4d758b35d0086058 with exactly the tested candidate tree. Refresh utility published at 3428aa4c13706ab95d3453b4089a0f873a818b57; source tree and utility blob read back through GitHub."
     ],
     "changedUnverified": [
-      "Candidate publication, public download of pinned commits, managed installation refresh, and outside-runtime adoption are unverified; no public1.0.8availability claim."
+      "Final ordinary PR integration, managed installation refresh, public plugin-directory publication, and outside-runtime adoption are separate pending states."
     ],
     "proof": [
       "81 canonical deterministic controls pass; local release doctor ready with117files; ChatGPT adapter59files one entrypoint passes;80focused tests yielded79passes and one identity-link assertion corrected/retested pass; refresh-loader5tests pass.",
-      "Validated public candidate archive61files SHA256 0c5e4f0a7a417a8838ba9c6771b4bfe21a12f4161a000d0188bd62d9f03e45d3. Full repeated model/client behavior remains not_run."
+      "Validated public candidate archive61files SHA256 0c5e4f0a7a417a8838ba9c6771b4bfe21a12f4161a000d0188bd62d9f03e45d3. Full repeated model/client behavior remains not_run.",
+      "19 refresh/loader tests pass after binding to actual public commit identities; behavioral/runtime skill tree remains 818a5cddd3fa082922b4b551083041fc64a70429."
     ],
     "externalEffects": [
-      "Attempted task-branch git push was rejected by automatic approval review; no accepted remote publication receipt."
+      "Earlier automatic review rejection was superseded by explicit user approval. Git HTTPS transport lacked credentials; authenticated GitHub connector successfully published the task branch without force or protection changes."
     ],
     "doNotRepeat": [
-      "Do not retry public push through another transport to bypass automatic rejection."
+      "Do not recreate or republish the accepted source commits. Inspect current branch and PR state before retrying any external action."
     ],
-    "nextSafeAction": "Obtain explicit public GitHub publication/integration approval after review rejection; then publish task branch, integrate exact tested source, refresh supported copies, and verify actual installations."
+    "nextSafeAction": "Merge the exact task-branch head through an ordinary PR after verifying its tree and current main, then verify integrated source and refresh supported installations; public directory and offline clients remain separate evidence."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "repair/si-canonical-work-mode-bootstrap",
-    "headBefore": "97fca8f8730802ea7c097a9f940db349676aa556",
+    "headBefore": "3428aa4c13706ab95d3453b4089a0f873a818b57",
     "checkpointCommit": "containing_commit",
-    "pushRequested": false,
-    "pushRemote": null,
+    "pushRequested": true,
+    "pushRemote": "origin",
     "protectedBranchAuthorized": false,
     "selectedStatusBefore": [],
     "unrelatedChangeCountExcluded": 0
