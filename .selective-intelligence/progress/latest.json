@@ -1,8 +1,8 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
   "checkpointId": "progress-20260907T174654Z-fb263391",
-  "createdAt": "2026-09-07T17:46:54.931820+00:00",
-  "outcome": "Corrected SI connector evidence is implemented and locally validated on the 1.0.8 candidate; ordinary source integration, pinned refresh publication, and saved-installation refresh remain pending.",
+  "createdAt": "2026-09-07T17:49:27.503832+00:00",
+  "outcome": "SI connector-evidence correction is implemented, validated, and published on PR 50; this checkpoint captures the candidate before its ordinary merge and saved-installation refresh.",
   "scope": [
     "Canonical SI evidence rule, one semantic regression, generated projections, and existing refresh pins only."
   ],
@@ -12,7 +12,8 @@
   "progress": {
     "completedVerified": [
       "Connector status is bound to endpoint identity, observed reachability, and observation time; physical device power/network state and failure causes are not inferred.",
-      "Canonical source routing preserves its existing owners within the ChatGPT 1200-word entrypoint ceiling; native and ChatGPT projections are regenerated."
+      "Canonical source routing preserves its existing owners within the ChatGPT 1200-word entrypoint ceiling; native and ChatGPT projections are regenerated.",
+      "Published source 1874a87756461e24b9d53aa466c49e420411933f contains corrected skill tree 7aa94ad3cbd84221e91bd8b542c3260abf19ed63. Published refresh utility bd6a42832557a4b508a2f38de79c56950eccb0c1 names that exact source and tree; the loader pins that utility and its SHA256."
     ],
     "changedUnverified": [
       "Public plugin directory and outside-client installations remain unverified. The registered remote-computer connector route is unavailable; physical PC state and endpoint-to-current-PC mapping are unknown to the tools.",
@@ -20,21 +21,22 @@
     ],
     "proof": [
       "Local release doctor passes with 117 files; behavioral case schema passes with 14 cases; ChatGPT adapter check passes with 59 files and one entrypoint; seven native-pointer checks pass.",
-      "One independent scenario response retracted the physical-PC claim, separated the fresh retrieval from last seen, left identity and cause unknown, and asked for endpoint confirmation. This is a limited scenario check, not full-suite evidence."
+      "One independent scenario response retracted the physical-PC claim, separated the fresh retrieval from last seen, left identity and cause unknown, and asked for endpoint confirmation. This is a limited scenario check, not full-suite evidence.",
+      "All 19 focused refresh utility and verified-loader tests pass after pinning the corrected published source and utility identities."
     ],
     "externalEffects": [
-      "Earlier source push-and-merge authorization remains applicable; this new correction has not yet been published."
+      "Source and utility commits are published to fix/connector-observation-scope through the authorized GitHub connector; PR 50 is open. No force, protection change, or admin bypass was used."
     ],
     "doNotRepeat": [
       "Do not repeat the already-granted ordinary source push-and-merge approval or claim source integration updates the public plugin directory."
     ],
-    "nextSafeAction": "Publish the prepared source commit through the authorized ordinary PR path, bind the existing refresh utility and loader to verified published commit identities, then verify integration and refresh the reachable saved installation."
+    "nextSafeAction": "Check PR 50 and current main to establish whether this candidate is integrated; merge ordinarily under existing authorization if still pending. Then verify the exact governing tree and refresh the reachable saved installation. Public-directory publication and unavailable outside-client routes remain separate."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
     "branch": "fix/connector-observation-scope",
-    "headBefore": "f2694fa8eed06f8515d4ec2e47f313278b92acce",
+    "headBefore": "bd6a42832557a4b508a2f38de79c56950eccb0c1",
     "checkpointCommit": "containing_commit",
     "pushRequested": false,
     "pushRemote": null,
