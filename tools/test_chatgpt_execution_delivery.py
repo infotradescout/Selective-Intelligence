@@ -88,6 +88,33 @@ class DeliveryTests(unittest.TestCase):
         self.metadata.write_text('{"previous":true}\n')
         return self.snapshot()
 
+    def test_actual_entry_projection_respects_existing_budget(self):
+        import re
+        source = (SOURCE / "SKILL.md").read_text(encoding="utf-8")
+        projected = self.builder.rewrite_text("SKILL.md", source, {})
+        self.assertLessEqual(len(re.findall(r"\b[\w’'-]+\b", projected)), 1200)
+        self.assertLessEqual(len(projected), 10000)
+        before_description = next(line for line in source.splitlines() if line.startswith("description:"))
+        self.assertIn(before_description, projected)
+        self.assertIn("Software does not imply SaaS", projected)
+        self.assertIn("memberships, fees, providers, and services", projected)
+        self.assertIn("references/model-neutral-execution.md#product-identity-and-corrected-execution", projected)
+
+    def test_entry_reference_retains_product_scope_and_real_client_protocol(self):
+        guide = (SOURCE / "references/model-neutral-execution.md").read_text(encoding="utf-8")
+        for phrase in (
+            "## Product identity and corrected execution",
+            "Do not infer subscription tiers, seat billing, tenant boundaries, dashboards, upgrade funnels",
+            "rejecting SaaS does not revoke explicitly approved memberships, fees, existing providers, or shared services",
+            "Identify the existing control owner",
+            "plan-packet", "stage-plan", "sessionId", "taskId",
+            "authorized_checkpoint_id", "authorized_intent_hash",
+            "Do not relabel an old plan or result",
+            "Do not invent another approval before each harmless edit",
+            "A built archive is not installed-client or live-model proof",
+        ):
+            self.assertIn(phrase, guide)
+
     def test_runtime_recipe_contains_execution_owners_and_dependencies(self):
         metadata = json.loads((SOURCE / "metadata/distribution.json").read_text())
         self.assertTrue(REQUIRED.issubset(metadata["runtime_files"]), sorted(REQUIRED - set(metadata["runtime_files"])))
