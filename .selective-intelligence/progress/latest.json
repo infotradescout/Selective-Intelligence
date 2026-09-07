@@ -1,27 +1,51 @@
 {
-  "checkpointId": "product-identity-execution-integrity-v5",
-  "recordedAt": "2026-09-07T00:27:35.083494+00:00",
+  "checkpointId": "product-identity-execution-and-delivery-v5",
   "status": "DRAFT_UNRELEASED_CONTINUING",
   "branch": "repair/product-model-corrections-2026-09-06",
   "baseRevision": "d46ec1e34e7f547aab6623dad74b4c3a9ff0baf3",
-  "lastObservedHead": "f5b3c6a6142f2d6a57ba947dba290379612f67d9",
-  "intent": "SI must carry corrections into actual work and preserve approved product identity. Software does not imply SaaS. Do not invent a replacement business category or revoke approved memberships/fees/providers.",
-  "authority": "Continue on existing draft PR45. No merge, release, install, production data, new paid service, user-PC access or Actions gate.",
+  "verifiedSourceHead": "6a50849c616b2447815ef0d9166fcf9d36ce3dd7",
+  "intent": "Carry the person's actual product and corrections through execution, recovery and delivery. Software does not imply SaaS. Never invent a replacement business category or revoke approved memberships, fees, providers or services.",
+  "authority": "Continue existing draft PR45. Preserve task-owned work remotely. No merge, release, install, production data, new paid service, user-PC access or Actions gate.",
   "completed": [
-    "Bind actual task content and execution roots to checkpoint snapshots; runtime-only progress remains mutable.",
-    "Reject stale persisted session revisions with real cooperative thread/process locks; atomically replace individual saved-session files.",
-    "Serialize SI effect and correction transactions; stage complete file batches before replacing targets; rollback tested caught write/save failures.",
-    "Reserve one verification attempt; keep its original authority on returned evidence, invalidate stale results, clear failed claims and preserve correction cancellation.",
-    "Require current task-bound command evidence for verified completion; unrelated and changed historical success cannot certify new work."
+    "Bind actual task content and execution roots to checkpoint snapshots; runtime progress remains mutable without rewriting the approved contract.",
+    "Reject stale persisted revisions with cooperative thread/process locks; atomically replace individual saved-session files.",
+    "Serialize SI effect/correction transactions; stage complete file batches and restore earlier changes for tested caught write/save failures.",
+    "Reserve one verification attempt, prevent duplicate execution, preserve original authority on evidence and invalidate results after correction.",
+    "Require current task-bound command evidence for verified completion; unrelated, altered or historical success cannot certify current work.",
+    "Preserve all 50 existing runtime files and add eight omitted execution dependencies to the 58-file packaging recipe.",
+    "Preflight the complete source projection before replacing a prior package; validate exact bytes and preserve prior copies or recovery material on tested failures.",
+    "Reject stale/missing/changed package contents; create archives without truncating a prior archive and check bytes actually written into the ZIP.",
+    "Keep the actual generated entry within its existing word/character budget. Preserve the previous detailed product rule verbatim in the existing model-neutral execution reference.",
+    "Document the actual corrected client sequence in that canonical reference without creating another control owner or requiring approval before every harmless authorized edit."
   ],
   "proof": {
-    "newIntegrity": {"tests": 29, "beforeFailed": 27, "afterPassed": 29},
-    "newTransactions": {"tests": 16, "beforeFailed": 12, "afterPassed": 16},
-    "combinedNonCli": {"tests": 173, "passed": 173, "failed": 0, "errors": 0, "skipped": 0},
-    "cliRerun": {
-      "passed": 24, "remaining": 12,
-      "note": "Real child-process commands with file-backed output capture; assertions not weakened. Earlier broad timeout is not passing evidence."
-    }
+    "targetedMethods": 234,
+    "passed": 234,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "groups": {
+      "coreAndIntegrity": 173,
+      "realCommandLine": 36,
+      "deliveryAndEntry": 25
+    },
+    "separateVertical": {
+      "classification": "PRODUCTION_MODULE_PATH_PASS",
+      "intentionallyIncorrectImplementationExit": 1,
+      "correctedImplementationExit": 0,
+      "prohibitedActionsDenied": 4,
+      "protectedFixturesUnchanged": true,
+      "finalState": "VERIFIED_COMPLETE"
+    },
+    "entry": {
+      "projectedWords": 1187,
+      "projectedCharacters": 9240,
+      "unchangedWordBudget": 1200,
+      "unchangedCharacterBudget": 10000,
+      "originalDetailedProductRulePreserved": true
+    },
+    "remoteIdentity": "Fresh GitHub blob reads at verifiedSourceHead match all 14 changed source/test files below. Python sources also passed syntax parsing.",
+    "qualification": "Executed bounded tests from an exact partial source recovery, not a full repository run. Earlier worker/plan test doubles remain as documented. CLI tests and the separate vertical use actual processes and saved sessions with synthetic plans/results. Delivery tests use actual nine core execution scripts with explicit synthetic supporting files and an optional-registry fallback. Two delivery tests inspect the actual entry/reference structurally. No live model or installed client is proved. Earlier timeouts are not passing evidence."
   },
   "files": [
     {"path": "skills/selective-intelligence/scripts/checkpoint.py", "gitBlob": "3930e60d4e5c392bfea5273bad6eea0245d69a5d"},
@@ -29,15 +53,29 @@
     {"path": "skills/selective-intelligence/scripts/build_engine.py", "gitBlob": "914b3cea1e65f1152c9c595449ca4afe6b6c7343"},
     {"path": "skills/selective-intelligence/tests/test_product_model_execution_integrity.py", "gitBlob": "ad14eba07bf9929bdbb18cccd993a61ff86dba9a"},
     {"path": "skills/selective-intelligence/tests/test_product_model_transactions.py", "gitBlob": "e9b380d7fb40b93093c706ce21bf19542615dd95"},
-    {"path": "skills/selective-intelligence/tests/test_product_model_worker_binding.py", "gitBlob": "a9e601ebb2eacabfe694d62bbe000673abbeb337"}
+    {"path": "skills/selective-intelligence/tests/test_product_model_worker_binding.py", "gitBlob": "a9e601ebb2eacabfe694d62bbe000673abbeb337"},
+    {"path": "skills/selective-intelligence/tests/test_product_model_client_protocol.py", "gitBlob": "959e591faee90e348311c73c2a48767554841f88"},
+    {"path": "skills/selective-intelligence/tests/run_instruction_fidelity_vertical.py", "gitBlob": "a1e16cc0cbbcd37fe40818064e1a727fa8c7683b"},
+    {"path": "skills/selective-intelligence/SKILL.md", "gitBlob": "b0251b8ad996272067a463b10fd067ef1b221874"},
+    {"path": "skills/selective-intelligence/references/model-neutral-execution.md", "gitBlob": "6e2c255851fe63b13f379d454f569820e28ca72e"},
+    {"path": "skills/selective-intelligence/metadata/distribution.json", "gitBlob": "97108e4d114ff2a2c1101b467bc216e6eefc468c"},
+    {"path": "tools/build_chatgpt_adapter.py", "gitBlob": "9f3d4573a8c8d8388b120c8766de369283d33c04"},
+    {"path": "tools/test_chatgpt_execution_delivery.py", "gitBlob": "0aa56cc7d4815d6be644e30f65475a584736c9bd"},
+    {"path": "tools/test_chatgpt_adapter.py", "gitBlob": "0468430c48156e0bbd42e92f430a8e23c7118cd7"}
   ],
-  "localPending": ["File-backed CLI-test capture adjustment is tested in the first 24 cases but not yet remotely saved."],
-  "limitations": [
-    "Exact partial source recovery, not a complete repository checkout or full project index. Full clone/download and connector materialization unavailable.",
-    "No full repository/package or installed-client proof; external producers/IDEs still require migration and tests.",
-    "Locks are advisory for cooperative local SI processes. Cross-session same-workspace writes, hostile writers, crash recovery and Windows paths are not proved.",
-    "Caught rollback is not multi-file crash atomicity; incomplete recovery is reported, not hidden.",
-    "Command execution and content hashes are not model-behavior or semantic acceptance proof. Nonliteral unwanted templates remain broader work."
+  "localSourcePending": [],
+  "remainingReleaseBlockers": [
+    "Recover the remaining 47 unchanged runtime files and complete repository context. The local tree is not a full checkout.",
+    "Generate the complete actual 58-file adapter and run the existing full adapter quality check; that complete suite has not run.",
+    "Verify platform acceptance of the complete bundle. The 58-file guard is a repository budget, not established platform acceptance.",
+    "Run full repository compatibility checks, reconcile supported projections and rebuild release/plugin packages without claiming fixture archives are the actual distribution.",
+    "Migrate and prove actual IDE/plugin/client consumers. A source recipe and an extracted test archive do not update installed SI.",
+    "Prove the installed copy is loaded and follows the corrected sequence; prove external worker cancellation separately from SI-owned verification cancellation.",
+    "Assess existing Start Pack control-path parity separately. Engine tests must not be presented as proof of all control owners.",
+    "Extend semantic model-behavior checks for unwanted business templates that never use the word SaaS. Literal correction and source hashes alone are insufficient.",
+    "Cross-session same-workspace writes, hostile writers, crash recovery and Windows behavior remain unproved."
   ],
-  "nextAction": "Finish remaining real CLI tests and separate end-to-end runner, save all matching test sources, inspect adapter/package consumers, retain draft until release blockers are resolved."
+  "nextAction": "Continue delivery from the existing owner: recover missing source, build the full actual adapter, run its full checks, then prove real client adoption before release. Do not re-run already settled investigations or present test counts as installed behavior.",
+  "installationState": "UNCHANGED_UNVERIFIED",
+  "releaseState": "NOT_MERGED_NOT_RELEASED"
 }
