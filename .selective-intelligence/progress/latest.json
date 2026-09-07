@@ -1,8 +1,8 @@
 {
   "schemaVersion": "si.progress-checkpoint.v1",
-  "checkpointId": "progress-canonical-publication-1.0.8",
-  "createdAt": "2026-09-07T17:19:56.385828+00:00",
-  "outcome": "One canonical SI Work-mode bootstrap, version 1.0.8",
+  "checkpointId": "progress-canonical-integration-1.0.8",
+  "createdAt": "2026-09-07T17:25:22.159086+00:00",
+  "outcome": "SI 1.0.8 canonical source integrated and reachable saved installation verified; public-directory and outside-client distribution remain incomplete.",
   "scope": [
     "Selective-Intelligence canonical source and generated client/plugin distribution only."
   ],
@@ -11,11 +11,14 @@
   ],
   "progress": {
     "completedVerified": [
-      "Canonical standing adoption, authority order, source-owner routing, seven delivery states, active-objective continuation, cold-start SI-root repair; generated ChatGPT/native/web projections and exact embedded refresh pins.",
-      "User explicitly approved public push and ordinary merge. Canonical source published at 26606d51cffec17607802ded4d758b35d0086058 with exactly the tested candidate tree. Refresh utility published at 3428aa4c13706ab95d3453b4089a0f873a818b57; source tree and utility blob read back through GitHub."
+      "One canonical SI 1.0.8 behavior includes standing adoption, authority order, source-owner routing, seven delivery states, active-objective continuation, and cold-start SI-root repair. Generated client projections share that governing behavior.",
+      "PR 48 merged through the ordinary GitHub API after explicit user push-and-merge approval. Integration commit 019119650db8c471db122a62b409208f445748b3 and its tree 5f36c1cebcd3b2e4d374655be13c052fc3347fec were read back successfully.",
+      "Tested governing skill tree 818a5cddd3fa082922b4b551083041fc64a70429 is integrated unchanged. Published refresh pins reference source 26606d51cffec17607802ded4d758b35d0086058 and utility 3428aa4c13706ab95d3453b4089a0f873a818b57; remote identities were verified.",
+      "The reachable saved SI 1.0.8 installation was verified after reconciliation: all 57 governing and execution files match the canonical adapter. Platform-owned presentation normalization does not change doctrine."
     ],
     "changedUnverified": [
-      "Final ordinary PR integration, managed installation refresh, public plugin-directory publication, and outside-runtime adoption are separate pending states."
+      "At the latest checked account, the public plugin directory remains at version 1.0.5 and legitimate SI publisher/update controls are unavailable. Repository integration does not update that listing.",
+      "Outside-client and offline-computer installations remain unverified. Full repeated cross-client model behavior is not established."
     ],
     "proof": [
       "81 canonical deterministic controls pass; local release doctor ready with117files; ChatGPT adapter59files one entrypoint passes;80focused tests yielded79passes and one identity-link assertion corrected/retested pass; refresh-loader5tests pass.",
@@ -23,18 +26,21 @@
       "19 refresh/loader tests pass after binding to actual public commit identities; behavioral/runtime skill tree remains 818a5cddd3fa082922b4b551083041fc64a70429."
     ],
     "externalEffects": [
-      "Earlier automatic review rejection was superseded by explicit user approval. Git HTTPS transport lacked credentials; authenticated GitHub connector successfully published the task branch without force or protection changes."
+      "The earlier automatic approval rejection is historical and was superseded by explicit user approval. Public source push and ordinary PR 48 merge succeeded without force, protection changes, or admin bypass.",
+      "Canonical 1.0.8 source integration and reachable saved-installation verification succeeded. No public-directory update or outside-client refresh is claimed."
     ],
     "doNotRepeat": [
-      "Do not recreate or republish the accepted source commits. Inspect current branch and PR state before retrying any external action."
+      "Do not rebuild or request the already supplied source push-and-merge approval again merely to resume this task.",
+      "Do not reopen PR 48 or republish its accepted commits. Inspect current authoritative state before retrying any external action.",
+      "Do not substitute another behavioral edition or consumer installation controls for the legitimate publisher update workflow."
     ],
-    "nextSafeAction": "Merge the exact task-branch head through an ordinary PR after verifying its tree and current main, then verify integrated source and refresh supported installations; public directory and offline clients remain separate evidence."
+    "nextSafeAction": "Use the legitimate publisher account/workflow to update the public plugin from the validated canonical 1.0.8 package, then verify the actual published listing and each reachable installed client. Obtain only genuinely missing publisher/computer access; keep inaccessible outside-client states unverified."
   },
   "repository": {
     "root": ".",
     "rootKind": "repository_relative",
-    "branch": "repair/si-canonical-work-mode-bootstrap",
-    "headBefore": "3428aa4c13706ab95d3453b4089a0f873a818b57",
+    "branch": "main",
+    "headBefore": "019119650db8c471db122a62b409208f445748b3",
     "checkpointCommit": "containing_commit",
     "pushRequested": true,
     "pushRemote": "origin",
