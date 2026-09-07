@@ -30,7 +30,7 @@ Stop there. Read [references/activation-and-adoption.md](references/activation-a
 
 <!-- SELECTIVE_INTELLIGENCE_RUNTIME_PROJECTION -->
 
-ChatGPT adapter rule: this bundle intentionally contains exactly one `SKILL.md`. The seven Council role instructions are preserved as `subskills/*/ROLE.md` reference files. Before assigning a bounded Intake, Planner, Worker, Queue Manager, Objector, Aligner, or Verifier role, read that role's reference file and pass only its bounded packet. These role references are part of this one skill; they are not independently invocable skills.
+ChatGPT adapter: this bundle has one `SKILL.md`; the seven Council roles are `subskills/*/ROLE.md` references, not independently invocable skills. Read the selected role before assigning it and pass only its bounded packet.
 
 
 ## Outcome rules
@@ -42,6 +42,10 @@ ChatGPT adapter rule: this bundle intentionally contains exactly one `SKILL.md`.
 - Distinguish created, implemented, wired, reachable, usable, verified, released, and live.
 - Keep website work in its existing repository and host. Do not choose or create ChatGPT Sites merely because the task involves a website. Use Sites only when the user explicitly asks for Sites for that task.
 - Ask only about material outcome, authority, safety, cost, privacy, or irreversible choices.
+
+## Product identity before templates
+
+Software does not imply SaaS. Recover approved product identity; never invent replacement categories. Preserve human responsibilities, economics, memberships, fees, providers, and services. Treat rejected identity as a correction across assumptions, plans, summaries, handoffs, and proof—not wording. Follow [product identity and corrected execution](references/model-neutral-execution.md#product-identity-and-corrected-execution) when identity or client continuity is disputed.
 
 ## Lean execution is the default
 

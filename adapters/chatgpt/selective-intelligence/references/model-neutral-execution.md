@@ -11,6 +11,7 @@ Selective Intelligence must produce the same class of trustworthy outcome across
 - [Externalize the work contract](#externalize-the-work-contract)
 - [Instruction and input boundaries](#instruction-and-input-boundaries)
 - [Portable control surface](#portable-control-surface)
+- [Product identity and corrected execution](#product-identity-and-corrected-execution)
 - [Deterministic decision points](#deterministic-decision-points)
 - [Context-window independence](#context-window-independence)
 - [Independent verification and learning](#independent-verification-and-learning)
@@ -205,6 +206,27 @@ Use the same conceptual commands in every client:
 - `seal --amendment` authorizes and records material contract change before re-lock.
 
 Client-specific files such as `AGENTS.md`, `CLAUDE.md`, editor rules, steering files, or model-context files may point to this control surface. Keep them short and path-scoped. Do not copy the full doctrine into each client or allow a generated adapter to become a competing source of truth. Read [tool-interoperability.md](tool-interoperability.md) before installing or reconciling adapters.
+
+## Product identity and corrected execution
+
+Software is an implementation medium, not proof of a SaaS business model. Ground the product's purpose, people, human responsibilities, ownership, business relationships, economics, and ecosystem role in current approved intent. Do not infer subscription tiers, seat billing, tenant boundaries, dashboards, upgrade funnels, or a replacement product category from familiar software patterns.
+
+A rejected product model is a correction, not a new feature or a wording-only change. Reconcile affected assumptions, plans, summaries, and proof before continuing dependent work; carry the correction through checkpoints and handoffs. Preserve its scope: rejecting SaaS does not revoke explicitly approved memberships, fees, existing providers, or shared services. Recover the actual product definition from authoritative context instead of inventing a replacement or asking the person to repeat settled direction. Keep this public skill product-neutral.
+
+Identify the existing control owner before invoking a helper. An existing project lock remains governed by its registered Start Pack artifacts and amendment rules. An execution session remains governed by its current saved checkpoint and task queue. Do not replace either with a newly initialized parallel owner, copy approval labels between them, or treat tests of one path as proof of the other. Continue authorized inspection and unrelated harmless work; a disputed action does not invent a halt-all policy.
+
+When `scripts/build_engine.py` owns an existing execution session, clients must use its actual transactions, not imitate their output:
+
+1. Reload the saved session and current checkpoint. A stale session revision cannot overwrite a newer correction. Changed task instructions or execution roots require reconciliation; retaining old approval labels is not sufficient.
+2. Submit the person's correction through `correct`, `interrupt`, or the supported text gate before constructing replacement work. The plain correction must survive an invalid optional attachment. Preserve the resulting saved state and report attachment errors separately.
+3. Obtain `plan-packet` after the correction. Generate replacement tasks from that returned intent and its `source` fields. Do not relabel an old plan or result to make it appear current.
+4. Submit the fresh proposal through `stage-plan`. This prepares reviewable work; it grants no execution authority and does not add executable tasks. Resolve any mismatched or stale source rather than replacing its labels.
+5. Apply an actual authorized approval to the current checkpoint and intent hash when the triggered gate requires it. Never fabricate approval, infer it from silence, or use the test-only auto-approval path as user consent. Do not invent another approval before each harmless edit within already authorized work.
+6. Obtain the worker packet for the actual current task. Returned work must carry the unchanged `sessionId`, `taskId`, `authorized_checkpoint_id`, and `authorized_intent_hash` from that packet, plus its actual producer information and files. The client must not manufacture missing bindings or redirect returned work to the first available task.
+7. Apply the result through the engine, then run the relevant real verification. Preserve its original attempt and authority on the evidence. An old success, changed command result, or unrelated task cannot certify current work. Source and binding checks do not establish semantic correctness by themselves.
+8. On interruption, stop dispatching affected work and preserve actual process-stop evidence. SI's own verification-process cancellation is not proof that an external model or IDE worker stopped. Report any remaining worker and effects; do not erase history or call it cancelled without evidence.
+
+A built archive is not installed-client or live-model proof. Delivery requires the current canonical execution dependencies and source-identity checks; adoption additionally requires a running client to load the intended copy and complete the corrected handoff with valid evidence. Existing client pointers should reference this canonical contract rather than duplicating it. When the runtime cannot be invoked, preserve the same boundaries and report the automated control path as unverified; do not make the person relay code or pretend the transactions ran.
 
 ## Deterministic decision points
 

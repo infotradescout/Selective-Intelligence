@@ -13,6 +13,7 @@ interpretation; they must not be unioned into product intent.
 """
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import re
@@ -67,8 +68,11 @@ def _norm(text: str) -> str:
 
 def _expand_contractions(text: str) -> str:
     """Normalize informal negation so keyword parsers cannot miss repudiations."""
-    out = text.lower()
+    out = text.lower().replace("\u2019", "'").replace("\u2018", "'")
     replacements = (
+        (r"\bi(?:'m|m)\b", "i am"),
+        (r"\bwe're\b", "we are"),
+        (r"\bthat(?:'s|s)\b", "that is"),
         (r"\bdidnt\b", "did not"),
         (r"\bdidn't\b", "did not"),
         (r"\bdont\b", "do not"),
@@ -112,8 +116,10 @@ def _dedupe(items: list[str]) -> list[str]:
 def intent_hash(payload: dict[str, Any]) -> str:
     """Stable hash over the authoritative intent fields of a contract or checkpoint."""
     material = {
-        "product_intent": payload.get("product_intent") or payload.get("intent_summary") or "",
-        "process_directives": payload.get("process_directives") or payload.get("planned_next_actions") or [],
+        "product_intent": (payload.get("product_intent") if "product_intent" in payload
+                           else payload.get("intent_summary")) or "",
+        "process_directives": (payload.get("process_directives") if "process_directives" in payload
+                               else payload.get("planned_next_actions")) or [],
         "constraints": payload.get("constraints") or [],
         "prohibitions": payload.get("prohibitions") or [],
         "acceptance_criteria": payload.get("acceptance_criteria") or [],
@@ -124,6 +130,11 @@ def intent_hash(payload: dict[str, Any]) -> str:
         "operation": payload.get("operation"),
         "operation_targets": payload.get("operation_targets") or [],
     }
+    # These fields can change downstream work just as much as the main summary.
+    # Omit empty additions to preserve hashes for unaffected existing contracts.
+    for field in ("refinements", "assumptions", "unknowns", "contradictions"):
+        if payload.get(field):
+            material[field] = payload[field]
     encoded = json.dumps(material, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
@@ -162,10 +173,46 @@ def _extract_required_concepts(clause: str) -> list[str]:
     return concepts
 
 
+
+def _rejected_product_models(text: str) -> list[str]:
+    """Recognize explicit SaaS-model repudiations, not every mention of SaaS.
+
+    This is a bounded deterministic fallback, not a general semantic classifier.
+    Keep the short target ``saas``: expanding it into separate software/service
+    tokens would overreach into unrelated approved work. A rejected business
+    model does not itself revoke memberships, billing, or external providers.
+    """
+    model = r"(?:saas|software[ -]+as[ -]+a[ -]+service)"
+    article = r"(?:(?:a|an|generic|traditional)\s+)*"
+    direct = (
+        rf"^(?:i am|we are)\s+not\s+(?:building|creating|selling)\s+{article}{model}\b",
+        rf"^(?:this|it|the (?:product|project|ecosystem|business))\s+is\s+not\s+{article}{model}\b",
+    )
+    assumed = (
+        rf"\bassum(?:e|ed|es|ing)\s+(?:that\s+)?"
+        rf"(?:i am|i was|we are|we were)\s+(?:building|creating|selling)\s+{article}{model}\b"
+    )
+    for clause in _clauses(_expand_contractions(text)):
+        if any(re.search(pattern, clause) for pattern in direct):
+            return ["saas"]
+        # Anchor the complaint to the speaker/assistant. Quoted examples and
+        # third-party descriptions are not a new governing product decision.
+        complaint = re.match(
+            r"^(?:you\s+(?:keep\s+)?assum|"
+            r"(?:(?:another|the)\s+)?problem\s+is\s+(?:the\s+)?(?:ai|assistant|you)\b)",
+            clause,
+        )
+        disavowed = re.search(r"\b(?:that is|this is)\s+(?:not correct|wrong|incorrect)\b", clause)
+        direct_you = re.match(r"^you\s+(?:keep\s+)?assum(?:e|ed|es|ing)\b", clause)
+        if complaint and re.search(assumed, clause) and (direct_you or disavowed):
+            return ["saas"]
+    return []
+
+
 def _extract_retracted_targets(text: str) -> list[str]:
     """Pull the concepts the user is repudiating from correction language."""
     lowered = _expand_contractions(text)
-    targets: list[str] = []
+    targets: list[str] = _rejected_product_models(text)
     patterns = (
         r"(?:did not|do not)\s+(?:say|tell|ask|request|want|mean)\s+(?:to\s+)?(.+?)(?:\s+did\s+i|\s*\?|$|,|\.|!)",
         r"(?:that|this)\s+(?:was|is)\s+never\s+(?:said|given|requested|an?\s+instruction)\b",
@@ -204,7 +251,7 @@ def _is_standalone_negation(text: str) -> bool:
 
 def _is_repudiation_utterance(text: str) -> bool:
     lowered = _expand_contractions(text)
-    if _is_standalone_negation(lowered):
+    if _is_standalone_negation(lowered) or _rejected_product_models(lowered):
         return True
     patterns = (
         r"\bdid not\s+(?:say|tell|ask|request|want|mean)\b",
@@ -259,8 +306,11 @@ def _detect_operation(
         targets = list(structured_override.get("operation_targets") or [])
         if not all(isinstance(t, str) for t in targets):
             raise ValueError("operation_targets override must be a list of strings")
-        if text_derived and text_derived[0] == "RETRACT" and op != "RETRACT":
-            return text_derived
+        if text_derived and text_derived[0] == "RETRACT":
+            if op != "RETRACT":
+                return text_derived
+            # An adapter agreeing on RETRACT still cannot erase raw-text targets.
+            return "RETRACT", _dedupe(text_derived[1] + targets)
         return op, targets
 
     if text_derived:
@@ -315,6 +365,9 @@ def classify_intent(
     raw_text = (raw_text or "").strip()
     if not raw_text:
         raise ValueError("intent text is empty")
+
+    if structured_override is not None:
+        validate_override(structured_override)
 
     operation, operation_targets = _detect_operation(
         raw_text, event_type=event_type, structured_override=structured_override
@@ -406,27 +459,127 @@ def classify_intent(
                 if value.strip() and not is_retract_like:
                     result[key] = value.strip()
             else:
-                result[key] = _dedupe(result.get(key, []) + value)
+                accepted = value
+                model_targets = _product_model_targets(operation_targets) if is_retract_like else []
+                if model_targets and key in _ACTIVE_INTERPRETATION_LISTS:
+                    accepted, rejected = _remove_matching(value, model_targets)
+                    if rejected:
+                        result["contradictions"] = _dedupe(result["contradictions"] + [
+                            f"Discarded adapter {key} conflicting with the product-model correction: {item}"
+                            for item in rejected
+                        ])
+                result[key] = _dedupe(result.get(key, []) + accepted)
         result["source"] = "deterministic_text_plus_validated_reasoning_adapter"
         result["intent_hash"] = intent_hash(result)
 
     return result
 
 
+# Only exact model labels receive product-identity scope. A longer target such
+# as "SaaS email provider" remains an explicit provider retraction, not an
+# exemption. Keep all unrelated retraction semantics with their existing owner.
+_PRODUCT_MODEL = re.compile(r"\b(?:saas|software[ -]+as[ -]+a[ -]+service)\b", re.I)
+_ACTIVE_INTERPRETATION_LISTS = (
+    "process_directives", "constraints", "prohibitions", "acceptance_criteria",
+    "assumptions", "required_concepts", "scope", "refinements", "planned_next_actions",
+)
+
+
+def _product_model_targets(targets: list[str]) -> list[str]:
+    return [t for t in targets if _norm(t) in {"saas", "software as a service"}]
+
+
+def _conflicts_with_product_model(text: str) -> bool:
+    """Bounded SaaS-identity check, not a general natural-language classifier.
+
+    Inspect occurrences separately: an approved provider elsewhere in a sentence
+    cannot launder a forbidden product claim. Negated claims and clearly scoped
+    existing-provider use do not themselves identify the product as SaaS.
+    Ambiguous positive model references remain conflicts, not guessed exemptions.
+    """
+    for clause in _clauses(_expand_contractions(text)):
+        fragments = re.split(r"\s+(?:and|but|while|whereas)\s+", clause)
+        for fragment in fragments:
+            for match in _PRODUCT_MODEL.finditer(fragment):
+                before = fragment[:match.start()]
+                after = fragment[match.end():]
+                # Ignore 'not just' / 'not only': these do not reject the model.
+                negation_context = re.sub(r"\bnot\s+(?:just|only)\b", "", before)
+                negative_model = re.search(
+                    r"(?:\b(?:not|never|no)\s+(?:(?:a|an|the|generic|traditional)\s+)*|"
+                    r"\b(?:not|never|avoid|without)\s+"
+                    r"(?:build|building|create|creating|sell|selling|use|using|adopt|adopting|"
+                    r"implement|implementing|add|adding|introduce|introducing|infer|inferring)\s+"
+                    r"(?:(?:a|an|the|any|generic|traditional)\s+)*|"
+                    r"\b(?:not|never|avoid)\s+"
+                    r"(?:describe|describing|treat|treating|frame|framing|classify|classifying|label|labeling)\s+"
+                    r"(?:[a-z0-9_-]+\s+){0,8}as\s+(?:(?:a|an|generic|traditional)\s+)*|"
+                    r"\bnon[ -])$", negation_context,
+                )
+                if negative_model:
+                    continue
+                provider_use = re.search(
+                    r"\b(?:use|using|keep|retain|preserve|maintain|integrate|renew|"
+                    r"connect to|pay for)\b[^.!?;]{0,100}$", before
+                )
+                provider_scope = re.search(
+                    r"\b(?:external|third[ -]party|approved|existing)\b[^.!?;]{0,60}$", before
+                )
+                provider_noun = re.match(
+                    r"\s+(?:[a-z0-9_-]+\s+){0,3}(?:provider|vendor|tool|service)\b", after
+                )
+                provider_creation = bool(provider_use and re.search(
+                    r"\b(?:build|building|create|creating|sell|selling|become|turn)\b",
+                    before[provider_use.start():],
+                ))
+                if provider_use and provider_scope and provider_noun and not provider_creation:
+                    continue
+                return True
+    return False
+
+
 def _remove_matching(items: list[str], targets: list[str]) -> tuple[list[str], list[str]]:
-    """Remove items whose normalized text overlaps a retract target."""
-    target_tokens = concept_tokens(targets)
+    """Remove retracted interpretations without conflating product and provider."""
+    model_targets = _product_model_targets(targets)
+    other_targets = [t for t in targets if t not in model_targets]
+    target_tokens = concept_tokens(other_targets)
     retained: list[str] = []
     removed: list[str] = []
     for item in items:
         item_tokens = concept_tokens([item])
         item_norm = _norm(item)
-        hit = bool(target_tokens & item_tokens) or any(_norm(t) and _norm(t) in item_norm for t in targets)
-        if hit:
-            removed.append(item)
-        else:
-            retained.append(item)
+        hit = (
+            bool(model_targets and _conflicts_with_product_model(item))
+            or bool(target_tokens & item_tokens)
+            or any(_norm(t) and _norm(t) in item_norm for t in other_targets)
+        )
+        (removed if hit else retained).append(item)
     return retained, removed
+
+
+def _reconcile_product_model(
+    contract: dict[str, Any], targets: list[str], diff: dict[str, Any],
+) -> None:
+    """Remove stale active interpretations; retain untouched clauses and history."""
+    if not targets:
+        return
+    for key in ("product_intent", "intent_summary"):
+        value = str(contract.get(key) or "")
+        if not value:
+            continue
+        retained, removed = _remove_matching(_clauses(value), targets)
+        if removed:
+            contract[key] = " ".join(retained)
+            diff["removed"][key] = removed
+            diff["retained"][key] = retained
+    for key in _ACTIVE_INTERPRETATION_LISTS:
+        if key not in contract:
+            continue
+        retained, removed = _remove_matching(list(contract.get(key) or []), targets)
+        if removed:
+            contract[key] = retained
+            diff["removed"][key] = _dedupe(diff["removed"].get(key, []) + removed)
+            diff["retained"][key] = retained
 
 
 def merge_active_contract(active: dict[str, Any] | None, event: dict[str, Any]) -> dict[str, Any]:
@@ -439,9 +592,9 @@ def merge_active_contract(active: dict[str, Any] | None, event: dict[str, Any]) 
     if operation not in INTENT_OPERATIONS:
         raise ValueError(f"unsupported intent operation: {operation}")
 
-    active = dict(active or {})
+    active = copy.deepcopy(active or {})
     if not active:
-        return {
+        contract = {
             "schemaVersion": _INTENT_SCHEMA,
             "product_intent": event.get("product_intent") or "",
             "process_directives": list(event.get("process_directives") or []),
@@ -464,8 +617,13 @@ def merge_active_contract(active: dict[str, Any] | None, event: dict[str, Any]) 
             ],
             "sourceEventIds": [event["eventId"]],
             "updatedAt": _now(),
-            "intent_hash": intent_hash(event),
         }
+        initial_diff = {"removed": {}, "retained": {}}
+        _reconcile_product_model(contract, _product_model_targets(
+            list(contract.get("superseded_concepts") or []) + list(contract.get("non_goals") or [])
+        ), initial_diff)
+        contract["intent_hash"] = intent_hash(contract)
+        return contract
 
     diff: dict[str, Any] = {
         "operation": operation,
@@ -475,8 +633,35 @@ def merge_active_contract(active: dict[str, Any] | None, event: dict[str, Any]) 
         "eventId": event["eventId"],
     }
     targets = list(event.get("operation_targets") or event.get("superseded_concepts") or [])
+    persistent_model_targets = _product_model_targets(
+        list(active.get("superseded_concepts") or []) + list(active.get("non_goals") or [])
+    )
+    # Preserve corrections across model-authored REPLACE / SUPERSEDE overrides.
+    # A real user can change direction, but both replacement scope and the
+    # affirmative model choice must be present in the current raw instruction.
+    raw_text = str(event.get("rawText") or "")
+    raw_operation = _text_derived_operation(raw_text, event_type=str(event.get("eventType") or "request"))
+    explicit_model_replacement = (
+        operation in {"REPLACE", "SUPERSEDE"}
+        and raw_operation is not None and raw_operation[0] == operation
+        and not _rejected_product_models(raw_text)
+        and any(re.match(
+            r"^(?:build|create|sell)\s+(?:(?:a|an|the|generic|traditional)\s+)*"
+            r"(?:saas|software[ -]+as[ -]+a[ -]+service)\b", clause, re.I,
+        ) for clause in _clauses(raw_text))
+    )
+    if explicit_model_replacement:
+        for key in ("non_goals", "superseded_concepts"):
+            old = list(active.get(key) or [])
+            active[key] = [item for item in old if item not in _product_model_targets(old)]
+            if old != active[key]:
+                diff["changed"][key] = {"from": old, "to": list(active[key])}
+        persistent_model_targets = []
 
     if operation in {"RETRACT", "ROLLBACK"}:
+        # Reconcile the summary as well as list fields (the overlapping Concept
+        # Rescue draft identified this omission). No replacement is invented.
+        _reconcile_product_model(active, _product_model_targets(targets), diff)
         for key in (
             "process_directives",
             "constraints",
@@ -599,6 +784,15 @@ def merge_active_contract(active: dict[str, Any] | None, event: dict[str, Any]) 
             "non_goals",
         ):
             active[key] = _dedupe(list(active.get(key, [])) + list(event.get(key, [])))
+
+    for key in ("non_goals", "superseded_concepts"):
+        active[key] = _dedupe(list(active.get(key) or []) + persistent_model_targets)
+
+    # A later adapter or resumed session cannot reintroduce a rejected product
+    # identity through another field. Historical evidence stays intact.
+    _reconcile_product_model(active, _product_model_targets(
+        list(active.get("superseded_concepts") or []) + list(active.get("non_goals") or [])
+    ), diff)
 
     active.setdefault("operationHistory", []).append(
         {
