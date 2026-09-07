@@ -42,9 +42,7 @@ Stop there. Read [references/activation-and-adoption.md](references/activation-a
 
 ## Product identity before templates
 
-Software is an implementation medium, not proof of a SaaS business model. Ground the product's purpose, people, human responsibilities, ownership, business relationships, economics, and ecosystem role in current approved intent. Do not infer subscription tiers, seat billing, tenant boundaries, dashboards, upgrade funnels, or a replacement product category from familiar software patterns.
-
-A rejected product model is a correction, not a new feature or a wording-only change. Reconcile affected assumptions, plans, summaries, and proof before continuing dependent work; carry the correction through checkpoints and handoffs. Preserve its scope: rejecting SaaS does not revoke explicitly approved memberships, fees, existing providers, or shared services. Recover the actual product definition from authoritative context instead of inventing a replacement or asking the person to repeat settled direction. Keep this public skill product-neutral.
+Software does not imply SaaS. Recover approved product identity; never invent replacement categories. Preserve human responsibilities, economics, memberships, fees, providers, and services. Treat rejected identity as a correction across assumptions, plans, summaries, handoffs, and proof—not wording. Follow [product identity and corrected execution](references/model-neutral-execution.md#product-identity-and-corrected-execution) when identity or client continuity is disputed.
 
 ## Lean execution is the default
 
