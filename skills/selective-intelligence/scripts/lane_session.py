@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import copy
+from contextlib import contextmanager
 import json
 import os
 import tempfile
+import threading
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
@@ -75,12 +78,98 @@ def session_path(session_id: str) -> Path:
     return sessions_dir() / f"{session_id}.session.json"
 
 
+class SessionConflictError(RuntimeError):
+    """A stale writer cannot overwrite newer intent, approval or progress."""
+
+
+_THREAD_LOCKS: dict[str, threading.RLock] = {}
+_THREAD_LOCKS_GUARD = threading.Lock()
+_HELD_LOCKS = threading.local()
+
+
+@contextmanager
+def session_lock(session_id: str):
+    """Serialize cooperative SI writers across threads and local processes.
+
+    Reentrant in one thread. Locks are advisory and do not authenticate hostile
+    filesystem writers or provide distributed/network-filesystem transactions.
+    """
+    path = session_path(session_id).with_suffix(".lock")
+    key = str(path)
+    with _THREAD_LOCKS_GUARD:
+        thread_lock = _THREAD_LOCKS.setdefault(key, threading.RLock())
+    with thread_lock:
+        held = getattr(_HELD_LOCKS, "paths", None)
+        if held is None:
+            held = _HELD_LOCKS.paths = set()
+        if key in held:
+            yield
+            return
+        if path.is_symlink():
+            raise ValueError("session lock must not be a symlink")
+        fd = os.open(path, os.O_CREAT | os.O_RDWR | getattr(os, "O_NOFOLLOW", 0), 0o600)
+        try:
+            if os.name == "nt":
+                import msvcrt
+                if os.fstat(fd).st_size == 0:
+                    os.write(fd, b"0")
+                os.lseek(fd, 0, os.SEEK_SET)
+                msvcrt.locking(fd, msvcrt.LK_LOCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(fd, fcntl.LOCK_EX)
+            held.add(key)
+            try:
+                yield
+            finally:
+                held.remove(key)
+                if os.name == "nt":
+                    os.lseek(fd, 0, os.SEEK_SET)
+                    msvcrt.locking(fd, msvcrt.LK_UNLCK, 1)
+                else:
+                    fcntl.flock(fd, fcntl.LOCK_UN)
+        finally:
+            os.close(fd)
+
+
+def _revision(session: dict[str, Any]) -> int:
+    value = session.get("persistenceRevision", 0)
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise ValueError("invalid persistence revision")
+    return value
+
+
 def save_session(session: dict[str, Any]) -> None:
-    session["updatedAt"] = _now()
+    """Compare revisions under the session lock, then atomically replace JSON.
+
+    Missing revisions on historical records start at zero; saving upgrades
+    storage only and never restores checkpoint or task execution authority.
+    """
     target = session_path(session["sessionId"])
-    temp = target.with_suffix(f".{uuid.uuid4().hex}.tmp")
-    temp.write_text(json.dumps(session, indent=2, sort_keys=True), encoding="utf-8")
-    os.replace(temp, target)
+    expected = _revision(session)
+    with session_lock(session["sessionId"]):
+        current = load_session(session["sessionId"])
+        actual = _revision(current) if current is not None else 0
+        if expected != actual or (current is None and expected != 0):
+            raise SessionConflictError("session changed since it was loaded; reload before saving")
+        if session.get("schemaVersion") != SCHEMA_VERSION:
+            raise ValueError("unsupported session schema")
+        staged = copy.deepcopy(session)
+        staged["updatedAt"] = _now()
+        staged["persistenceRevision"] = actual + 1
+        encoded = json.dumps(staged, indent=2, sort_keys=True, allow_nan=False)
+        temp = target.with_suffix(f".{uuid.uuid4().hex}.tmp")
+        try:
+            with temp.open("x", encoding="utf-8") as handle:
+                handle.write(encoded)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(temp, target)
+        finally:
+            temp.unlink(missing_ok=True)
+        # Advance the caller only after replacement succeeds.
+        session["updatedAt"] = staged["updatedAt"]
+        session["persistenceRevision"] = staged["persistenceRevision"]
 
 
 def load_session(session_id: str) -> dict[str, Any] | None:
@@ -88,11 +177,17 @@ def load_session(session_id: str) -> dict[str, Any] | None:
         path = session_path(session_id)
     except ValueError:
         return None
-    if not path.exists():
+    if path.is_symlink():
+        raise ValueError("session file must not be a symlink")
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
         return None
-    data = json.loads(path.read_text(encoding="utf-8"))
-    if data.get("schemaVersion") != SCHEMA_VERSION:
-        raise ValueError(f"unsupported session schema: {data.get('schemaVersion')}")
+    if not isinstance(data, dict) or data.get("schemaVersion") != SCHEMA_VERSION:
+        raise ValueError("unsupported session schema")
+    if data.get("sessionId") != session_id:
+        raise ValueError("saved session identity differs from its file")
+    _revision(data)
     return data
 
 
@@ -200,7 +295,7 @@ def add_task(
         "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
         "authorized_intent_hash": session.get("authorizedIntentHash"),
     }
-    meta = dict(metadata or {})
+    meta = copy.deepcopy(metadata or {})
     meta.update({k: v for k, v in auth.items() if v})
     task = {
         "taskId": task_id,
@@ -212,7 +307,7 @@ def add_task(
         "intentRefs": list(intent_refs or session["activeIntent"].get("sourceEventIds", [])),
         "acceptanceRefs": list(acceptance_refs or []),
         "invalidationConditions": list(invalidation_conditions or []),
-        "operation": operation,
+        "operation": copy.deepcopy(operation),
         "metadata": meta,
         "authorized_checkpoint_id": auth["authorized_checkpoint_id"],
         "authorized_intent_hash": auth["authorized_intent_hash"],
@@ -225,6 +320,8 @@ def add_task(
         "tainted": False,
         "cancelRequested": False,
     }
+    if require_checkpoint:
+        task = CP.bind_authorization(session, task)
     session["queue"][task_id] = task
     record_event(
         session,
@@ -248,7 +345,7 @@ def transition_task(session: dict[str, Any], task_id: str, status: str, *, reaso
     if status not in TASK_STATUSES:
         return False, f"invalid task status: {status}"
     # Side-effecting progress requires an authorized checkpoint binding.
-    if status in {"running", "verifying", "repairing"} and not session.get("correctionMode"):
+    if status in {"running", "verifying", "repairing", "complete"}:
         try:
             CP.assert_binding(session, task)
         except CP.CheckpointError as exc:
