@@ -638,7 +638,11 @@ def command_check(args: argparse.Namespace) -> int:
         if position is None:
             reasons.append("snapshot target is not in open order for branch scope")
         else:
-            expected_position = snapshot.get("expected_position", 1)
+            # The snapshot command serializes an omitted optional value as null.
+            # Null and an absent field share the documented first-item default.
+            expected_position = snapshot.get("expected_position")
+            if expected_position is None:
+                expected_position = 1
             if position != expected_position:
                 reasons.append(
                     f"non-sequential step: queue item is position {position} but snapshot expects {expected_position} "

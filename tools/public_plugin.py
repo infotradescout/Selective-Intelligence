@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 import math
+import os
 import re
 import shutil
 import stat
@@ -18,6 +19,11 @@ import zipfile
 from pathlib import Path, PurePosixPath
 from urllib.parse import urlparse
 from xml.etree import ElementTree
+
+try:
+    from tools.build_chatgpt_adapter import EXECUTION_RUNTIME_FILES, _safe_member
+except ImportError:  # direct execution from tools/
+    from build_chatgpt_adapter import EXECUTION_RUNTIME_FILES, _safe_member
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -32,7 +38,9 @@ MAX_UNCOMPRESSED = 512 * 1024 * 1024
 MAX_ENTRY = 100 * 1024 * 1024
 MAX_SEGMENTS = 20
 MAX_PATH_BYTES = 1_024
-MAX_RUNTIME_ENTRIES = 55
+# 58 canonical runtime inputs plus the plugin manifest and public icon.
+# Keep the byte budget and exact-content checks; never omit execution to fit.
+MAX_RUNTIME_ENTRIES = 60
 MAX_RUNTIME_UNCOMPRESSED = 1 * 1024 * 1024
 SUPPORTED_CATEGORIES = {
     "Productivity",
@@ -231,8 +239,24 @@ Public plugin rule: this package intentionally contains exactly one `SKILL.md`. 
     return text
 
 
+def _runtime_source(relative: str) -> Path:
+    """Apply the shared portable path guard before reading public inputs."""
+    _safe_member(relative)
+    if SKILL_ROOT.resolve() != SKILL_ROOT.absolute():
+        raise ValueError("public runtime source root must not redirect through symlinks")
+    source = SKILL_ROOT / relative
+    current = source
+    while current != SKILL_ROOT:
+        if current.is_symlink():
+            raise ValueError(f"runtime sources must not be symlinks: {relative}")
+        current = current.parent
+    if not source.is_file():
+        raise FileNotFoundError(source)
+    return source
+
+
 def projected_files() -> dict[str, bytes]:
-    distribution = load_json(SKILL_ROOT / "metadata" / "distribution.json")
+    distribution = load_json(_runtime_source("metadata/distribution.json"))
     release_files = distribution.get("release_files")
     if not isinstance(release_files, list) or not all(isinstance(item, str) for item in release_files):
         raise ValueError("canonical release manifest is invalid")
@@ -243,6 +267,11 @@ def projected_files() -> dict[str, bytes]:
         raise ValueError("runtime file manifest contains duplicates")
     if not set(runtime_files).issubset(set(release_files)):
         raise ValueError("runtime file manifest contains files outside the canonical release")
+    for relative in release_files + runtime_files:
+        _safe_member(relative)
+    missing = sorted(EXECUTION_RUNTIME_FILES - set(runtime_files))
+    if missing:
+        raise ValueError("runtime manifest omits execution dependencies: " + ", ".join(missing))
     mapping = role_path_map(runtime_files)
     if len(mapping) != 7:
         raise ValueError(f"expected seven Council role skills, found {len(mapping)}")
@@ -252,9 +281,7 @@ def projected_files() -> dict[str, bytes]:
         "assets/icon.svg": ICON_PATH.read_bytes(),
     }
     for relative in runtime_files:
-        source = SKILL_ROOT / relative
-        if not source.is_file():
-            raise FileNotFoundError(source)
+        source = _runtime_source(relative)
         target_relative = mapping.get(relative, relative)
         text = rewrite_text(relative, source.read_text(encoding="utf-8"), mapping)
         result[f"skills/selective-intelligence/{target_relative}"] = text.encode("utf-8")
@@ -270,21 +297,37 @@ def archive_name() -> str:
 
 
 def write_archive(path: Path) -> dict[str, object]:
+    """Validate a staged archive before atomically replacing an existing copy."""
     files = projected_files()
+    if path.is_symlink() or path.parent.resolve() != path.parent.absolute():
+        raise ValueError("public archive destination must not redirect through symlinks")
     path.parent.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
-        for relative in sorted(files):
-            info = zipfile.ZipInfo(relative, date_time=(1980, 1, 1, 0, 0, 0))
-            info.compress_type = zipfile.ZIP_DEFLATED
-            info.create_system = 3
-            info.external_attr = (stat.S_IFREG | 0o644) << 16
-            archive.writestr(info, files[relative])
-    return {
-        "archive": str(path),
-        "files": len(files),
-        "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        "compressed_bytes": path.stat().st_size,
-    }
+    descriptor, temporary_name = tempfile.mkstemp(prefix=".si-plugin-", suffix=".zip", dir=path.parent)
+    os.close(descriptor)
+    temporary = Path(temporary_name)
+    try:
+        with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+            for relative in sorted(files):
+                info = zipfile.ZipInfo(relative, date_time=(1980, 1, 1, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.create_system = 3
+                info.external_attr = (stat.S_IFREG | 0o644) << 16
+                archive.writestr(info, files[relative])
+        errors = zip_errors(temporary)
+        if errors:
+            raise ValueError("public archive validation failed: " + "; ".join(errors))
+        payload = temporary.read_bytes()
+        result = {
+            "archive": str(path),
+            "files": len(files),
+            "sha256": hashlib.sha256(payload).hexdigest(),
+            "compressed_bytes": len(payload),
+        }
+        temporary.chmod(0o644)
+        os.replace(temporary, path)
+        return result
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def zip_errors(path: Path) -> list[str]:
@@ -372,9 +415,27 @@ def zip_errors(path: Path) -> list[str]:
                 "skills/selective-intelligence/SKILL.md",
                 "skills/selective-intelligence/subskills/si-worker/ROLE.md",
             }
+            expected: dict[str, bytes] = {}
+            try:
+                expected = projected_files()
+            except (OSError, ValueError) as exc:
+                errors.append(f"canonical public projection is unavailable: {exc}")
+            required.update(expected)
             missing = sorted(required - set(names))
             if missing:
                 errors.append("archive is missing required files: " + ", ".join(missing))
+            if expected:
+                unexpected = sorted(set(names) - set(expected))
+                if unexpected:
+                    errors.append("archive contains unexpected files: " + ", ".join(unexpected))
+                for name in sorted(set(names) & set(expected)):
+                    try:
+                        content = archive.read(name)
+                    except (OSError, RuntimeError, zipfile.BadZipFile) as exc:
+                        errors.append(f"archive entry is unreadable: {name}: {exc}")
+                        continue
+                    if content != expected[name]:
+                        errors.append(f"archive content differs from canonical projection: {name}")
             for icon_name in (
                 "assets/icon.svg",
                 "skills/selective-intelligence/assets/icon.svg",

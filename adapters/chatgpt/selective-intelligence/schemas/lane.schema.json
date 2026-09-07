@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platynum-standard.dev/selective-intelligence/lane.schema.json",
+  "title": "Selective Intelligence Lane Definition",
+  "description": "A durable SI capability (a lane). Lanes are the units the kernel routes, contextualizes, executes, and verifies. A lane is a product capability, not a Git branch, an agent, or a single prompt.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "version",
+    "purpose",
+    "owns",
+    "inputs",
+    "outputs",
+    "permissions",
+    "agentPolicy",
+    "isolationPolicy",
+    "completionGates",
+    "humanBlockerPolicy"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*([.-][a-z0-9]+)*$",
+      "description": "Stable lane id, e.g. si.planning, feature.backend."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "purpose": { "type": "string", "minLength": 1 },
+    "owns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "What this lane is responsible for producing/maintaining."
+    },
+    "triggers": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Conditions under which the compiler instantiates this lane."
+    },
+    "inputs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ioField" }
+    },
+    "outputs": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ioField" }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9]*([.-][a-z0-9]+)*$" },
+      "description": "Lane ids that must complete (or provide artifacts) before this lane runs."
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "enum": ["model", "filesystem", "shell", "git", "browser", "network", "deploy", "database"] },
+      "description": "Legacy coarse capability tags. Prefer 'requires' for resolver matching."
+    },
+    "requires": {
+      "type": "array",
+      "items": { "enum": ["reasoning", "code_generation", "structured_output", "filesystem_write", "shell_execution", "version_control", "git_service", "preview_runtime", "test_runner", "deploy_target", "database", "browser", "human"] },
+      "description": "Abstract capabilities this lane needs. The backend resolver maps these to whatever adapters the user already has — never to a hard-coded provider."
+    },
+    "executor": {
+      "type": "string",
+      "description": "Optional deterministic executor (script/command) when no model agent is needed."
+    },
+    "subskill": {
+      "type": "string",
+      "description": "Optional canonical subskill prompt this lane uses when it does call a model."
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["filesystem", "shell", "git", "network", "secrets"],
+      "properties": {
+        "filesystem": { "enum": ["none", "read", "write-scoped", "write"] },
+        "shell": { "type": "boolean" },
+        "git": { "enum": ["none", "read", "worktree", "commit"] },
+        "network": { "enum": ["none", "restricted", "full"] },
+        "secrets": { "enum": ["none", "reference-only", "read"] }
+      }
+    },
+    "contextPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "scope": { "enum": ["minimal", "lane-local", "feature", "project"] },
+        "includes": { "type": "array", "items": { "type": "string" } }
+      },
+      "description": "Which context the broker supplies; agents do not get the whole project by default."
+    },
+    "agentPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["defaultAgents", "maximumAgents", "roles"],
+      "properties": {
+        "defaultAgents": { "type": "integer", "minimum": 0, "maximum": 8 },
+        "maximumAgents": { "type": "integer", "minimum": 0, "maximum": 8 },
+        "roles": {
+          "type": "array",
+          "items": { "enum": ["primary", "researcher", "specialist", "implementer", "reviewer", "verifier", "diagnostic", "integrator", "planner"] }
+        },
+        "spawnConditions": {
+          "type": "array",
+          "items": { "enum": ["confidence_below_threshold", "large_divisible_workload", "specialist_domain_required", "high_risk_change", "repeated_verification_failure", "unresolved_conflict", "independent_review_required", "excessive_scope"] }
+        }
+      }
+    },
+    "isolationPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requiresWorktree", "writableScopes"],
+      "properties": {
+        "requiresWorktree": { "type": "boolean" },
+        "branchPattern": { "type": "string" },
+        "writableScopes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "completionGates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Observable gates; generated code existing is never a gate."
+    },
+    "verificationPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "depth": { "enum": ["none", "basic-build", "targeted-tests", "independent-review", "security-audit", "production-validation"] }
+      }
+    },
+    "repairPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxAttempts": { "type": "integer", "minimum": 0, "maximum": 10 },
+        "onRepeatedFailure": { "enum": ["add-diagnostic-agent", "escalate-human", "block-lane"] }
+      }
+    },
+    "humanBlockerPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["continueIndependentWork"],
+      "properties": {
+        "continueIndependentWork": { "type": "boolean" },
+        "requireExactInstructions": { "type": "boolean" }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "upstream": { "type": "array", "items": { "type": "string" } },
+        "downstream": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "$defs": {
+    "ioField": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "required": { "type": "boolean" }
+      }
+    }
+  }
+}

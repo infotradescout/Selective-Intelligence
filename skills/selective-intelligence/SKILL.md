@@ -40,6 +40,10 @@ Stop there. Read [references/activation-and-adoption.md](references/activation-a
 - Keep website work in its existing repository and host. Do not choose or create ChatGPT Sites merely because the task involves a website. Use Sites only when the user explicitly asks for Sites for that task.
 - Ask only about material outcome, authority, safety, cost, privacy, or irreversible choices.
 
+## Product identity before templates
+
+Software does not imply SaaS. Recover approved product identity; never invent replacement categories. Preserve human responsibilities, economics, memberships, fees, providers, and services. Treat rejected identity as a correction across assumptions, plans, summaries, handoffs, and proof—not wording. Follow [product identity and corrected execution](references/model-neutral-execution.md#product-identity-and-corrected-execution) when identity or client continuity is disputed.
+
 ## Lean execution is the default
 
 Use one capable context:

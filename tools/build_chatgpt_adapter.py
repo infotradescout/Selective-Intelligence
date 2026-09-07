@@ -15,8 +15,10 @@ import json
 import os
 import shutil
 import stat
+import tempfile
+import re
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -43,7 +45,7 @@ def rewrite_text(relative: str, text: str, mapping: dict[str, str]) -> str:
         anchor = "<!-- SELECTIVE_INTELLIGENCE_RUNTIME_PROJECTION -->"
         addition = """
 
-ChatGPT adapter rule: this bundle intentionally contains exactly one `SKILL.md`. The seven Council role instructions are preserved as `subskills/*/ROLE.md` reference files. Before assigning a bounded Intake, Planner, Worker, Queue Manager, Objector, Aligner, or Verifier role, read that role's reference file and pass only its bounded packet. These role references are part of this one skill; they are not independently invocable skills.
+ChatGPT adapter: this bundle has one `SKILL.md`; the seven Council roles are `subskills/*/ROLE.md` references, not independently invocable skills. Read the selected role before assigning it and pass only its bounded packet.
 """
         if anchor not in text:
             raise ValueError("master skill adapter anchor is missing")
@@ -94,91 +96,244 @@ def write_text(path: Path, text: str, mode: int) -> None:
     path.chmod(mode)
 
 
-def build_adapter(destination: Path = ADAPTER_ROOT) -> dict[str, object]:
-    metadata_path = PORTABLE_ROOT / "metadata" / "distribution.json"
-    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-    release_files = metadata.get("release_files")
-    if not isinstance(release_files, list) or not all(isinstance(item, str) for item in release_files):
-        raise ValueError("portable release manifest is invalid")
-    runtime_files = metadata.get("runtime_files")
-    if not isinstance(runtime_files, list) or not runtime_files or not all(isinstance(item, str) for item in runtime_files):
-        raise ValueError("runtime file manifest is invalid")
-    if len(runtime_files) != len(set(runtime_files)):
-        raise ValueError("runtime file manifest contains duplicates")
-    if not set(runtime_files).issubset(set(release_files)):
-        raise ValueError("runtime file manifest contains files outside the portable release")
+# These are shipped dependencies, not instructions to activate tools without
+# permission. The package must carry the same execution owners that tests use.
+EXECUTION_RUNTIME_FILES = frozenset({
+    "scripts/build_engine.py", "scripts/capabilities.py", "scripts/checkpoint.py",
+    "scripts/context_budget.py", "scripts/feedback.py", "scripts/intent_contract.py",
+    "scripts/lane_registry.py", "scripts/lane_session.py", "scripts/policy_guard.py",
+    "scripts/text_gate.py", "lanes/si.execution.json", "lanes/si.planning.json",
+    "schemas/lane.schema.json",
+})
 
+
+def _safe_member(relative: str) -> None:
+    parts = PurePosixPath(relative).parts
+    if (not relative or "\\" in relative or ":" in relative
+            or relative.startswith("/") or ".." in parts
+            or PurePosixPath(relative).as_posix() != relative
+            or any(ord(char) < 32 for char in relative)):
+        raise ValueError(f"unsafe runtime path: {relative!r}")
+
+
+def _source(relative: str) -> Path:
+    _safe_member(relative)
+    source = PORTABLE_ROOT / relative
+    current = source
+    while current != PORTABLE_ROOT:
+        if current.is_symlink():
+            raise ValueError(f"runtime sources must not be symlinks: {relative}")
+        current = current.parent
+    if not source.is_file():
+        raise FileNotFoundError(source)
+    return source
+
+
+def _prepare_projection() -> tuple[dict[str, tuple[bytes, int]], dict[str, object]]:
+    """Read and validate everything before replacing a previously usable copy.
+
+    Content hashes identify source/projection drift. They are not signatures,
+    installed-client evidence, or proof of behavior across running models.
+    """
+    if PORTABLE_ROOT.resolve() != PORTABLE_ROOT.absolute():
+        raise ValueError("portable source root must not redirect through symlinks")
+    metadata_bytes = _source("metadata/distribution.json").read_bytes()
+    metadata = json.loads(metadata_bytes)
+    release_files = metadata.get("release_files")
+    runtime_files = metadata.get("runtime_files")
+    for name, values in (("portable release", release_files), ("runtime file", runtime_files)):
+        if not isinstance(values, list) or not values or not all(isinstance(x, str) for x in values):
+            raise ValueError(f"{name} manifest is invalid")
+        if len(values) != len(set(values)):
+            raise ValueError(f"{name} manifest contains duplicates")
+        for value in values:
+            _safe_member(value)
+    if not set(runtime_files).issubset(release_files):
+        raise ValueError("runtime file manifest contains files outside the portable release")
+    missing = sorted(EXECUTION_RUNTIME_FILES - set(runtime_files))
+    if missing:
+        raise ValueError("runtime manifest omits execution dependencies: " + ", ".join(missing))
+    version = metadata.get("version")
+    if not isinstance(version, str) or not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+        raise ValueError("distribution version must be a safe semantic version")
+    if _source("VERSION").read_text(encoding="utf-8").strip() != version:
+        raise ValueError("distribution and VERSION disagree")
     mapping = role_path_map(runtime_files)
     if len(mapping) != 7:
         raise ValueError(f"expected seven nested role skills, found {len(mapping)}")
-
-    destination = destination.resolve()
-    expected_parent = (REPO_ROOT / "adapters" / "chatgpt").resolve()
-    if destination.parent != expected_parent:
-        raise ValueError(f"refusing to replace unexpected adapter destination: {destination}")
-    if destination.exists():
-        shutil.rmtree(destination)
-    destination.mkdir(parents=True)
-
-    adapted_runtime_files = [mapping.get(relative, relative) for relative in runtime_files]
-
-    for portable_relative in runtime_files:
-        source = PORTABLE_ROOT / portable_relative
-        if not source.is_file():
-            raise FileNotFoundError(source)
-        adapted_relative = mapping.get(portable_relative, portable_relative)
-        target = destination / adapted_relative
-        text = source.read_text(encoding="utf-8")
-        text = rewrite_text(portable_relative, text, mapping)
-        mode = stat.S_IMODE(source.stat().st_mode)
-        write_text(target, text, mode)
-
-    actual_files = sorted(path.relative_to(destination).as_posix() for path in destination.rglob("*") if path.is_file())
-    skill_entrypoints = [path for path in actual_files if Path(path).name == "SKILL.md"]
-    if actual_files != sorted(adapted_runtime_files):
-        raise ValueError("generated adapter files do not equal the adapted runtime manifest")
-    if skill_entrypoints != ["SKILL.md"]:
-        raise ValueError(f"ChatGPT adapter must contain exactly one SKILL.md: {skill_entrypoints}")
-
-    projection_manifest = {
-        "schema_version": 1,
+    prepared: dict[str, tuple[bytes, int]] = {}
+    source_hashes: dict[str, str] = {}
+    for relative in runtime_files:
+        source = _source(relative)
+        raw = source.read_bytes()
+        text = rewrite_text(relative, raw.decode("utf-8"), mapping)
+        adapted = mapping.get(relative, relative)
+        if adapted in prepared:
+            raise ValueError("runtime projection has colliding target paths")
+        prepared[adapted] = (text.encode("utf-8"), stat.S_IMODE(source.stat().st_mode))
+        source_hashes[relative] = hashlib.sha256(raw).hexdigest()
+    for relative in prepared:
+        if any(parent.as_posix() in prepared for parent in PurePosixPath(relative).parents):
+            raise ValueError("runtime files conflict with a parent directory")
+    entrypoints = sorted(name for name in prepared if PurePosixPath(name).name == "SKILL.md")
+    if entrypoints != ["SKILL.md"]:
+        raise ValueError(f"ChatGPT adapter must contain exactly one SKILL.md: {entrypoints}")
+    projection = {
+        "schema_version": 2,
         "adapter": "chatgpt_personal_skills",
         "skill": "selective-intelligence",
-        "version": metadata["version"],
+        "version": version,
         "portable_source_path": "skills/selective-intelligence",
         "adapter_path": "adapters/chatgpt/selective-intelligence",
         "transformation": "runtime_only_with_nested_role_entrypoints_as_role_references",
         "single_skill_entrypoint": "SKILL.md",
-        "runtime_file_count": len(actual_files),
+        "runtime_file_count": len(prepared),
         "role_path_map": mapping,
-        "behavioral_contract": "preserved",
+        "behavioral_contract": "source_preserved_not_installed_behavior_proof",
+        "source_manifest_sha256": hashlib.sha256(metadata_bytes).hexdigest(),
+        "source_file_sha256": source_hashes,
+        "projected_file_sha256": {name: hashlib.sha256(raw).hexdigest() for name, (raw, _) in prepared.items()},
+        "execution_entrypoint": "scripts/build_engine.py",
+        "execution_dependencies": sorted(EXECUTION_RUNTIME_FILES),
     }
-    write_text(
-        ADAPTER_METADATA,
-        json.dumps(projection_manifest, ensure_ascii=False, indent=2) + "\n",
-        0o644,
-    )
+    return prepared, projection
 
+
+def _validate_output(root: Path, prepared: dict[str, tuple[bytes, int]]) -> None:
+    if root.is_symlink() or not root.is_dir():
+        raise ValueError("adapter must be a real directory")
+    actual = []
+    for path in root.rglob("*"):
+        if path.is_symlink():
+            raise ValueError("adapter must not contain symlinks")
+        if path.is_file():
+            actual.append(path.relative_to(root).as_posix())
+    if sorted(actual) != sorted(prepared):
+        raise ValueError("generated adapter files do not equal the adapted runtime manifest")
+    for relative, (raw, mode) in prepared.items():
+        path = root / relative
+        if path.read_bytes() != raw or stat.S_IMODE(path.stat().st_mode) != mode:
+            raise ValueError(f"adapter content or mode differs from source projection: {relative}")
+
+
+def build_adapter(destination: Path = ADAPTER_ROOT) -> dict[str, object]:
+    destination = Path(destination).absolute()
+    expected_parent = (REPO_ROOT / "adapters" / "chatgpt").absolute()
+    if (destination.parent != expected_parent or destination.name != "selective-intelligence"
+            or destination.is_symlink() or expected_parent.resolve() != expected_parent):
+        raise ValueError(f"refusing to replace unexpected adapter destination: {destination}")
+    if destination.exists() and not destination.is_dir():
+        raise ValueError("existing adapter destination is not a directory")
+    # This call has no write effects. Missing sources, bad paths, stale versions
+    # and bad rewrite anchors cannot delete the preceding generated package.
+    prepared, projection = _prepare_projection()
+    metadata = Path(ADAPTER_METADATA).absolute()
+    if (metadata != expected_parent / "metadata" / "chatgpt-adapter.json"
+            or metadata.is_symlink() or metadata.parent.resolve() != metadata.parent):
+        raise ValueError("unexpected adapter metadata destination")
+    expected_parent.mkdir(parents=True, exist_ok=True)
+    temporary = Path(tempfile.mkdtemp(prefix=".si-adapter-stage-", dir=expected_parent))
+    cleanup_allowed = True
+    try:
+        staged = temporary / "new"
+        staged.mkdir()
+        for relative, (raw, mode) in prepared.items():
+            write_text(staged / relative, raw.decode("utf-8"), mode)
+        _validate_output(staged, prepared)
+        staged_metadata = temporary / "metadata.json"
+        write_text(staged_metadata, json.dumps(projection, ensure_ascii=False, indent=2) + "\n", 0o644)
+        backup = temporary / "previous"
+        backup_metadata = temporary / "previous-metadata.json"
+        old_metadata = metadata.read_bytes() if metadata.exists() else None
+        if old_metadata is not None:
+            backup_metadata.write_bytes(old_metadata)
+            backup_metadata.chmod(stat.S_IMODE(metadata.stat().st_mode))
+        had_old = destination.exists()
+        replaced = False
+        moved_old = False
+        # Retain recovery material if interruption or restoration itself fails.
+        # A hard process kill is not claimed to be a completed transaction.
+        cleanup_allowed = False
+        try:
+            metadata.parent.mkdir(parents=True, exist_ok=True)
+            if had_old:
+                os.replace(destination, backup)
+                moved_old = True
+            os.replace(staged, destination)
+            replaced = True
+            os.replace(staged_metadata, metadata)
+            cleanup_allowed = True
+        except BaseException as failure:
+            recovery_errors = []
+            try:
+                if replaced:
+                    shutil.rmtree(destination)
+                if moved_old:
+                    os.replace(backup, destination)
+            except OSError as exc:
+                recovery_errors.append(str(exc))
+            try:
+                if old_metadata is not None:
+                    os.replace(backup_metadata, metadata)
+                else:
+                    metadata.unlink(missing_ok=True)
+            except OSError as exc:
+                recovery_errors.append(str(exc))
+            if recovery_errors:
+                raise RuntimeError(f"adapter build failed; recovery retained at {temporary}: "
+                                   + "; ".join(recovery_errors)) from failure
+            cleanup_allowed = True
+            raise
+    finally:
+        if cleanup_allowed:
+            shutil.rmtree(temporary)
     return {
-        "destination": str(destination),
-        "files": len(actual_files),
-        "version": metadata["version"],
-        "skill_entrypoints": skill_entrypoints,
-        "role_path_map": mapping,
+        "destination": str(destination), "files": len(prepared),
+        "version": projection["version"], "skill_entrypoints": ["SKILL.md"],
+        "role_path_map": projection["role_path_map"],
+        "execution_entrypoint": projection["execution_entrypoint"],
+        "source_manifest_sha256": projection["source_manifest_sha256"],
     }
+
+
+def validate_adapter(adapter_root: Path = ADAPTER_ROOT) -> dict[str, object]:
+    prepared, projection = _prepare_projection()
+    _validate_output(Path(adapter_root), prepared)
+    metadata = Path(ADAPTER_METADATA)
+    if metadata.is_symlink() or json.loads(metadata.read_text(encoding="utf-8")) != projection:
+        raise ValueError("adapter metadata is missing or stale; rebuild from current source")
+    return projection
 
 
 def build_archive(adapter_root: Path = ADAPTER_ROOT, dist_root: Path = DIST_ROOT) -> dict[str, object]:
-    version = (adapter_root / "VERSION").read_text(encoding="utf-8").strip()
+    projection = validate_adapter(adapter_root)
+    version = projection["version"]
     archive_path = dist_root / f"selective-intelligence-chatgpt-{version}.zip"
     dist_root.mkdir(parents=True, exist_ok=True)
-    with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
-        for path in sorted(item for item in adapter_root.rglob("*") if item.is_file()):
-            relative = Path("selective-intelligence") / path.relative_to(adapter_root)
-            info = zipfile.ZipInfo(relative.as_posix(), date_time=(1980, 1, 1, 0, 0, 0))
-            info.compress_type = zipfile.ZIP_DEFLATED
-            info.external_attr = (stat.S_IMODE(path.stat().st_mode) & 0xFFFF) << 16
-            archive.writestr(info, path.read_bytes())
+    descriptor, temporary_name = tempfile.mkstemp(prefix=".si-archive-", dir=dist_root)
+    os.close(descriptor)
+    temporary = Path(temporary_name)
+    try:
+        with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+            for path in sorted(item for item in adapter_root.rglob("*") if item.is_file()):
+                relative = Path("selective-intelligence") / path.relative_to(adapter_root)
+                info = zipfile.ZipInfo(relative.as_posix(), date_time=(1980, 1, 1, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = (stat.S_IMODE(path.stat().st_mode) & 0xFFFF) << 16
+                if path.is_symlink() or not path.resolve().is_relative_to(adapter_root.resolve()):
+                    raise ValueError("archive source redirected outside the adapter")
+                raw = path.read_bytes()
+                expected = projection["projected_file_sha256"].get(path.relative_to(adapter_root).as_posix())
+                if hashlib.sha256(raw).hexdigest() != expected:
+                    raise ValueError("archive bytes differ from the validated source projection")
+                archive.writestr(info, raw)
+        # Recheck after archive creation so source/output drift during this
+        # build cannot be published as a matching package.
+        if validate_adapter(adapter_root) != projection:
+            raise ValueError("source projection changed while building archive")
+        os.replace(temporary, archive_path)
+    finally:
+        temporary.unlink(missing_ok=True)
     digest = hashlib.sha256(archive_path.read_bytes()).hexdigest()
     return {"archive": str(archive_path), "sha256": digest}
 

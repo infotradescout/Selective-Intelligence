@@ -12,6 +12,16 @@ It performs one bounded Council implementation packet. Do not invoke it merely b
 - `si-planner` output packet
 - Active repository files, issue state, and existing implementation
 
+## Existing execution owner
+
+Follow [the corrected execution contract](../../references/model-neutral-execution.md#product-identity-and-corrected-execution). Keep an existing Start Pack project lock or execution session as the owner; do not initialize a parallel one.
+
+When the engine owns the session, obtain its current worker packet before generating work. Read the complete `task`, including `metadata` requirements, operations, dependencies, acceptance references and invalidation conditions, plus the selected context. The title alone is not the task. Missing, blocked or over-budget material requires reconciliation, not guessed requirements or silent truncation.
+
+For this engine-owned path, return the format specified by the packet's `requiredOutput`: the unchanged top-level `sessionId`, `taskId`, `authorized_checkpoint_id`, and `authorized_intent_hash`, actual `producer` information, and `files` mapping safe relative paths to complete UTF-8 text. The engine applies those files and runs verification. An operation description is not permission to execute it directly or bypass that owner. The general summary below accompanies the result; it does not replace the required result format.
+
+Do not relabel old work, invent missing bindings, or redirect a result to another task. After a correction, discard dependent stale work and obtain the fresh packet. Report external-worker shutdown only with actual stop evidence. Returning a valid packet does not itself prove correct behavior or installed-client adoption.
+
 ## Steps
 1. Read the plan and current code.
 2. Make only the edits needed for this slice.
