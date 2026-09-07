@@ -83,12 +83,22 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
         for adapter in session.get("capabilityInventory", [])
         if adapter.get("executable")
     ]
-    context_bundle = CB.select_context(
-        workspace,
-        objective=session["objective"],
-        task=task,
-        acceptance_refs=task.get("acceptanceRefs", []),
-    )
+    # Export the same task material that the approval binds. A short title
+    # cannot substitute for nested requirements, operations or invalidators.
+    task_material = CP._task_material(task)
+    task_bytes = len(json.dumps(task_material, sort_keys=True, ensure_ascii=False,
+                               allow_nan=False).encode("utf-8"))
+    if task_bytes > 65_536:
+        raise EngineError("task instructions exceed the bounded handoff; reconcile a smaller complete task")
+    try:
+        context_bundle = CB.select_context(
+            workspace,
+            objective=session["objective"],
+            task=task_material,
+            acceptance_refs=task.get("acceptanceRefs", []),
+        )
+    except ValueError as exc:
+        raise EngineError(str(exc)) from exc
     coverage = context_bundle.get("outcomeCoverage", {})
     if coverage.get("complete") is not True:
         raise EngineError(
@@ -107,13 +117,9 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
         "confirmedFacts": session.get("knownFacts", []),
         "verifiedAdapters": verified_adapters,
         "task": {
-            "title": task["title"],
-            "tags": task.get("tags", []),
-            "acceptanceRefs": task.get("acceptanceRefs", []),
+            **task_material,
             "status": task["status"],
-            "attempts": task.get("attempts", []),
-            "authorized_checkpoint_id": task.get("authorized_checkpoint_id"),
-            "authorized_intent_hash": task.get("authorized_intent_hash"),
+            "attempts": copy.deepcopy(task.get("attempts", [])),
         },
         "permissions": {
             "writableRoots": session.get("writableRoots", []),
