@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 
@@ -13,7 +14,25 @@ SOURCE = ROOT / "adapters" / "repository-pointer.md"
 
 def outputs() -> dict[Path, str]:
     pointer = SOURCE.read_text(encoding="utf-8")
+    skill_root = ROOT / "skills" / "selective-intelligence"
+    skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+    guide_path = skill_root / "AI-GUIDE.md"
+    guide = guide_path.read_text(encoding="utf-8")
+    sections = []
+    for title in ("Authority and source routing", "Delivery states", "Product identity before templates", "SI defects and cold starts"):
+        match = re.search(rf"^## {re.escape(title)}\n.*?(?=^## |\Z)", skill, re.M | re.S)
+        if match is None:
+            raise ValueError(f"canonical bootstrap section is missing: {title}")
+        sections.append(match.group().strip())
+    begin = "<!-- SELECTIVE_INTELLIGENCE_BOOTSTRAP_PROJECTION_BEGIN -->"
+    end = "<!-- SELECTIVE_INTELLIGENCE_BOOTSTRAP_PROJECTION_END -->"
+    if guide.count(begin) != 1 or guide.count(end) != 1:
+        raise ValueError("strict guide requires one canonical bootstrap projection")
+    guide = re.sub(re.escape(begin) + r".*?" + re.escape(end),
+                   lambda _: begin + "\n\n" + "\n\n".join(sections) + "\n\n" + end,
+                   guide, flags=re.S)
     return {
+        guide_path: guide,
         ROOT / "AGENTS.md": pointer,
         ROOT / ".github" / "copilot-instructions.md": pointer,
         ROOT / "CLAUDE.md": "@AGENTS.md\n",

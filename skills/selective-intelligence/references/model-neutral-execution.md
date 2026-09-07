@@ -18,6 +18,18 @@ Selective Intelligence must produce the same class of trustworthy outcome across
 - [Model-neutral communication](#model-neutral-communication)
 - [Portability conformance](#portability-conformance)
 
+## Fresh-context bootstrap acceptance
+
+Run periodic tests in a fresh context that receives only **Always use Selective Intelligence**, then a real task. Do not supply prior chats, a narrated expected answer, the suspected defect, or a hidden answer key to the worker. The installed canonical skill and narrowly relevant current connected evidence remain available as they would to a real user.
+
+The worker must independently establish: owning product/system, current authoritative sources, approved intent/constraints, actual environment and breakpoint, remaining work, needed capabilities/connections, next correct action, completion condition, and the strongest evidenced delivery state. Use **INTENT → IMPLEMENTED → PROVED → PUSHED → INTEGRATED → DEPLOYED → LIVE VERIFIED** from [evidence and completion](evidence-and-completion.md#environment-and-delivery-states). Do not map a deployment receipt to successful live behavior.
+
+Test explicit SI maintenance as a real task even with zero product history. Test standing adoption on tasks with no repeated SI wordmark. Test a current user correction against a stale handoff, and a managed account against shared product behavior. Test mismatched installed copies against canonical source and generation metadata. Client packaging may differ; governing behavior may not.
+
+A declared fixture, valid schema, or deterministic phrase check is not behavioral evidence. Run the model on the actual fixture, preserve task-local inputs, source/skill identities, observations, and the evaluator verdict in the existing evaluation owner. Missing access must be reported narrowly; never replace unavailable sources with invented state.
+
+Wrong interpretation, destination, stale authority, excessive retrieval, environment conflation, or false completion is an SI defect. Record the causal authority/retrieval/source-map/capability/verification owner; repair the canonical owner and regenerate affected copies; then rerun the failed case and one relevant transfer case. Do not primarily add permanent model-specific instructions or create a user/client doctrine fork.
+
 ## Governing requirement: model interchangeability
 
 **Authoritative product-owner requirement.** Machine-checkable acceptance language lives in [portability-conformance.md](portability-conformance.md) (Test O) and `evals/evals.json`.

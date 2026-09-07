@@ -12,6 +12,31 @@ Selective Intelligence is the actual-intent, system-coherence, and truthful-comp
 - [Schema and client compatibility](#schema-and-client-compatibility)
 - [Free public portability](#free-public-portability)
 
+## Source-owner routing before retrieval
+
+Apply the current objective, owning product, affected capability, environment, relevant authority, and completion condition before choosing connections. Retrieve the minimum evidence that changes the next decision or proves it.
+
+| Information or action | Owning source |
+|---|---|
+| Repositories, branches, commits, PRs, issues, source history | GitHub or the actual source-control host. |
+| Deployed revision, runtime status, logs, production services | Deployment/runtime provider and live behavior. |
+| Uncommitted or local-only work | Actual local workspace or authorized remote computer access. |
+| Governed documents, business assets, spreadsheets | Designated Drive/document/data system. |
+| Current communication, scheduling, people | Relevant mail/calendar/contact system. |
+| Other capabilities | Connection/plugin/system that owns the needed information or operation. |
+
+Use current connected authority before reconstructing truth from old chats. Historical context can be relevant evidence; it is never a required substitute for a functioning source map. Do not load other products, unrelated accounts, or ecosystem history merely because tools expose them. If the source map cannot identify a required owner, record the precise SI routing defect, inspect the narrowly relevant available owners, and ask only if the missing distinction materially blocks progress.
+
+## One source, verified delivery copies
+
+Personal, public, plugin, Work, and Codex installations use one canonical SI behavior. User-specific facts belong in the user's authoritative systems; they are not a different edition of the doctrine. Client adapters may alter file packaging, role-entrypoint filenames, or supported transport only.
+
+For SI maintenance, compare the canonical source revision, generated projection manifest/hash, published package, and each reachable installed copy. Repository metadata owns current source; provider registration owns published availability; actual installed content owns what that client can load. A matching name, shared source URL, or version string alone does not establish behavioral parity.
+
+Resolve the canonical source through the installed package's declared repository, verify its identity, and inspect only the named governing owner plus relevant generation metadata. Use the generator rather than hand-editing materialized caches or creating a personal fork. Refresh stale managed copies through supported installation/publication workflows and verify content. An integrated change, generated archive, published package, refreshed installation, and fresh task run are distinct evidence.
+
+If a pinned transition loader targets an old revision, update its exact revision/tree through the established verified refresh mechanism. Do not label inaccessible computers, running conversations, outside accounts, or unrefreshed plugin versions current.
+
 ## Discover existing authority
 
 Before creating `.selective-intelligence/`, inspect for:

@@ -19,8 +19,8 @@ import urllib.request
 import uuid
 import zipfile
 
-SOURCE_COMMIT = "a9baf93436d097d161053d877333e9ab4ff5df96"
-SOURCE_TREE = "591f0d7b7aae58f1533df79afa340b9afdcef622"
+SOURCE_COMMIT = "93dca1bf7c50d8ee866acda2f8bce40ac4519dc0"
+SOURCE_TREE = "818a5cddd3fa082922b4b551083041fc64a70429"
 SOURCE_PREFIX = f"Selective-Intelligence-{SOURCE_COMMIT}/skills/selective-intelligence/"
 SOURCE_URL = f"https://codeload.github.com/infotradescout/Selective-Intelligence/zip/{SOURCE_COMMIT}"
 MAX_ARCHIVE = 64 * 1024 * 1024
