@@ -41,10 +41,17 @@ class ClientProtocolTests(unittest.TestCase):
         return str(path)
 
     def call(self, command, *args, expected=0):
-        result = subprocess.run(
-            [sys.executable, str(ENGINE), command, *map(str, args)],
-            cwd=self.root, env=self.env, text=True, capture_output=True, timeout=20,
-        )
+        # File-backed capture avoids pipe-capacity deadlocks for large sessions.
+        # Commands, exit codes and response assertions remain unchanged.
+        with tempfile.TemporaryFile(mode="w+b") as out, tempfile.TemporaryFile(mode="w+b") as err:
+            result = subprocess.run(
+                [sys.executable, str(ENGINE), command, *map(str, args)],
+                cwd=self.root, env=self.env, stdout=out, stderr=err, timeout=20,
+            )
+            out.seek(0)
+            err.seek(0)
+            result.stdout = out.read().decode("utf-8")
+            result.stderr = err.read().decode("utf-8")
         self.assertNotIn("Traceback", result.stderr, result.stderr)
         self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
         try:
@@ -361,16 +368,23 @@ class ClientProtocolTests(unittest.TestCase):
         files = {"test_wait.py": "import time, unittest\nfrom pathlib import Path\nclass Wait(unittest.TestCase):\n    def test_wait(self):\n        Path('started.txt').write_text('started')\n        time.sleep(15)\n        Path('should_not_finish.txt').write_text('wrong')\n"}
         artifact = self.artifact(packet, files)
         self.call("apply", "--session", session["sessionId"], "--task", packet["taskId"], "--artifact", self.document(artifact))
+        out = tempfile.TemporaryFile(mode="w+b")
+        err = tempfile.TemporaryFile(mode="w+b")
+        self.addCleanup(out.close)
+        self.addCleanup(err.close)
         process = subprocess.Popen([sys.executable, str(ENGINE), "verify", "--session", session["sessionId"],
                                     "--task", packet["taskId"], "--command", self.document({"argv": [sys.executable, "-m", "unittest", "test_wait"]})],
-                                   cwd=self.root, env=self.env, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                                   cwd=self.root, env=self.env, stdout=out, stderr=err)
         try:
             deadline = time.monotonic() + 8
             while not (self.workspace / "started.txt").exists() and time.monotonic() < deadline:
                 time.sleep(.03)
             self.assertTrue((self.workspace / "started.txt").exists())
             self.call("correct", "--session", session["sessionId"], "--correction", CORRECTION)
-            stdout, stderr = process.communicate(timeout=8)
+            process.wait(timeout=8)
+            out.seek(0)
+            err.seek(0)
+            stdout, stderr = out.read().decode("utf-8"), err.read().decode("utf-8")
             self.assertNotIn("Traceback", stderr)
             self.assertEqual(process.returncode, 5, stdout + stderr)
             result = json.loads(stdout)
@@ -381,7 +395,7 @@ class ClientProtocolTests(unittest.TestCase):
         finally:
             if process.poll() is None:
                 process.kill()
-                process.communicate(timeout=20)
+                process.wait(timeout=20)
 
 
     def test_schema_invalid_model_override_cannot_prevent_correction(self):
