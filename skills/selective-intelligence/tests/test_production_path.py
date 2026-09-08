@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 TEST_DIR = Path(__file__).resolve().parent
@@ -550,6 +551,153 @@ class WorkerPacketTests(SessionEnvironmentIsolationMixin, unittest.TestCase):
             self.assertTrue(packet["activeIntent"]["prohibitions"])
             self.assertEqual(packet["authorized_checkpoint_id"], session["authorizedCheckpointId"])
             self.assertNotIn("API_KEY=should-not-export", json.dumps(packet))
+
+
+class WorkerHandoffAdmissionTests(SessionEnvironmentIsolationMixin, unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.workspace = self.root / "workspace"
+        os.environ["SI_SESSION_DIR"] = str(self.root / "sessions")
+        self.session = BE.start_project(
+            request="Build a local result", workspace=str(self.workspace), canonical_roots=[],
+            plan={"tasks": [
+                {"key": "work", "title": "Build a local result", "kind": "worker", "queue": "ready"},
+                {"key": "other", "title": "Build another local result", "kind": "worker", "queue": "ready"},
+            ]}, auto_approve=True,
+        )
+        self.sid = self.session["sessionId"]
+        self.tasks = list(self.session["queue"])
+
+    def packet(self, task=None):
+        return BE.make_worker_packet(session_id=self.sid, task_id=task or self.tasks[0])
+
+    def exhaust(self):
+        for _ in range(3):
+            self.packet()
+
+    def test_fourth_export_is_denied_before_retrieval_and_without_state_change(self):
+        self.exhaust()
+        before = LS.load_session(self.sid)
+        with mock.patch.object(BE.CB, "select_context") as selection:
+            with self.assertRaisesRegex(BE.EngineError, "three worker handoff"):
+                self.packet()
+        selection.assert_not_called()
+        self.assertEqual(LS.load_session(self.sid), before)
+
+    def test_usage_survives_a_fresh_cli_process(self):
+        self.exhaust()
+        proc = subprocess.run(
+            [sys.executable, "-B", str(SCRIPTS / "build_engine.py"), "packet",
+             "--session", self.sid, "--task", self.tasks[0]],
+            text=True, capture_output=True, check=False,
+        )
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("three worker handoff", proc.stdout)
+        self.assertNotIn("contextBundle", proc.stdout)
+
+    def test_other_task_can_progress_and_reapproval_cannot_reset_same_task(self):
+        self.exhaust()
+        self.packet(self.tasks[1])
+        with self.assertRaises(BE.EngineError):
+            BE.approve_project(session_id=self.sid)
+        with self.assertRaisesRegex(BE.EngineError, "three worker handoff"):
+            self.packet()
+        self.assertEqual(LS.load_session(self.sid)["workerHandoffUsage"]["totalExports"], 4)
+
+    def test_failed_context_retrievals_are_also_bounded(self):
+        (self.workspace / "app.py").write_text("import helper\n", encoding="utf-8")
+        (self.workspace / "helper.py").write_text("# local result\n" * 2000, encoding="utf-8")
+        for _ in range(3):
+            with self.assertRaisesRegex(BE.EngineError, "cannot preserve"):
+                self.packet()
+        with mock.patch.object(BE.CB, "select_context") as selection:
+            with self.assertRaisesRegex(BE.EngineError, "three worker handoff"):
+                self.packet()
+        selection.assert_not_called()
+        usage = LS.load_session(self.sid)["workerHandoffUsage"]
+        self.assertEqual(usage["totalRetrievals"], 3)
+        self.assertEqual(usage["totalExports"], 0)
+
+    def test_full_payload_is_bounded_even_when_selected_files_are_small(self):
+        session = LS.load_session(self.sid)
+        LS.add_fact(session, "Observed local result", {"observation": "x" * 65536})
+        LS.save_session(session)
+        with self.assertRaisesRegex(BE.EngineError, "65536 UTF-8 payload bytes"):
+            self.packet()
+        usage = LS.load_session(self.sid)["workerHandoffUsage"]
+        self.assertEqual(usage["totalRetrievals"], 1)
+        self.assertEqual(usage["totalExports"], 0)
+
+    def test_receipt_counts_actual_final_packet_bytes(self):
+        packet = self.packet()
+        expected = len((json.dumps(packet, indent=2) + "\n").encode("utf-8"))
+        state = LS.load_session(self.sid)
+        self.assertEqual(state["workerHandoffUsage"]["totalPayloadBytes"], expected)
+        self.assertEqual(state["events"][-1]["payload"]["payloadBytes"], expected)
+
+    def test_accepted_work_and_failed_verification_allow_a_repair_handoff(self):
+        self.exhaust()
+        session = LS.load_session(self.sid)
+        session["capabilityInventory"] = CAP.inventory(probe_root=self.workspace)
+        LS.save_session(session)
+        artifact = {
+            "sessionId": self.sid, "taskId": self.tasks[0],
+            "authorized_checkpoint_id": session["authorizedCheckpointId"],
+            "authorized_intent_hash": session["authorizedIntentHash"],
+            "producer": {"adapterId": "structured_worker_packet", "surface": "deterministic test",
+                         "generatedAt": "2026-09-08T00:00:00Z"},
+            "files": {"test_result.py": "import unittest\nclass Result(unittest.TestCase):\n    def test_result(self):\n        self.fail('repair needed')\n"},
+        }
+        BE.apply_worker_artifact(session_id=self.sid, task_id=self.tasks[0], artifact=artifact)
+        result = BE.verify_task(session_id=self.sid, task_id=self.tasks[0],
+                                command={"argv": [sys.executable, "-m", "unittest", "test_result"]})
+        self.assertFalse(result["passed"])
+        packet = self.packet()
+        self.assertEqual(packet["taskId"], self.tasks[0])
+        usage = LS.load_session(self.sid)["workerHandoffUsage"]
+        self.assertEqual(usage["totalExports"], 4)
+        self.assertEqual(usage["tasks"][self.tasks[0]]["retrievals"], 1)
+
+    def test_malformed_persisted_ledger_is_denied(self):
+        session = LS.load_session(self.sid)
+        session["workerHandoffUsage"] = {"schemaVersion": "unrecognized"}
+        LS.save_session(session)
+        with self.assertRaisesRegex(BE.EngineError, "invalid worker handoff"):
+            self.packet()
+
+    def test_build_transport_counts_its_entire_wrapper(self):
+        session = BE.start_project(
+            request="Build a local result", workspace=str(self.workspace), canonical_roots=[],
+            plan={"tasks": [{"key": "work", "title": "Build a local result", "kind": "worker",
+                             "queue": "ready", "metadata": {"requirements": "x" * 31000}}]},
+            auto_approve=True,
+        )
+        task_id = next(iter(session["queue"]))
+        packet = BE.make_worker_packet(session_id=session["sessionId"], task_id=task_id)
+        self.assertLess(len(json.dumps(packet, indent=2).encode("utf-8")), 65536)
+        proc = subprocess.run(
+            [sys.executable, "-B", str(SCRIPTS / "build_engine.py"), "build", "--session", session["sessionId"]],
+            text=True, capture_output=True, check=False,
+        )
+        self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+        self.assertIn("65536 UTF-8 payload bytes", proc.stdout)
+        self.assertNotIn("workerPacket", proc.stdout)
+
+    def test_concurrent_processes_share_the_final_admission(self):
+        self.packet()
+        self.packet()
+        argv = [sys.executable, "-B", str(SCRIPTS / "build_engine.py"), "packet",
+                "--session", self.sid, "--task", self.tasks[0]]
+        processes = [subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                     for _ in range(2)]
+        outputs = [proc.communicate(timeout=15) for proc in processes]
+        self.assertEqual(sorted(proc.returncode for proc in processes), [0, 2], outputs)
+        usage = LS.load_session(self.sid)["workerHandoffUsage"]
+        self.assertEqual(usage["totalRetrievals"], 3)
+        self.assertEqual(usage["totalExports"], 3)
 
 
 class PolicyTests(unittest.TestCase):

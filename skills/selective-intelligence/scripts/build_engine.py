@@ -37,6 +37,7 @@ import context_budget as CB  # noqa: E402
 import feedback as FB  # noqa: E402
 import intent_contract as IC  # noqa: E402
 import lane_session as LS  # noqa: E402
+import progress_checkpoint as PC  # noqa: E402
 from policy_guard import PolicyDenied, PolicyGuard, guarded_run, guarded_write_text  # noqa: E402
 
 
@@ -60,7 +61,9 @@ def _serialized_session(function):
 
 
 @_serialized_session
-def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
+def make_worker_packet(*, session_id: str, task_id: str, transport: str = "packet") -> dict[str, Any]:
+    if transport not in {"packet", "build"}:
+        raise EngineError("unsupported worker handoff transport")
     session = LS.load_session(session_id)
     if not session:
         raise EngineError("session not found")
@@ -73,6 +76,27 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
         raise EngineError("task not found")
     if task["status"] not in {"ready", "repairing", "failed"}:
         raise EngineError(f"task is not available for worker handoff: {task['status']}")
+    # Session-owned evidence is the progress source. Rewording a request,
+    # exporting a packet or re-approving the same checkpoint cannot reset it.
+    current_binding = {"authorized_checkpoint_id": session.get("authorizedCheckpointId"),
+                       "authorized_intent_hash": session.get("authorizedIntentHash")}
+    progress = {
+        "artifacts": [item.get("artifactId") for item in session.get("artifacts", [])
+                      if item.get("taskId") == task_id and not item.get("tainted")
+                      and not item.get("rolledBack")
+                      and all(item.get(k) == v for k, v in current_binding.items())],
+        "verification": [item.get("verificationId") for item in session.get("verificationAttempts", [])
+                         if item.get("taskId") == task_id
+                         and all(item.get(k) == v for k, v in current_binding.items())],
+    }
+    usage_binding = {"task_id": task_id,
+                     "checkpoint_id": session["authorizedCheckpointId"],
+                     "intent_hash": session["authorizedIntentHash"],
+                     "progress_id": _plan_hash(progress)}
+    try:
+        usage = PC.admit_worker_handoff(session.get("workerHandoffUsage"), **usage_binding)
+    except PC.ProgressCheckpointError as exc:
+        raise EngineError(str(exc)) from exc
     workspace = Path(session["workspace"]).resolve()
     verified_adapters = [
         {
@@ -90,6 +114,10 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
                                allow_nan=False).encode("utf-8"))
     if task_bytes > 65_536:
         raise EngineError("task instructions exceed the bounded handoff; reconcile a smaller complete task")
+    # Persist admission before retrieval, including attempts that fail coverage
+    # or serialization. A new process cannot restart an exhausted window.
+    session["workerHandoffUsage"] = usage
+    LS.save_session(session)
     try:
         context_bundle = CB.select_context(
             workspace,
@@ -153,18 +181,28 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
             ),
         },
     }
+    event_payload = {
+        "packetId": packet["packetId"], "taskId": task_id,
+        "selectedContextFiles": len(packet["contextBundle"]["selected"]),
+        "authorized_checkpoint_id": packet["authorized_checkpoint_id"],
+        "authorized_intent_hash": packet["authorized_intent_hash"],
+    }
     event = LS.record_event(
-        session,
-        "worker.packet_exported",
-        {
-            "packetId": packet["packetId"],
-            "taskId": task_id,
-            "selectedContextFiles": len(packet["contextBundle"]["selected"]),
-            "authorized_checkpoint_id": packet["authorized_checkpoint_id"],
-            "authorized_intent_hash": packet["authorized_intent_hash"],
-        },
+        session, "worker.packet_exported", event_payload,
     )
     packet["eventId"] = event["eventId"]
+    try:
+        # Match the packet CLI's JSON formatting, including its final newline.
+        # Instructions, facts, attempts and the final event ID all count.
+        delivery = _build_handoff_response(session, task, packet) if transport == "build" else packet
+        payload_bytes = len((json.dumps(delivery, indent=2, allow_nan=False) + "\n").encode("utf-8"))
+        PC.validate_worker_handoff_size(file_count=len(context_bundle["selected"]), byte_count=payload_bytes)
+    except (PC.ProgressCheckpointError, ValueError) as exc:
+        raise EngineError(str(exc)) from exc
+    event_payload["payloadBytes"] = payload_bytes
+    usage["totalExports"] += 1
+    usage["totalPayloadBytes"] += payload_bytes
+    usage["tasks"][task_id].update(lastPayloadBytes=payload_bytes, lastFileCount=len(context_bundle["selected"]))
     LS.save_session(session)
     return packet
 
@@ -1409,6 +1447,15 @@ def cmd_plan(args: argparse.Namespace) -> int:
     ))
 
 
+def _build_handoff_response(session: dict[str, Any], task: dict[str, Any], packet: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "sessionId": session["sessionId"], "code": "worker_input_required",
+        "task": task, "workerPacket": packet, "humanActions": [],
+        "state": LS.global_state(session),
+        "note": "Generate from this packet; return its unchanged bindings with the actual result.",
+    }
+
+
 def cmd_build(args: argparse.Namespace) -> int:
     if args.artifact:
         return cmd_apply(argparse.Namespace(session=args.session, task=None, artifact=args.artifact))
@@ -1421,16 +1468,11 @@ def cmd_build(args: argparse.Namespace) -> int:
         if not task:
             print(json.dumps({"error": "no ready worker task", "code": "no_ready_task"}))
             return 4
-        packet = make_worker_packet(session_id=session["sessionId"], task_id=task["taskId"])
+        packet = make_worker_packet(session_id=session["sessionId"], task_id=task["taskId"], transport="build")
     except (EngineError, LS.SessionConflictError, ValueError, OSError) as exc:
         print(json.dumps({"error": str(exc), "code": "build_handoff_failed"}))
         return 2
-    print(json.dumps({
-        "sessionId": session["sessionId"], "code": "worker_input_required",
-        "task": task, "workerPacket": packet, "humanActions": [],
-        "state": LS.global_state(session),
-        "note": "Generate from this packet; return its unchanged bindings with the actual result.",
-    }, indent=2))
+    print(json.dumps(_build_handoff_response(session, task, packet), indent=2))
     return 3
 
 
