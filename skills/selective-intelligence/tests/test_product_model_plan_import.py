@@ -45,6 +45,7 @@ class PlanImportTests(unittest.TestCase):
         modules["context_budget"].select_context = mock.Mock(return_value={
             "outcomeCoverage": {"complete": True}, "selected": []
         })
+        modules["context_budget"].validate_task_context = mock.Mock()
         spec = importlib.util.spec_from_file_location("si_plan_import_engine", SCRIPTS / "build_engine.py")
         self.engine = importlib.util.module_from_spec(spec)
         with mock.patch.dict(sys.modules, modules):
