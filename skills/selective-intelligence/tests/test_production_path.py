@@ -553,6 +553,236 @@ class WorkerPacketTests(SessionEnvironmentIsolationMixin, unittest.TestCase):
             self.assertNotIn("API_KEY=should-not-export", json.dumps(packet))
 
 
+class WorkerArtifactReuseTests(SessionEnvironmentIsolationMixin, unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.workspace = self.root / "workspace"
+        os.environ["SI_SESSION_DIR"] = str(self.root / "sessions")
+        self.session = BE.start_project(
+            request="Repair the local source while reusing existing owners",
+            workspace=str(self.workspace), canonical_roots=[],
+            plan={"tasks": [
+                {"key": "work", "title": "Repair the local source", "kind": "worker", "queue": "ready"},
+            ]}, auto_approve=True,
+        )
+        self.sid = self.session["sessionId"]
+        self.task_id = next(iter(self.session["queue"]))
+
+    def apply_files(self, files):
+        return BE.apply_worker_artifact(
+            session_id=self.sid, task_id=self.task_id,
+            artifact={
+                "sessionId": self.sid, "taskId": self.task_id,
+                "authorized_checkpoint_id": self.session["authorizedCheckpointId"],
+                "authorized_intent_hash": self.session["authorizedIntentHash"],
+                "producer": {"adapterId": "structured_worker_packet", "surface": "deterministic test",
+                             "generatedAt": "2026-09-08T00:00:00Z"},
+                "files": files,
+            },
+        )
+
+    def test_new_duplicate_owner_rejects_entire_artifact_before_target_writes(self):
+        source = "def shared_value():\n    return 1\n"
+        original = "def current_value():\n    return 0\n"
+        (self.workspace / "owner.py").write_text(source, encoding="utf-8")
+        target = self.workspace / "app.py"
+        target.write_text(original, encoding="utf-8")
+        before = LS.load_session(self.sid)
+
+        with mock.patch.object(BE, "guarded_write_text", wraps=BE.guarded_write_text) as writer:
+            with mock.patch.object(BE.tempfile, "mkstemp", wraps=BE.tempfile.mkstemp) as temporary:
+                with self.assertRaisesRegex(BE.EngineError, "duplicate|ownership"):
+                    self.apply_files({
+                        "app.py": "def current_value():\n    return 2\n",
+                        "new/copy.py": source,
+                    })
+
+        writer.assert_not_called()
+        self.assertFalse(any(call.kwargs.get("prefix") == ".si-stage-" for call in temporary.call_args_list))
+        self.assertEqual(target.read_text(encoding="utf-8"), original)
+        self.assertEqual((self.workspace / "owner.py").read_text(encoding="utf-8"), source)
+        self.assertFalse((self.workspace / "new").exists())
+        persisted = LS.load_session(self.sid)
+        self.assertEqual(persisted["artifacts"], before["artifacts"])
+        self.assertEqual(persisted["actionReceipts"], before["actionReceipts"])
+
+    def test_existing_owner_cannot_be_replaced_with_duplicate_source(self):
+        source = "def shared_value():\n    return 1\n"
+        original = "def distinct_value():\n    return 2\n"
+        owner = self.workspace / "owner.py"
+        owner.write_text(source, encoding="utf-8")
+        target = self.workspace / "app.py"
+        target.write_text(original, encoding="utf-8")
+        original_stat = target.stat()
+        before = LS.load_session(self.sid)
+
+        with mock.patch.object(BE, "guarded_write_text", wraps=BE.guarded_write_text) as writer:
+            with mock.patch.object(BE.tempfile, "mkstemp", wraps=BE.tempfile.mkstemp) as temporary:
+                with self.assertRaisesRegex(BE.EngineError, "duplicate|ownership"):
+                    self.apply_files({"app.py": source})
+
+        writer.assert_not_called()
+        self.assertFalse(any(call.kwargs.get("prefix") == ".si-stage-" for call in temporary.call_args_list))
+        self.assertEqual(target.read_text(encoding="utf-8"), original)
+        self.assertEqual(target.stat().st_mtime_ns, original_stat.st_mtime_ns)
+        self.assertEqual(owner.read_text(encoding="utf-8"), source)
+        persisted = LS.load_session(self.sid)
+        self.assertEqual(persisted["artifacts"], before["artifacts"])
+        self.assertEqual(persisted["actionReceipts"], before["actionReceipts"])
+
+    def test_preexisting_duplicate_debt_allows_unrelated_source_repair(self):
+        duplicate = "def legacy_value():\n    return 1\n"
+        for name in ("legacy.py", "legacy_copy.py"):
+            (self.workspace / name).write_text(duplicate, encoding="utf-8")
+        target = self.workspace / "app.py"
+        target.write_text("def current_value():\n    return 0\n", encoding="utf-8")
+        repaired = "def current_value():\n    return 2\n"
+
+        result = self.apply_files({"app.py": repaired})
+
+        self.assertEqual(target.read_text(encoding="utf-8"), repaired)
+        self.assertEqual([record["relativePath"] for record in result["written"]], ["app.py"])
+        self.assertEqual(LS.load_session(self.sid)["queue"][self.task_id]["status"], "verifying")
+        for name in ("legacy.py", "legacy_copy.py"):
+            self.assertEqual((self.workspace / name).read_text(encoding="utf-8"), duplicate)
+
+    def test_distinct_default_export_pages_are_module_local_owners(self):
+        source = "export default function Page() { return <main>Home</main>; }\n"
+        proposed = "export default function Page() { return <main>About</main>; }\n"
+        owner = self.workspace / "app/page.tsx"
+        owner.parent.mkdir()
+        owner.write_text(source, encoding="utf-8")
+
+        result = self.apply_files({"app/about/page.tsx": proposed})
+
+        self.assertEqual(owner.read_text(encoding="utf-8"), source)
+        self.assertEqual((self.workspace / "app/about/page.tsx").read_text(encoding="utf-8"), proposed)
+        self.assertEqual([item["relativePath"] for item in result["written"]], ["app/about/page.tsx"])
+        self.assertEqual(LS.load_session(self.sid)["queue"][self.task_id]["status"], "verifying")
+
+    def test_empty_and_whitespace_package_markers_are_not_duplicate_implementations(self):
+        for package, content in (("empty_owner", ""), ("whitespace_owner", " \n\t\n")):
+            marker = self.workspace / package / "__init__.py"
+            marker.parent.mkdir()
+            marker.write_text(content, encoding="utf-8")
+
+        proposed = {"empty_package/__init__.py": "", "whitespace_package/__init__.py": " \n\t\n"}
+        result = self.apply_files(proposed)
+
+        self.assertEqual({item["relativePath"] for item in result["written"]}, set(proposed))
+        for name, content in proposed.items():
+            self.assertEqual((self.workspace / name).read_text(encoding="utf-8"), content)
+        self.assertEqual(LS.load_session(self.sid)["queue"][self.task_id]["status"], "verifying")
+
+    def test_named_exported_component_and_hook_collisions_remain_denied(self):
+        cases = (
+            ("Button.tsx", "export function Button() { return <button>Save</button>; }\n",
+             "export function Button() { return <button>Submit</button>; }\n"),
+            ("useSession.ts", "export function useSession() { return {ready: true}; }\n",
+             "export function useSession() { return {ready: false}; }\n"),
+        )
+        for filename, source, proposed in cases:
+            with self.subTest(filename=filename):
+                owner = self.workspace / filename
+                owner.write_text(source, encoding="utf-8")
+                with self.assertRaisesRegex(BE.EngineError, "PI002"):
+                    self.apply_files({f"copies/{filename}": proposed})
+                self.assertEqual(owner.read_text(encoding="utf-8"), source)
+                self.assertFalse((self.workspace / "copies" / filename).exists())
+                self.assertEqual(LS.load_session(self.sid)["queue"][self.task_id]["status"], "ready")
+
+    def test_nonempty_default_export_implementation_copies_remain_denied(self):
+        source = "export default function Page() { return <main>Home</main>; }\n"
+        owner = self.workspace / "page.tsx"
+        owner.write_text(source, encoding="utf-8")
+
+        with self.assertRaisesRegex(BE.EngineError, "PI001"):
+            self.apply_files({"copies/page.tsx": source})
+
+        self.assertEqual(owner.read_text(encoding="utf-8"), source)
+        self.assertFalse((self.workspace / "copies").exists())
+        self.assertEqual(LS.load_session(self.sid)["queue"][self.task_id]["status"], "ready")
+
+    def test_unchanged_content_keeps_verification_lifecycle_without_staging(self):
+        content = "def current_value():\n    return 1\n"
+        target = self.workspace / "app.py"
+        target.write_text(content, encoding="utf-8")
+        target.chmod(0o640)
+        os.utime(target, ns=(1_700_000_000_000_000_000, 1_700_000_000_000_000_000))
+        original_stat = target.stat()
+        before = LS.load_session(self.sid)
+
+        with mock.patch.object(BE, "guarded_write_text", wraps=BE.guarded_write_text) as writer:
+            with mock.patch.object(BE.tempfile, "mkstemp", wraps=BE.tempfile.mkstemp) as temporary:
+                result = self.apply_files({"app.py": content})
+
+        writer.assert_not_called()
+        self.assertFalse(any(call.kwargs.get("prefix") == ".si-stage-" for call in temporary.call_args_list))
+        self.assertEqual(target.read_text(encoding="utf-8"), content)
+        self.assertEqual(target.stat().st_mtime_ns, original_stat.st_mtime_ns)
+        self.assertEqual(target.stat().st_ino, original_stat.st_ino)
+        self.assertEqual(target.stat().st_mode, original_stat.st_mode)
+        self.assertEqual(result["written"], [])
+        self.assertEqual(len(result["unchanged"]), 1)
+        record = result["unchanged"][0]
+        self.assertIs(record["changed"], False)
+        self.assertEqual(record["relativePath"], "app.py")
+        self.assertEqual(record["taskId"], self.task_id)
+        self.assertEqual(record["authorized_checkpoint_id"], self.session["authorizedCheckpointId"])
+        self.assertEqual(record["authorized_intent_hash"], self.session["authorizedIntentHash"])
+        persisted = LS.load_session(self.sid)
+        self.assertIn(record, persisted["artifacts"])
+        task = persisted["queue"][self.task_id]
+        self.assertEqual(task["status"], "verifying")
+        self.assertEqual(task["attempts"][-1]["fileArtifactIds"], [record["artifactId"]])
+        self.assertEqual(
+            [receipt for receipt in persisted["actionReceipts"] if receipt["action"] == "filesystem.write"],
+            [receipt for receipt in before["actionReceipts"] if receipt["action"] == "filesystem.write"],
+        )
+
+    def test_unchanged_content_lifecycle_does_not_reset_exhausted_handoff_limit(self):
+        content = "def current_value():\n    return 1\n"
+        (self.workspace / "app.py").write_text(content, encoding="utf-8")
+        for _ in range(3):
+            BE.make_worker_packet(session_id=self.sid, task_id=self.task_id)
+
+        result = self.apply_files({"app.py": content})
+        self.assertEqual(result["written"], [])
+        self.assertEqual(len(result["unchanged"]), 1)
+        session = LS.load_session(self.sid)
+        self.assertEqual(session["queue"][self.task_id]["status"], "verifying")
+        ok, reason = LS.transition_task(session, self.task_id, "repairing")
+        self.assertTrue(ok, reason)
+        LS.save_session(session)
+
+        with self.assertRaisesRegex(BE.EngineError, "three worker handoff"):
+            BE.make_worker_packet(session_id=self.sid, task_id=self.task_id)
+        self.assertEqual(LS.load_session(self.sid)["workerHandoffUsage"]["totalExports"], 3)
+
+    def test_normal_source_update_writes_and_enters_verification(self):
+        target = self.workspace / "app.py"
+        target.write_text("def current_value():\n    return 0\n", encoding="utf-8")
+        updated = "def current_value():\n    return 3\n"
+
+        result = self.apply_files({"app.py": updated})
+
+        self.assertEqual(target.read_text(encoding="utf-8"), updated)
+        self.assertEqual(len(result["written"]), 1)
+        record = result["written"][0]
+        self.assertEqual(record["relativePath"], "app.py")
+        self.assertEqual(record["taskId"], self.task_id)
+        persisted = LS.load_session(self.sid)
+        self.assertIn(record, persisted["artifacts"])
+        self.assertEqual(persisted["queue"][self.task_id]["status"], "verifying")
+        write_receipts = [receipt for receipt in persisted["actionReceipts"]
+                          if receipt["action"] == "filesystem.write"]
+        self.assertEqual(len(write_receipts), 1)
+        self.assertEqual(write_receipts[0]["details"]["files"], ["app.py"])
+
+
 class WorkerHandoffAdmissionTests(SessionEnvironmentIsolationMixin, unittest.TestCase):
     def setUp(self):
         super().setUp()

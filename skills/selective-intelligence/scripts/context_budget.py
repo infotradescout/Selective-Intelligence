@@ -103,6 +103,14 @@ def _acceptance_refs(task: Mapping[str, Any] | str | None, refs: Sequence[str] |
     return list(dict.fromkeys(values))
 
 
+def validate_task_context(task: Mapping[str, Any] | str | None) -> str:
+    """Validate task text without reading files or changing retrieval state."""
+    text = _task_text(task)
+    if SENSITIVE_CONTENT.search(text):
+        raise ValueError("task instructions contain potential secret material; use an authorized reference")
+    return text
+
+
 def _contains_path(text: str, relative: str) -> bool:
     normalized = text.replace("\\", "/").lower()
     variants = (relative.lower(), Path(relative).name.lower())
@@ -236,9 +244,7 @@ def select_context(
 
     workspace = Path(workspace).resolve()
     task_material = _task_material(task)
-    task_text = _task_text(task_material)
-    if SENSITIVE_CONTENT.search(task_text):
-        raise ValueError("task instructions contain potential secret material; use an authorized reference")
+    task_text = validate_task_context(task_material)
     refs = _acceptance_refs(task_material, acceptance_refs)
     query_terms = _terms(" ".join([objective, task_text, *refs]))
     candidates: list[dict[str, Any]] = []

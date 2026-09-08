@@ -38,6 +38,7 @@ import feedback as FB  # noqa: E402
 import intent_contract as IC  # noqa: E402
 import lane_session as LS  # noqa: E402
 import progress_checkpoint as PC  # noqa: E402
+import project_index as PI  # noqa: E402
 from policy_guard import PolicyDenied, PolicyGuard, guarded_run, guarded_write_text  # noqa: E402
 
 
@@ -80,14 +81,27 @@ def make_worker_packet(*, session_id: str, task_id: str, transport: str = "packe
     # exporting a packet or re-approving the same checkpoint cannot reset it.
     current_binding = {"authorized_checkpoint_id": session.get("authorizedCheckpointId"),
                        "authorized_intent_hash": session.get("authorizedIntentHash")}
+    evidence_by_id = {item.get("evidenceId"): item for item in session.get("commandEvidence", [])}
+    verification_progress = set()
+    for attempt in session.get("verificationAttempts", []):
+        evidence = evidence_by_id.get(attempt.get("commandEvidenceId"))
+        if (attempt.get("taskId") == task_id and isinstance(evidence, dict)
+                and evidence.get("taskId") == task_id and evidence.get("sessionId") == session_id
+                and not evidence.get("cancelled") and not evidence.get("invalidated")
+                and all(item.get(k) == v for item in (attempt, evidence) for k, v in current_binding.items())
+                and attempt.get("command_evidence_hash") == CP._material_hash(evidence)):
+            verification_progress.add(_plan_hash({"argv": evidence.get("argv"), "cwd": evidence.get("cwd"),
+                                                   "exitCode": evidence.get("exitCode"), "passed": attempt.get("passed")}))
     progress = {
-        "artifacts": [item.get("artifactId") for item in session.get("artifacts", [])
-                      if item.get("taskId") == task_id and not item.get("tainted")
-                      and not item.get("rolledBack")
-                      and all(item.get(k) == v for k, v in current_binding.items())],
-        "verification": [item.get("verificationId") for item in session.get("verificationAttempts", [])
-                         if item.get("taskId") == task_id
-                         and all(item.get(k) == v for k, v in current_binding.items())],
+        # Fresh receipt IDs, identical writes and repeated identical failed
+        # checks do not create fresh material progress or renew the budget.
+        "artifacts": sorted({(item.get("relativePath", ""), item.get("sha256", ""))
+                             for item in session.get("artifacts", [])
+                             if item.get("taskId") == task_id and not item.get("tainted")
+                             and item.get("changed") is not False
+                             and not item.get("rolledBack")
+                             and all(item.get(k) == v for k, v in current_binding.items())}),
+        "verification": sorted(verification_progress),
     }
     usage_binding = {"task_id": task_id,
                      "checkpoint_id": session["authorizedCheckpointId"],
@@ -114,6 +128,10 @@ def make_worker_packet(*, session_id: str, task_id: str, transport: str = "packe
                                allow_nan=False).encode("utf-8"))
     if task_bytes > 65_536:
         raise EngineError("task instructions exceed the bounded handoff; reconcile a smaller complete task")
+    try:
+        CB.validate_task_context(task_material)
+    except ValueError as exc:
+        raise EngineError(str(exc)) from exc
     # Persist admission before retrieval, including attempts that fail coverage
     # or serialization. A new process cannot restart an exhausted window.
     session["workerHandoffUsage"] = usage
@@ -204,7 +222,7 @@ def make_worker_packet(*, session_id: str, task_id: str, transport: str = "packe
     usage["totalPayloadBytes"] += payload_bytes
     usage["tasks"][task_id].update(lastPayloadBytes=payload_bytes, lastFileCount=len(context_bundle["selected"]))
     LS.save_session(session)
-    return packet
+    return delivery
 
 
 def _now() -> str:
@@ -863,11 +881,35 @@ def apply_worker_artifact(
         if any(parent.exists() and not parent.is_dir() for parent in target.parents):
             raise EngineError("file target has a non-directory parent")
         targets.add(target)
+        before = target.read_bytes() if target.exists() else None
         prepared.append({"relative": relative, "target": target, "content": content,
-                         "before": target.read_bytes() if target.exists() else None,
+                         "before": before, "changed": before != content.encode("utf-8"),
                          "mode": target.stat().st_mode & 0o777 if target.exists() else None})
     if any(parent in targets for target in targets for parent in target.parents):
         raise EngineError("file targets conflict with another file's parent directory")
+
+    proposed_sources = {
+        item["target"].relative_to(workspace).as_posix(): item["content"]
+        for item in prepared
+        if item["changed"] and item["target"].suffix.lower() in PI.SOURCE_EXTENSIONS
+    }
+    if proposed_sources:
+        baseline = PI.build_index(workspace, PI.load_existing(workspace / PI.DEFAULT_INDEX))
+        prospective = PI.build_index(workspace, baseline, proposed_files=proposed_sources)
+        inherited = [item for item in baseline["findings"] if item["code"] in {"PI001", "PI002"}]
+        introduced = [
+            item for item in prospective["findings"]
+            if item["code"] in {"PI001", "PI002"}
+            and not any(
+                old["code"] == item["code"] and old["message"] == item["message"]
+                and set(item["paths"]).issubset(old["paths"])
+                for old in inherited
+            )
+        ]
+        if introduced:
+            raise EngineError("proposed source introduces duplicate ownership: " + "; ".join(
+                f"{item['code']}: {', '.join(item['paths'])}" for item in introduced
+            ))
 
     # Stage the complete batch before replacing any original. Keep preimages
     # until the session save succeeds; recover caught failures without claiming
@@ -876,12 +918,15 @@ def apply_worker_artifact(
     committed: list[dict[str, Any]] = []
     created_dirs: list[Path] = []
     written: list[dict[str, Any]] = []
+    unchanged: list[dict[str, Any]] = []
     original_revision = session.get("persistenceRevision", 0)
     try:
         ok, reason = LS.transition_task(session, task_id, "running")
         if not ok:
             raise EngineError(reason)
         for item in prepared:
+            if not item["changed"]:
+                continue
             target = item["target"]
             missing = []
             parent = target.parent
@@ -912,36 +957,46 @@ def apply_worker_artifact(
             if (target.is_symlink() or actual != item["before"]
                     or (item["mode"] is not None and target.stat().st_mode & 0o777 != item["mode"])):
                 raise EngineError("file changed during staging; refusing to overwrite other work")
-            decision = guard.authorize(session_id=session_id, task_id=task_id,
-                                       action={"kind": "filesystem.write", "path": str(target)})
-            if not decision["allowed"]:
-                raise PolicyDenied(decision)
-            os.replace(item["stage"], target)
-            committed.append(item)
-            evidence = item["evidence"]
-            LS.record_policy_decision(session, decision)
+            if item["changed"]:
+                decision = guard.authorize(session_id=session_id, task_id=task_id,
+                                           action={"kind": "filesystem.write", "path": str(target)})
+                if not decision["allowed"]:
+                    raise PolicyDenied(decision)
+                os.replace(item["stage"], target)
+                committed.append(item)
+                evidence = item["evidence"]
+                LS.record_policy_decision(session, decision)
+            else:
+                # Observe the current bytes for this task without inventing a
+                # write or trusting an older task's artifact receipt.
+                evidence = {"evidenceId": f"artifact-{uuid.uuid4().hex}", "timestamp": _now(),
+                            "sha256": hashlib.sha256(actual).hexdigest(), "bytes": len(actual)}
             record = {"artifactId": evidence["evidenceId"], "taskId": task_id,
                       "artifactType": "file", "relativePath": item["relative"].as_posix(),
                       "absolutePath": str(target), "sha256": evidence["sha256"],
                       "bytes": evidence["bytes"], "producer": artifact["producer"],
+                      "changed": item["changed"],
                       "createdAt": evidence["timestamp"],
                       "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
                       "authorized_intent_hash": session.get("authorizedIntentHash")}
             LS.record_artifact(session, record)
-            written.append(record)
+            (written if item["changed"] else unchanged).append(record)
         task["attempts"].append({
             "attemptId": f"attempt-{len(task['attempts']) + 1}",
             "type": "structured_worker_artifact", "producer": artifact["producer"],
-            "fileArtifactIds": [record["artifactId"] for record in written], "timestamp": _now(),
+            "fileArtifactIds": [record["artifactId"] for record in [*written, *unchanged]], "timestamp": _now(),
             "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
             "authorized_intent_hash": session.get("authorizedIntentHash"),
         })
         ok, reason = LS.transition_task(session, task_id, "verifying")
         if not ok:
             raise EngineError(reason)
-        CP.receipt(session, action="filesystem.write", details={"taskId": task_id, "files": [w["relativePath"] for w in written]})
+        if written:
+            CP.receipt(session, action="filesystem.write", details={"taskId": task_id, "files": [w["relativePath"] for w in written]})
+        if unchanged:
+            CP.receipt(session, action="artifact.reuse", details={"taskId": task_id, "files": [w["relativePath"] for w in unchanged]})
         LS.save_session(session)
-        return {"session": session, "written": written}
+        return {"session": session, "written": written, "unchanged": unchanged}
     except Exception as exc:
         unresolved = []
         for item in reversed(committed):
@@ -1351,7 +1406,8 @@ def cmd_apply(args: argparse.Namespace) -> int:
     except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "apply_failed"}))
         return 2
-    print(json.dumps({"sessionId": args.session, "written": result["written"], "state": LS.global_state(result["session"])}, indent=2))
+    print(json.dumps({"sessionId": args.session, "written": result["written"],
+                      "unchanged": result["unchanged"], "state": LS.global_state(result["session"])}, indent=2))
     return 0
 
 
@@ -1468,11 +1524,11 @@ def cmd_build(args: argparse.Namespace) -> int:
         if not task:
             print(json.dumps({"error": "no ready worker task", "code": "no_ready_task"}))
             return 4
-        packet = make_worker_packet(session_id=session["sessionId"], task_id=task["taskId"], transport="build")
+        response = make_worker_packet(session_id=session["sessionId"], task_id=task["taskId"], transport="build")
     except (EngineError, LS.SessionConflictError, ValueError, OSError) as exc:
         print(json.dumps({"error": str(exc), "code": "build_handoff_failed"}))
         return 2
-    print(json.dumps(_build_handoff_response(session, task, packet), indent=2))
+    print(json.dumps(response, indent=2))
     return 3
 
 

@@ -11,6 +11,8 @@ import re
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from progress_checkpoint import MAX_BATCH_BYTES, MAX_BATCH_FILES
+
 
 EXCLUDED_DIRS = {".git", "node_modules", ".venv", "venv", "__pycache__", ".cache", "dist", "build"}
 SENSITIVE_NAME_PATTERNS = (
@@ -99,6 +101,14 @@ def _acceptance_refs(task: Mapping[str, Any] | str | None, refs: Sequence[str] |
     if isinstance(task, Mapping) and isinstance(task.get("acceptanceRefs"), list):
         values.extend(item for item in task["acceptanceRefs"] if isinstance(item, str) and item.strip())
     return list(dict.fromkeys(values))
+
+
+def validate_task_context(task: Mapping[str, Any] | str | None) -> str:
+    """Validate task text without reading files or changing retrieval state."""
+    text = _task_text(task)
+    if SENSITIVE_CONTENT.search(text):
+        raise ValueError("task instructions contain potential secret material; use an authorized reference")
+    return text
 
 
 def _contains_path(text: str, relative: str) -> bool:
@@ -223,8 +233,8 @@ def select_context(
     objective: str = "",
     task: Mapping[str, Any] | str | None = None,
     acceptance_refs: Sequence[str] | None = None,
-    max_files: int = 50,
-    max_bytes: int = 65536,
+    max_files: int = MAX_BATCH_FILES,
+    max_bytes: int = MAX_BATCH_BYTES,
     max_file_bytes: int = 16384,
 ) -> dict[str, Any]:
     """Return exact references first, then task-relevant safe text within hard limits."""
@@ -234,21 +244,23 @@ def select_context(
 
     workspace = Path(workspace).resolve()
     task_material = _task_material(task)
-    task_text = _task_text(task_material)
-    if SENSITIVE_CONTENT.search(task_text):
-        raise ValueError("task instructions contain potential secret material; use an authorized reference")
+    task_text = validate_task_context(task_material)
     refs = _acceptance_refs(task_material, acceptance_refs)
     query_terms = _terms(" ".join([objective, task_text, *refs]))
     candidates: list[dict[str, Any]] = []
     excluded: list[dict[str, Any]] = []
     avoided_tokens = 0
     referenced_workspace_paths: set[str] = set()
+    workspace_paths: set[str] = set()
 
     for path in sorted(workspace.rglob("*")):
-        if not path.is_file():
+        if not path.is_file() and not path.is_symlink():
             continue
         relative_path = path.relative_to(workspace)
         relative = relative_path.as_posix()
+        # Dependency identities survive content exclusion. Otherwise an unsafe
+        # or oversized local import disappears from the coverage proof.
+        workspace_paths.add(relative)
         if any(_contains_path(ref, relative) for ref in [objective, task_text, *refs]):
             referenced_workspace_paths.add(relative)
         if path.is_symlink():
@@ -315,7 +327,7 @@ def select_context(
     candidate_map = {item["path"]: item for item in candidates}
     candidate_paths = set(candidate_map)
     dependency_map = {
-        path: _local_dependencies(path, candidate["content"], candidate_paths)
+        path: _local_dependencies(path, candidate["content"], workspace_paths)
         for path, candidate in candidate_map.items()
     }
     seed_paths = {
@@ -331,7 +343,9 @@ def select_context(
             continue
         visited.add(source)
         for dependency in sorted(dependency_map.get(source, set())):
-            candidate = candidate_map[dependency]
+            candidate = candidate_map.get(dependency)
+            if candidate is None:
+                continue
             relation = f"local dependency of {source}"
             if relation not in candidate["relationSources"]:
                 candidate["relationSources"].append(relation)
