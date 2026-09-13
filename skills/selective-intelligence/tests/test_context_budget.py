@@ -98,6 +98,55 @@ class ContextBudgetTests(unittest.TestCase):
         self.assertFalse(incomplete["outcomeCoverage"]["complete"])
         self.assertEqual(incomplete["outcomeCoverage"]["unresolvedPaths"], ["helpers/price.py"])
 
+    def test_default_batch_selects_at_most_twelve_files(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            for index in range(13):
+                (root / f"target_{index}.txt").write_text("target implementation\n", encoding="utf-8")
+            result = CB.select_context(root, objective="target")
+        self.assertEqual(len(result["selected"]), 12)
+        self.assertEqual(result["budget"]["maxFiles"], 12)
+        self.assertEqual(result["budget"]["maxBytes"], 65_536)
+        self.assertEqual(len(result["excluded"]), 1)
+        self.assertEqual(result["excluded"][0]["reason"], "context bundle file budget exhausted")
+
+    def test_excluded_required_dependencies_fail_coverage_without_exporting_content(self):
+        cases = (
+            ("helper.py", "def run(): return True\n" + "# padding\n" * 1700,
+             "file exceeds context file budget"),
+            ("secrets.py", "def run(): return 'private-source-marker'\n", "sensitive filename"),
+            ("helper.py", "token='" + "ghp_" + "A" * 30 + "'\n", "potential secret content"),
+        )
+        for filename, content, reason in cases:
+            with self.subTest(reason=reason), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)
+                (root / "app.py").write_text(f"from {Path(filename).stem} import run\nrun()\n", encoding="utf-8")
+                (root / filename).write_text(content, encoding="utf-8")
+                result = CB.select_context(root, objective="Fix app.py")
+                self.assertEqual([item["path"] for item in result["selected"]], ["app.py"])
+                self.assertFalse(result["outcomeCoverage"]["complete"])
+                self.assertEqual(result["outcomeCoverage"]["unresolvedPaths"], [filename])
+                excluded = next(item for item in result["excluded"] if item["path"] == filename)
+                self.assertEqual(excluded["reason"], reason)
+                self.assertNotIn("content", excluded)
+
+    def test_symlink_and_broken_symlink_dependencies_remain_unresolved(self):
+        for target_exists in (True, False):
+            with self.subTest(target_exists=target_exists), tempfile.TemporaryDirectory() as temp:
+                base = Path(temp)
+                root = base / "workspace"
+                root.mkdir()
+                target = base / "outside.js"
+                if target_exists:
+                    target.write_text("export const run = () => 'private-source-marker';\n", encoding="utf-8")
+                (root / "app.js").write_text("import { run } from './helper.js';\nrun();\n", encoding="utf-8")
+                (root / "helper.js").symlink_to(target)
+                result = CB.select_context(root, objective="Fix app.js")
+                self.assertEqual([item["path"] for item in result["selected"]], ["app.js"])
+                self.assertFalse(result["outcomeCoverage"]["complete"])
+                self.assertEqual(result["outcomeCoverage"]["unresolvedPaths"], ["helper.js"])
+                self.assertEqual(result["excluded"], [{"path": "helper.js", "reason": "symlink excluded"}])
+
 
 if __name__ == "__main__":
     unittest.main()
