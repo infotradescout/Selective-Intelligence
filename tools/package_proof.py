@@ -8,11 +8,13 @@ import io
 import json
 import lzma
 import os
+import platform
 import re
 import subprocess
 import sys
 import tarfile
 import tempfile
+import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
 from pathlib import PurePosixPath
@@ -36,6 +38,10 @@ PINS = {
 }
 SI_CANONICAL_PIN = "d15220aea58553b08d9f577cf527ff3118f42edf"
 CONTRACT_ARCHIVE_SHA256 = "cf5b6bd51bb112329ed6229a2d46c47a3304fe1d648b4b706dcb2ae35df38fa3"
+NODE_VERSION = "v22.23.2"
+NODE_ARCHIVE = "node-v22.23.2-linux-x64.tar.xz"
+NODE_ARCHIVE_SHA256 = "d60acfe00a2932254bb0ad20e01b0d74397a0875595de719654b214f4b03f307"
+NODE_DOWNLOAD = f"https://nodejs.org/dist/{NODE_VERSION}/{NODE_ARCHIVE}"
 
 
 def main() -> None:
@@ -46,7 +52,7 @@ def main() -> None:
     logs.mkdir()
     env = {
         "PATH": os.environ["PATH"],
-        "NODE_VERSION": "22.20.0",
+        "NODE_VERSION": NODE_VERSION.removeprefix("v"),
         "PYTHON_VERSION": "3.12.14",
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
@@ -158,13 +164,38 @@ def main() -> None:
     verify("platynum", source)
     if sys.version_info[:2] != (3, 12):
         raise RuntimeError("This proof requires Python 3.12")
+    # Python-started native builds do not initialize Render's shell-managed Node.
+    # Install one official, checksum-pinned binary into an owned temporary prefix.
+    if sys.platform != "linux" or platform.machine() not in ("x86_64", "amd64"):
+        raise RuntimeError("The pinned proof toolchain requires Linux x64")
+    print("RUN node-toolchain-bootstrap", flush=True)
+    node_archive = work / NODE_ARCHIVE
+    digest = hashlib.sha256()
+    total_bytes = 0
+    with urllib.request.urlopen(NODE_DOWNLOAD, timeout=90) as response, node_archive.open("wb") as output:
+        while chunk := response.read(1024 * 1024):
+            total_bytes += len(chunk)
+            if total_bytes > 64 * 1024 * 1024:
+                raise RuntimeError("Node toolchain download exceeds the bounded archive size")
+            digest.update(chunk)
+            output.write(chunk)
+    if digest.hexdigest() != NODE_ARCHIVE_SHA256:
+        raise RuntimeError("Official Node toolchain checksum mismatch")
+    toolchain = work / "node-toolchain"
+    toolchain.mkdir()
+    with tarfile.open(node_archive) as bundle:
+        bundle.extractall(toolchain, filter="data")
+    node_bin = toolchain / NODE_ARCHIVE.removesuffix(".tar.xz") / "bin"
+    env["PATH"] = str(node_bin) + os.pathsep + env["PATH"]
+    steps.append({"name": "node-toolchain-bootstrap", "exitCode": 0,
+                  "artifactSha256": digest.hexdigest(), "downloadBytes": total_bytes})
     node_output = run("node-version", ["node", "--version"], work)
     # Native builders may print toolchain setup notices around the actual version.
     # Accept one explicit version line; never confuse setup text with execution.
     versions = [line.strip() for line in node_output.splitlines()
                 if re.fullmatch(r"v\d+\.\d+\.\d+", line.strip())]
-    if len(versions) != 1 or not versions[0].startswith("v22."):
-        raise RuntimeError(f"This proof requires one executed Node 22 version; observed {versions}")
+    if versions != [NODE_VERSION]:
+        raise RuntimeError(f"This proof requires exactly {NODE_VERSION}; observed {versions}")
     node_version = versions[0]
     run("corepack-version", ["corepack", "--version"], work)
     si = clone("si")
@@ -240,6 +271,7 @@ def main() -> None:
     summary = {
         "schemaVersion": 1, "passed": True, "observedAt": datetime.now(UTC).isoformat(),
         "sources": PINS, "python": sys.version.split()[0], "node": node_version,
+        "nodeToolchain": {"url": NODE_DOWNLOAD, "sha256": NODE_ARCHIVE_SHA256},
         "launcherCommit": launcher_commit, "launcherTree": launcher_tree,
         "launcherSourceSha256": hashlib.sha256(committed_runner).hexdigest(),
         "platynumTransport": "private configuration archive; original commit and full tree verified",
