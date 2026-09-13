@@ -19,6 +19,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import tempfile
 from functools import wraps
 import sys
@@ -199,6 +200,28 @@ def make_worker_packet(*, session_id: str, task_id: str, transport: str = "packe
             ),
         },
     }
+    if task.get("metadata", {}).get("kind") == "repair":
+        metadata = task["metadata"]
+        failure = evidence_by_id.get(metadata.get("failureEvidenceId"))
+        if (not isinstance(failure, dict) or failure.get("sessionId") != session_id
+                or failure.get("taskId") != metadata.get("originalTaskId")
+                or failure.get("cancelled") or failure.get("invalidated")
+                or any(failure.get(key) != value for key, value in current_binding.items())
+                or not any(attempt.get("taskId") == metadata.get("originalTaskId")
+                           and attempt.get("commandEvidenceId") == failure.get("evidenceId")
+                           and attempt.get("passed") is False
+                           and attempt.get("command_evidence_hash") == CP._material_hash(failure)
+                           and all(attempt.get(key) == value for key, value in current_binding.items())
+                           for attempt in session.get("verificationAttempts", []))):
+            raise EngineError("repair failure evidence is missing, changed, or belongs to another task")
+        packet["failureEvidence"] = {
+            **{key: copy.deepcopy(failure.get(key)) for key in (
+                "evidenceId", "taskId", "argv", "cwd", "exitCode", "stdoutSha256", "stderrSha256")},
+            **current_binding,
+            "stdout": str(failure.get("stdout", ""))[-4096:],
+            "stderr": str(failure.get("stderr", ""))[-4096:],
+            "outputExcerpted": any(len(str(failure.get(key, ""))) > 4096 for key in ("stdout", "stderr")),
+        }
     event_payload = {
         "packetId": packet["packetId"], "taskId": task_id,
         "selectedContextFiles": len(packet["contextBundle"]["selected"]),
@@ -1151,6 +1174,15 @@ def verify_task(
             return {"session": session, "passed": False, "cancelled": True,
                     "verification": None, "commandEvidence": evidence, "repairTask": None}
         passed = evidence["exitCode"] == 0
+        # A successful runner process with no executed tests is not behavioral
+        # evidence. Preserve its actual exit code while keeping the task open.
+        output = str(evidence.get("stdout", "")) + "\n" + str(evidence.get("stderr", ""))
+        if argv[1:3] == ["--test", "--test-reporter=tap"]:
+            registered = [name for name in re.findall(r"^# Subtest: (.+)$", output, re.MULTILINE)
+                          if Path(name).name not in argv[3:]]
+            passed = passed and bool(registered) and re.search(r"^# pass [1-9][0-9]*\s*$", output, re.MULTILINE) is not None
+        elif argv[1:3] == ["-m", "unittest"]:
+            passed = passed and re.search(r"Ran [1-9][0-9]* tests?\b", output) is not None
         verification = LS.record_verification(session, task_id, evidence["evidenceId"], passed)
         repair_task = None
         if passed:
@@ -1179,6 +1211,13 @@ def verify_task(
 def verify_repair(
     *, session_id: str, repair_task_id: str, command: dict[str, Any],
 ) -> dict[str, Any]:
+    with LS.session_lock(session_id):
+        session = LS.load_session(session_id)
+        repair = (session or {}).get("queue", {}).get(repair_task_id) or {}
+        if repair.get("metadata", {}).get("kind") != "repair":
+            raise EngineError("verification requires an engine-issued repair task")
+        if command != repair["metadata"].get("verificationCommand"):
+            raise EngineError("repair verification must rerun the original failed command")
     result = verify_task(session_id=session_id, task_id=repair_task_id, command=command)
     if not result["passed"]:
         return result
@@ -1192,18 +1231,31 @@ def verify_repair(
         except CP.CheckpointError as exc:
             raise EngineError("repair authority changed before completion: " + str(exc)) from exc
         original_id = repair_task.get("metadata", {}).get("originalTaskId")
-        if original_id and session["queue"].get(original_id, {}).get("status") == "repairing":
-            ok, reason = LS.transition_task(session, original_id, "complete", reason=f"repair task {repair_task_id} passed verification")
+        ancestors = []
+        visited = {repair_task_id}
+        current_id = original_id
+        while current_id:
+            if current_id in visited:
+                raise EngineError("repair lineage contains a cycle")
+            visited.add(current_id)
+            original = session["queue"].get(current_id)
+            if not original or original.get("status") != "repairing":
+                raise EngineError("repair lineage no longer belongs to an awaiting original task")
+            CP.assert_binding(session, original)
+            ancestors.append(current_id)
+            current_id = original.get("metadata", {}).get("originalTaskId") if original.get("metadata", {}).get("kind") == "repair" else None
+        for completed_id in ancestors:
+            ok, reason = LS.transition_task(session, completed_id, "complete", reason=f"repair task {repair_task_id} passed verification")
             if not ok:
                 raise EngineError(reason)
-        session["completionEvidence"].append({
-            "completionId": f"complete-{len(session['completionEvidence']) + 1}", "timestamp": _now(),
-            "originalTaskId": original_id, "repairTaskId": repair_task_id,
-            "verificationId": result["verification"]["verificationId"],
-            "commandEvidenceId": result["commandEvidence"]["evidenceId"],
-            "authorized_checkpoint_id": session["authorizedCheckpointId"],
-            "authorized_intent_hash": session["authorizedIntentHash"],
-        })
+            session["completionEvidence"].append({
+                "completionId": f"complete-{len(session['completionEvidence']) + 1}", "timestamp": _now(),
+                "originalTaskId": completed_id, "repairTaskId": repair_task_id,
+                "verificationId": result["verification"]["verificationId"],
+                "commandEvidenceId": result["commandEvidence"]["evidenceId"],
+                "authorized_checkpoint_id": session["authorizedCheckpointId"],
+                "authorized_intent_hash": session["authorizedIntentHash"],
+            })
         LS.save_session(session)
         result["session"] = session
         return result
@@ -1435,7 +1487,7 @@ def cmd_verify_repair(args: argparse.Namespace) -> int:
     except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "repair_verify_failed"}))
         return 2
-    print(json.dumps({"sessionId": args.session, "passed": result["passed"], "commandEvidence": result["commandEvidence"], "state": LS.global_state(result["session"])}, indent=2))
+    print(json.dumps({"sessionId": args.session, "passed": result["passed"], "commandEvidence": result["commandEvidence"], "repairTask": result.get("repairTask"), "state": LS.global_state(result["session"])}, indent=2))
     return 0 if result["passed"] else 5
 
 

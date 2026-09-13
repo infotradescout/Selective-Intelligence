@@ -484,8 +484,18 @@ def _structured_command_allowed(base: str, argv: list[str]) -> tuple[bool, str]:
         if len(lowered) >= 3 and lowered[1:3] == ["-m", "unittest"]:
             return True, "structured Python unittest verification"
         return False, "Python command is not on the structured verification allowlist"
-    if base in {"node", "nodejs"} and lowered[1:] in (["--version"], ["-v"]):
-        return True, "Node version query"
+    if base in {"node", "nodejs"}:
+        if lowered[1:] in (["--version"], ["-v"]):
+            return True, "Node version query"
+        # A bounded built-in runner has no shell, package-script, loader,
+        # eval, watch, or auto-discovery surface. Resolve these local files
+        # against the authorized cwd below before admitting the process.
+        if (argv[1:3] == ["--test", "--test-reporter=tap"]
+                and 1 <= len(argv[3:]) <= 12
+                and all(re.fullmatch(r"[A-Za-z0-9_.-]+\.(?:test|spec)\.[cm]?js", item)
+                        and not item.startswith("-") for item in argv[3:])):
+            return True, "structured Node built-in test verification"
+        return False, "Node command is not on the structured verification allowlist"
     return False, "executable is not on the structured command allowlist"
 
 
@@ -687,6 +697,13 @@ class PolicyGuard:
                 )
 
             command_allowed, command_reason = _structured_command_allowed(base, effective_argv)
+            if command_allowed and base in {"node", "nodejs"} and effective_argv[1:2] == ["--test"]:
+                for test_file in effective_argv[3:]:
+                    target = cwd / test_file
+                    if target.is_symlink() or not target.is_file() or not _inside(target.resolve(), cwd):
+                        command_allowed = False
+                        command_reason = "Node verification requires existing regular test files inside its authorized cwd"
+                        break
             if not command_allowed:
                 return self._decision(
                     session_id=session_id,

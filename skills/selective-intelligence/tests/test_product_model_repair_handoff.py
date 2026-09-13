@@ -77,6 +77,17 @@ class RepairHandoffTests(unittest.TestCase):
         self.assertEqual(packet["task"]["metadata"]["kind"], "repair")
         self.assertNotIn("planKey", packet["task"]["metadata"])
         self.assertIn("zeta.txt", packet["contextBundle"]["outcomeCoverage"]["requiredPaths"])
+        self.assertEqual(packet["failureEvidence"]["taskId"], self.task["taskId"])
+        self.assertIn("AssertionError", packet["failureEvidence"]["stderr"])
+        self.assertEqual(packet["failureEvidence"]["exitCode"], 1)
+
+    def test_repair_cannot_receive_tampered_failure_output(self):
+        session = LS.load_session(self.session["sessionId"])
+        evidence = next(item for item in session["commandEvidence"] if item["evidenceId"] == self.repair["metadata"]["failureEvidenceId"])
+        evidence["stderr"] = "A fabricated failure"
+        LS.save_session(session)
+        with self.assertRaisesRegex(ENGINE.EngineError, "repair failure evidence"):
+            self.packet(self.repair["taskId"])
 
     def test_changed_inherited_instructions_cannot_keep_repair_approval(self):
         session = LS.load_session(self.session["sessionId"])
@@ -106,6 +117,33 @@ class RepairHandoffTests(unittest.TestCase):
         final = LS.load_session(self.session["sessionId"])
         self.assertEqual(final["queue"][self.task["taskId"]]["status"], "complete")
         self.assertEqual(final["queue"][self.repair["taskId"]]["status"], "complete")
+
+    def test_second_repair_completes_every_original_task_with_bound_evidence(self):
+        self.apply(self.repair["taskId"], "still wrong")
+        failed = ENGINE.verify_repair(session_id=self.session["sessionId"], repair_task_id=self.repair["taskId"], command=self.command)
+        second = failed["repairTask"]["taskId"]
+        self.apply(second, "correct")
+        final = ENGINE.verify_repair(session_id=self.session["sessionId"], repair_task_id=second, command=self.command)
+        self.assertTrue(final["passed"])
+        self.assertEqual(LS.global_state(final["session"]), "VERIFIED_COMPLETE")
+        for original_id in [self.task["taskId"], self.repair["taskId"]]:
+            completion = next(item for item in final["session"]["completionEvidence"] if item["originalTaskId"] == original_id)
+            self.assertEqual(completion["repairTaskId"], second)
+            self.assertEqual(completion["commandEvidenceId"], final["commandEvidence"]["evidenceId"])
+
+    def test_repair_cannot_substitute_a_successful_version_check(self):
+        self.apply(self.repair["taskId"], "still wrong")
+        with self.assertRaisesRegex(ENGINE.EngineError, "original failed command"):
+            ENGINE.verify_repair(session_id=self.session["sessionId"], repair_task_id=self.repair["taskId"], command={"argv": [sys.executable, "--version"]})
+        self.assertNotEqual(LS.global_state(LS.load_session(self.session["sessionId"])), "VERIFIED_COMPLETE")
+
+    def test_empty_unittest_collection_cannot_complete_a_task(self):
+        self.apply(self.repair["taskId"], "correct")
+        (self.workspace / "test_result.py").unlink()
+        result = ENGINE.verify_repair(session_id=self.session["sessionId"], repair_task_id=self.repair["taskId"], command=self.command)
+        self.assertRegex(result["commandEvidence"]["stderr"], r"Ran 0 tests")
+        self.assertFalse(result["passed"])
+        self.assertIsNotNone(result["repairTask"])
 
 
 if __name__ == "__main__":
