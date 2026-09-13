@@ -73,6 +73,24 @@ Recover → inspect → act → verify → report.
 
 **No reference is mandatory merely because the skill activated.** Start with zero references. Inspect status, consumers, and tests before edits; revalidate affected proof.
 
+## Hard resume gate
+
+A new session, Work task, Codex run, model, provider, or context is **not** a new project and is **not** permission to restart discovery.
+
+Before any broad repo scan, deep dive, roadmap rebuild, architecture reconstruction, or full-suite validation, first recover the current breakpoint from the cheapest authoritative evidence available: active branch/commit, latest durable checkpoint/handoff, current diff, current task/PR, and only the governing files needed for that slice.
+
+Resume from the first unproven transition. Reuse still-valid evidence. Verify only what could have changed or what must be proven to continue safely.
+
+Prohibited waste unless evidence specifically requires it:
+
+- repeating a repository-wide audit because the previous run ended;
+- rereading large files already summarized by an authoritative checkpoint when exact ranges/diffs suffice;
+- rerunning full lint/build/test matrices after each bounded edit when targeted proof exists and no shared contract changed;
+- making parallel agents independently reconstruct the same project state;
+- spending scarce capacity on duplicate analysis, prose, or review while implementation lanes are ready to execute.
+
+If a run may end before the objective does, leave a durable checkpoint containing the exact current branch/commit, verified completed work, changed-but-unverified work, files touched, proof already run, invalidated proof, external side effects/retry safety, one next exact action, and actions that must not be repeated. The receiving run starts there.
+
 ## Whole-run usage governor
 
 Each retrieval/check must affect decisions, risk, or proof. Inspect at most 12 text files or 64 KB per batch. One ledger and owner per question. After three batches, act, narrow, checkpoint, or stop. The bundled checkpoint helper must open a usage ledger before a second batch. Preserve outcome/proof/safety.
