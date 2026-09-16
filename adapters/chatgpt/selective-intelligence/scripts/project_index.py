@@ -22,7 +22,7 @@ import sys
 import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 sys.dont_write_bytecode = True
 
@@ -136,6 +136,9 @@ def javascript_symbols(relative: str, text: str, suffix: str) -> list[dict[str, 
                     "path": relative,
                     "line": line,
                     "exported": bool(match.group(1)),
+                    # A default export's declaration name is local to its
+                    # module; importers choose their own name for that owner.
+                    "defaultExport": "default" in (match.group(1) or "").split(),
                 }
             )
     return symbols
@@ -275,7 +278,17 @@ def generated_projection_exception(paths: list[str], projections: list[dict[str,
     return None
 
 
-def build_index(root: Path, existing: object = None) -> dict[str, Any]:
+def build_index(
+    root: Path,
+    existing: object = None,
+    *,
+    proposed_files: Mapping[str, str] | None = None,
+) -> dict[str, Any]:
+    """Inspect current source or a proposed source overlay without writing it.
+
+    Projection exceptions still come from existing repository manifests; an
+    artifact cannot authorize its own duplicate owners through the overlay.
+    """
     root = root.resolve()
     canonical, reuse_decisions = retained_governance(existing)
     files: list[dict[str, Any]] = []
@@ -284,12 +297,36 @@ def build_index(root: Path, existing: object = None) -> dict[str, Any]:
     directory_counts: Counter[str] = Counter()
     hash_paths: defaultdict[str, list[str]] = defaultdict(list)
 
-    for path in source_files(root):
-        relative = safe_relative(root, path)
-        try:
-            payload = path.read_bytes()
-        except OSError:
+    sources = {safe_relative(root, path): path for path in source_files(root)}
+    proposed_sources: dict[str, bytes] = {}
+    for name, content in (proposed_files or {}).items():
+        if not isinstance(name, str) or not isinstance(content, str):
+            raise ValueError("proposed source files must map relative paths to text")
+        relative = Path(name)
+        if relative.is_absolute() or not relative.parts or ".." in relative.parts:
+            raise ValueError("proposed source paths must stay inside the project")
+        if relative.suffix.lower() not in SOURCE_EXTENSIONS or any(
+            part in SKIP_DIRECTORIES for part in relative.parts[:-1]
+        ):
             continue
+        path = root / relative
+        resolved = path.resolve()
+        if resolved != root and root not in resolved.parents:
+            raise ValueError("proposed source path escapes the project")
+        if any(part.is_symlink() for part in [path, *path.parents] if part != root and root in part.parents):
+            raise ValueError("proposed source paths cannot traverse symlinks")
+        normalized = relative.as_posix()
+        sources[normalized] = path
+        proposed_sources[normalized] = content.encode("utf-8")
+
+    for relative, path in sorted(sources.items()):
+        if relative in proposed_sources:
+            payload = proposed_sources[relative]
+        else:
+            try:
+                payload = path.read_bytes()
+            except OSError:
+                continue
         if len(payload) > 2 * 1024 * 1024:
             continue
         try:
@@ -299,7 +336,10 @@ def build_index(root: Path, existing: object = None) -> dict[str, Any]:
         digest = sha256_bytes(payload)
         suffix = path.suffix.lower()
         files.append({"path": relative, "language": suffix.removeprefix("."), "sha256": digest, "bytes": len(payload)})
-        hash_paths[digest].append(relative)
+        # Empty package markers and whitespace contain no implementation to
+        # consolidate, while remaining part of the source inventory.
+        if text.strip():
+            hash_paths[digest].append(relative)
         directory_counts[Path(relative).parent.as_posix()] += 1
         symbols.extend(python_symbols(relative, text) if suffix == ".py" else javascript_symbols(relative, text, suffix))
         if suffix in UI_EXTENSIONS:
@@ -320,7 +360,7 @@ def build_index(root: Path, existing: object = None) -> dict[str, Any]:
     ]
     exported_by_name: defaultdict[str, list[dict[str, Any]]] = defaultdict(list)
     for symbol in symbols:
-        if symbol["exported"] and symbol["kind"] in {"component", "hook"}:
+        if symbol["exported"] and not symbol.get("defaultExport") and symbol["kind"] in {"component", "hook"}:
             exported_by_name[symbol["name"]].append(symbol)
     symbol_collisions = [
         {"name": name, "owners": [{"path": item["path"], "line": item["line"], "kind": item["kind"]} for item in owners]}

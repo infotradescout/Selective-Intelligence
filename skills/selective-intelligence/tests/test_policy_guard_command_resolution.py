@@ -90,6 +90,28 @@ class PolicyCommandCanonicalizationTests(unittest.TestCase):
             action={"kind": "process.run", "argv": argv, "cwd": str(self.disposable)},
         )
 
+    def test_node_runner_accepts_only_bounded_existing_local_tests(self):
+        test_file = self.disposable / "calc.test.mjs"
+        test_file.write_text("import { test } from 'node:test';\n", encoding="utf-8")
+        allowed = ["node", "--test", "--test-reporter=tap", "calc.test.mjs"]
+        self.assertTrue(self._run(allowed)["allowed"])
+        for command in (
+            ["node", "--test"],
+            ["node", "--test", "--test-reporter=tap", "../calc.test.mjs"],
+            ["node", "--test", "--test-reporter=tap", "missing.test.mjs"],
+            ["node", "--test", "--test-reporter=tap", "--import=loader.js", "calc.test.mjs"],
+            ["node", "--test", "--test-reporter=tap", "calc.test.mjs", "--watch"],
+            ["node", "--test", "--test-reporter=tap", *(["calc.test.mjs"] * 13)],
+            ["npm", "test"],
+        ):
+            with self.subTest(command=command):
+                self.assertFalse(self._run(command)["allowed"])
+        test_file.unlink()
+        outside = self.canonical / "outside.test.mjs"
+        outside.write_text("export {};\n", encoding="utf-8")
+        test_file.symlink_to(outside)
+        self.assertFalse(self._run(allowed)["allowed"])
+
     def test_denies_windows_suffix_git_and_install(self):
         for argv in (
             ["git.exe", "commit", "-m", "x"],
