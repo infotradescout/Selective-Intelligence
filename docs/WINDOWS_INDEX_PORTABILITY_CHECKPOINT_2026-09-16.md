@@ -24,3 +24,5 @@ Next exact action: finish the original full Windows test invocation, execute fin
 Actions not to repeat: broad SI audit, replacing installed SI with an unaccepted candidate, weakening staged-byte checks, erasing inherited duplicate debt, claiming all projects are governed from global instruction files alone.
 
 Scout boundary: its request-flow inspection/write calls were blocked before execution in this continuation. They were not retried through alternative routes. Scout remains at 05b7ad1c with its earlier 210-case core proof; missing request-specific native flows remain open.
+
+Packaging correction: The complete 343-test Windows run found the new test missing from release_files, alongside the three prior symlink-privilege errors and one existing skip. Added only tests/test_project_index_portability.py to that reviewed file list; runtime_files and validation rules remain unchanged. Regenerated the existing adapter. All 27 package/index/reuse checks then passed. Full final-candidate results are recorded in PR #54 and the local project-execution receipt.
