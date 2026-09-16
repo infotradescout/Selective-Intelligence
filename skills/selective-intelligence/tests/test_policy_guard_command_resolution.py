@@ -244,3 +244,19 @@ class PolicyCommandCanonicalizationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PolicyAdapterPortabilityTests(unittest.TestCase):
+    def test_guarded_write_preserves_exact_supplied_utf8_bytes(self):
+        import hashlib
+        from policy_guard import guarded_write_text
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            guard = PolicyGuard(canonical_roots=[], writable_roots=[root])
+            content = "first\nsecond\r\nthird\nUnicode: \u2713\n"
+            target = root / 'exact.txt'
+            decision, evidence = guarded_write_text(target, content, guard=guard, session_id='si-portable', task_id='bytes')
+            self.assertTrue(decision['allowed'])
+            self.assertEqual(target.read_bytes(), content.encode('utf-8'))
+            self.assertEqual(evidence['bytes'], len(target.read_bytes()))
+            self.assertEqual(evidence['sha256'], hashlib.sha256(target.read_bytes()).hexdigest())
