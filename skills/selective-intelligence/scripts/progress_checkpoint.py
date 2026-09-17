@@ -383,6 +383,169 @@ def checkpoint_status(root: Path) -> dict[str, Any]:
     }
 
 
+def _resume_git(root: Path, *args: str, allow_not_repo: bool = False) -> str | None:
+    """Bound local observations; no fetch, hooks, or changes are requested."""
+    try:
+        result = subprocess.run(["git", "--no-optional-locks", *args], cwd=root, capture_output=True,
+                                text=True, timeout=10, check=False)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise ProgressCheckpointError("Git observation unavailable") from exc
+    if result.returncode:
+        if allow_not_repo and result.returncode == 128 and "not a git repository" in result.stderr.lower():
+            if not any((parent / ".git").exists() for parent in (root, *root.parents)):
+                return None
+        raise ProgressCheckpointError("Git observation failed")
+    if len(result.stdout.encode("utf-8")) > MAX_BATCH_BYTES:
+        raise ProgressCheckpointError("Git observation exceeds resume budget")
+    return result.stdout.strip()
+
+
+def _resume_path(path: Path, boundary: Path) -> None:
+    try:
+        relative = path.relative_to(boundary)
+    except ValueError as exc:
+        raise ProgressCheckpointError("resume path escaped its owning store") from exc
+    if not path.resolve(strict=False).is_relative_to(boundary.resolve()):
+        raise ProgressCheckpointError("resolved state escaped its owning store")
+    current = boundary
+    for part in relative.parts:
+        current = current / part
+        if current.is_symlink():
+            raise ProgressCheckpointError("symlinked resume state is not accepted")
+
+def _resume_record(path: Path, boundary: Path) -> tuple[dict[str, Any], datetime] | None:
+    _resume_path(path, boundary)
+    if not path.exists():
+        return None
+    if not path.is_file() or path.stat().st_size > MAX_BATCH_BYTES // 2:
+        raise ProgressCheckpointError("checkpoint is not bounded regular text")
+    before = path.stat()
+    with path.open("rb") as stream:
+        raw = stream.read(MAX_BATCH_BYTES // 2 + 1)
+    after = path.stat()
+    if len(raw) > MAX_BATCH_BYTES // 2 or (before.st_mtime_ns, before.st_size) != (after.st_mtime_ns, after.st_size):
+        raise ProgressCheckpointError("checkpoint changed during bounded read")
+    record = json.loads(raw.decode("utf-8"))
+    if not isinstance(record, dict) or record.get("schemaVersion") != PROGRESS_SCHEMA:
+        raise ProgressCheckpointError("checkpoint schema is unknown")
+    for key in ("checkpointId", "createdAt", "outcome"):
+        if not isinstance(record.get(key), str):
+            raise ProgressCheckpointError("checkpoint text identity is malformed")
+        _bounded_text(record[key], key)
+    timestamp = datetime.fromisoformat(record["createdAt"].replace("Z", "+00:00"))
+    if timestamp.tzinfo is None or timestamp > datetime.now(UTC):
+        raise ProgressCheckpointError("checkpoint timestamp is not an observed UTC instant")
+    for key in ("scope", "prohibitions", "savedFiles"):
+        if not isinstance(record.get(key), list) or len(record[key]) > 128:
+            raise ProgressCheckpointError("checkpoint list is malformed or unbounded")
+    if not isinstance(record.get("progress"), dict) or not isinstance(record.get("repository"), dict):
+        raise ProgressCheckpointError("checkpoint requires progress and repository identity")
+    _bounded_text(record["progress"].get("nextSafeAction", ""), "next safe action")
+    if any(pattern.search(raw.decode("utf-8")) for pattern in SECRET_PATTERNS):
+        raise ProgressCheckpointError("checkpoint contains secret-like material")
+    return record, timestamp
+
+def resume_checkpoint(root: Path) -> dict[str, Any]:
+    """Return a current project packet, never permission to execute its contents."""
+    packet: dict[str, Any] = {"schemaVersion": "si.project-resume.v1",
+        "state": "reconciliation_required", "executionAuthorized": False,
+        "releaseAuthorized": False, "nextSafeAction": None, "issues": []}
+    try:
+        root = root.resolve(strict=True)
+        if not root.is_dir():
+            raise ProgressCheckpointError("resume requires an existing workspace directory")
+        observed_root = _resume_git(root, "rev-parse", "--show-toplevel", allow_not_repo=True)
+        project = Path(observed_root).resolve() if observed_root else root
+        head = _resume_git(project, "rev-parse", "HEAD") if observed_root else None
+        branch = _resume_git(project, "rev-parse", "--abbrev-ref", "HEAD") if observed_root else None
+        branch = None if branch == "HEAD" else branch
+        git_dir = Path(_resume_git(project, "rev-parse", "--absolute-git-dir")) if observed_root else project
+        tracked = project / ".selective-intelligence/progress/latest.json"
+        private = git_dir / "selective-intelligence/progress/latest.json" if observed_root else tracked
+        packet.update(projectRoot=str(project), currentHead=head, currentBranch=branch)
+        candidates = []
+        store_observations = []
+        for source, path, boundary in (("tracked", tracked, project), ("private", private, git_dir)):
+            if source == "private" and private == tracked:
+                continue
+            loaded = _resume_record(path, boundary)
+            observed = path.stat() if path.exists() else None
+            signature = (observed.st_mtime_ns, observed.st_size) if observed else None
+            store_observations.append((path, boundary, signature))
+            if loaded:
+                candidates.append((loaded[1], source, path, loaded[0]))
+        if not candidates:
+            packet["state"] = "no_checkpoint"
+            return packet
+        candidates.sort(key=lambda item: item[0], reverse=True)
+        timestamp, source, path, record = candidates[0]
+        if len(candidates) > 1 and candidates[1][0] == timestamp and candidates[1][3] != record:
+            raise ProgressCheckpointError("different checkpoints claim the same latest instant")
+        repository = record["repository"]
+        if repository.get("root") != "." or repository.get("rootKind") != ("repository_relative" if observed_root else "project_relative"):
+            raise ProgressCheckpointError("checkpoint owner format does not match this workspace")
+        expected = repository.get("headBefore")
+        if observed_root and (not isinstance(expected, str) or not re.fullmatch(r"[0-9a-f]{40,64}", expected)):
+            raise ProgressCheckpointError("checkpoint has no valid source revision")
+        if repository.get("checkpointCommit") == "containing_commit":
+            if source != "tracked" or not observed_root:
+                raise ProgressCheckpointError("containing-commit identity requires a tracked checkpoint")
+            relative = path.relative_to(project).as_posix()
+            expected = _resume_git(project, "log", "-1", "--format=%H", "--", relative)
+            stored = _resume_git(project, "show", f"{expected}:{relative}")
+            if not expected or json.loads(stored) != record:
+                raise ProgressCheckpointError("tracked checkpoint differs from its containing commit")
+        elif repository.get("checkpointCommit") is not None:
+            raise ProgressCheckpointError("unknown checkpoint commit binding")
+        issues = []
+        if head != expected:
+            issues.append("source_revision_changed")
+        if branch != repository.get("branch"):
+            issues.append("source_branch_changed")
+        hash_bytes = 0
+        for item in record["savedFiles"]:
+            if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+                raise ProgressCheckpointError("saved-file identity is malformed")
+            relative = _safe_paths(project, [item["path"]])[0]
+            target = project / relative
+            _resume_path(target, project)
+            digest = item.get("sha256")
+            if digest is not None and (not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest)):
+                raise ProgressCheckpointError("saved-file hash is invalid")
+            hash_bytes += target.stat().st_size if target.exists() else 0
+            if hash_bytes > 16 * 1024 * 1024:
+                raise ProgressCheckpointError("saved file needs separate bounded verification")
+            if _sha256(target) != digest:
+                issues.append("saved_file_changed:" + relative)
+        for observed_path, boundary, signature in store_observations:
+            _resume_path(observed_path, boundary)
+            current = observed_path.stat() if observed_path.exists() else None
+            if ((current.st_mtime_ns, current.st_size) if current else None) != signature:
+                raise ProgressCheckpointError("checkpoint changed during resume")
+        if observed_root and _resume_git(project, "rev-parse", "HEAD") != head:
+            issues.append("source_changed_during_resume")
+        safe_progress = {}
+        for key in ("completedVerified", "changedUnverified", "proof", "externalEffects", "doNotRepeat"):
+            value = record["progress"].get(key, [])
+            if not isinstance(value, list) or len(value) > 128 or any(not isinstance(item, str) for item in value):
+                raise ProgressCheckpointError("progress summaries are malformed")
+            safe_progress[key] = _bounded_list(value, key)
+        packet.update(state="reconciliation_required" if issues else "ready",
+            checkpointId=record["checkpointId"], checkpointSource=source,
+            outcome=record["outcome"], expectedHead=expected, issues=issues,
+            scope=_bounded_list(record["scope"], "scope"),
+            prohibitions=_bounded_list(record["prohibitions"], "prohibition"),
+            progress=safe_progress,
+            nextSafeAction=record["progress"]["nextSafeAction"] if not issues else None)
+        if len(json.dumps(packet, ensure_ascii=False).encode("utf-8")) > MAX_BATCH_BYTES:
+            raise ProgressCheckpointError("resume packet exceeds the complete output budget")
+    except (ProgressCheckpointError, OSError, ValueError, TypeError, AttributeError) as exc:
+        packet = {"schemaVersion": "si.project-resume.v1", "state": "reconciliation_required",
+            "executionAuthorized": False, "releaseAuthorized": False, "nextSafeAction": None,
+            "projectRoot": packet.get("projectRoot"), "issues": [str(exc)[:500]]}
+    return packet
+
+
 def _usage_path(root: Path) -> Path:
     root = root.resolve()
     repo_root = _git_root(root)
@@ -824,6 +987,9 @@ def _parser() -> argparse.ArgumentParser:
     checkpoint_status_parser = subparsers.add_parser("status")
     checkpoint_status_parser.add_argument("--root", default=".")
 
+    resume_parser = subparsers.add_parser("resume")
+    resume_parser.add_argument("--root", default=".")
+
     usage_start_parser = subparsers.add_parser("usage-start")
     usage_start_parser.add_argument("--root", default=".")
     usage_start_parser.add_argument("--outcome", required=True)
@@ -882,6 +1048,8 @@ def main() -> int:
             )
         elif args.command == "status":
             result = checkpoint_status(Path(args.root))
+        elif args.command == "resume":
+            result = resume_checkpoint(Path(args.root))
         elif args.command == "usage-start":
             result = usage_start(Path(args.root), args.outcome)
         elif args.command == "usage-record":
@@ -913,7 +1081,7 @@ def main() -> int:
         )
         return 1
     print(json.dumps(result, ensure_ascii=False, indent=2))
-    return 0
+    return 2 if args.command == "resume" and result["state"] == "reconciliation_required" else 0
 
 
 if __name__ == "__main__":
