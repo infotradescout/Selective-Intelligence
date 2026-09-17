@@ -175,7 +175,13 @@ def git_facts(root: Path) -> dict[str, Any]:
             timeout=10,
         )
 
-    inside = run("rev-parse", "--is-inside-work-tree")
+    try:
+        inside = run("rev-parse", "--is-inside-work-tree")
+    except FileNotFoundError:
+        # Filesystem inventory remains useful without Git; no revision/cleanliness is inferred.
+        # Permission denials and timeouts still propagate instead of being hidden.
+        return {"kind": "directory", "revision": None, "dirty": None,
+                "git_probe_status": "unavailable"}
     if inside.returncode != 0 or inside.stdout.strip() != "true":
         return {"kind": "directory", "revision": None, "dirty": None}
     revision = run("rev-parse", "HEAD")
@@ -296,6 +302,7 @@ def build_index(
     raw_ui: list[dict[str, Any]] = []
     directory_counts: Counter[str] = Counter()
     hash_paths: defaultdict[str, list[str]] = defaultdict(list)
+    newline_paths: defaultdict[str, list[tuple[str, str]]] = defaultdict(list)
 
     sources = {safe_relative(root, path): path for path in source_files(root)}
     proposed_sources: dict[str, bytes] = {}
@@ -340,6 +347,9 @@ def build_index(
         # consolidate, while remaining part of the source inventory.
         if text.strip():
             hash_paths[digest].append(relative)
+            # Comparison only: original file bytes and inventory hashes remain authoritative.
+            normalized = sha256_bytes(payload.replace(b"\r\n", b"\n"))
+            newline_paths[normalized].append((relative, digest))
         directory_counts[Path(relative).parent.as_posix()] += 1
         symbols.extend(python_symbols(relative, text) if suffix == ".py" else javascript_symbols(relative, text, suffix))
         if suffix in UI_EXTENSIONS:
@@ -357,6 +367,12 @@ def build_index(
         {"sha256": digest, "paths": sorted(paths)}
         for digest, paths in sorted(hash_paths.items())
         if len(paths) > 1
+    ]
+    newline_equivalent_files = [
+        {"normalized_sha256": digest, "normalization": "crlf-to-lf",
+         "paths": sorted(relative for relative, _ in entries)}
+        for digest, entries in sorted(newline_paths.items())
+        if len({raw_digest for _, raw_digest in entries}) > 1
     ]
     exported_by_name: defaultdict[str, list[dict[str, Any]]] = defaultdict(list)
     for symbol in symbols:
@@ -388,7 +404,11 @@ def build_index(
         if exception is not None:
             justified_duplicates.append({**group, "exception": exception})
             continue
-        findings.append({"severity": "error", "code": "PI001", "message": "Exact duplicate source files require consolidation or an explicit exception.", "paths": group["paths"]})
+        findings.append({"severity": "error", "code": "PI001", "message": "Duplicate source implementations require consolidation or an explicit exception.", "paths": group["paths"]})
+    for group in newline_equivalent_files:
+        findings.append({"severity": "error", "code": "PI001",
+                         "message": "Duplicate source implementations require consolidation or an explicit exception.",
+                         "paths": group["paths"]})
     for collision in symbol_collisions:
         findings.append({"severity": "error", "code": "PI002", "message": f"Exported symbol {collision['name']} has multiple candidate owners.", "paths": [item["path"] for item in collision["owners"]]})
     for tag, paths in sorted(raw_paths_by_tag.items()):
@@ -413,6 +433,7 @@ def build_index(
         "ui": {"primitive_candidates": ui_candidates, "raw_elements": raw_ui},
         "duplicates": {
             "exact_files": duplicate_files,
+            "line_ending_equivalent_files": newline_equivalent_files,
             "justified_generated_projections": justified_duplicates,
             "exported_symbol_collisions": symbol_collisions,
         },

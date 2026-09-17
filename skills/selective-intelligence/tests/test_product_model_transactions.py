@@ -112,12 +112,11 @@ class TransactionTests(unittest.TestCase):
         target = self.workspace / "first.txt"
         target.write_text("old")
         target.chmod(0o640)
-        # Windows exposes supported mode bits, not POSIX group/other permissions.
-        expected_mode = target.stat().st_mode & 0o777
-        if os.name != "nt":
-            self.assertEqual(expected_mode, 0o640)
+        existing_mode = target.stat().st_mode & 0o777
+        if sys.platform != "win32":
+            self.assertEqual(existing_mode, 0o640)
         self.apply()
-        self.assertEqual(target.stat().st_mode & 0o777, expected_mode)
+        self.assertEqual(target.stat().st_mode & 0o777, existing_mode)
         self.assertEqual(target.read_text(), "new first")
         self.assertEqual(sorted(p.name for p in self.workspace.iterdir()), ["first.txt", "second.txt"])
 

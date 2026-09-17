@@ -706,10 +706,29 @@ class WorkerArtifactReuseTests(SessionEnvironmentIsolationMixin, unittest.TestCa
         self.assertFalse((self.workspace / "copies").exists())
         self.assertEqual(LS.load_session(self.sid)["queue"][self.task_id]["status"], "ready")
 
+    def test_existing_duplicate_debt_allows_line_ending_only_update(self):
+        content = "def current_value():\n    return 1\n"
+        original = content.replace("\n", "\r\n").encode("utf-8")
+        for filename in ("owner.py", "copy.py"):
+            (self.workspace / filename).write_bytes(original)
+        result = self.apply_files({"owner.py": content})
+        self.assertEqual(len(result["written"]), 1)
+        self.assertEqual((self.workspace / "copy.py").read_bytes(), original)
+        self.assertEqual((self.workspace / "owner.py").read_bytes(), content.encode("utf-8"))
+
+    def test_newline_only_change_is_a_real_write_not_an_unchanged_receipt(self):
+        content = "def current_value():\n    return 1\n"
+        target = self.workspace / "app.py"
+        target.write_bytes(content.replace("\n", "\r\n").encode("utf-8"))
+        result = self.apply_files({"app.py": content})
+        self.assertEqual(len(result["written"]), 1)
+        self.assertEqual(result["unchanged"], [])
+        self.assertEqual(target.read_bytes(), content.encode("utf-8"))
+
     def test_unchanged_content_keeps_verification_lifecycle_without_staging(self):
         content = "def current_value():\n    return 1\n"
         target = self.workspace / "app.py"
-        target.write_text(content, encoding="utf-8")
+        target.write_text(content, encoding="utf-8", newline="")
         target.chmod(0o640)
         os.utime(target, ns=(1_700_000_000_000_000_000, 1_700_000_000_000_000_000))
         original_stat = target.stat()
@@ -745,7 +764,7 @@ class WorkerArtifactReuseTests(SessionEnvironmentIsolationMixin, unittest.TestCa
 
     def test_unchanged_content_lifecycle_does_not_reset_exhausted_handoff_limit(self):
         content = "def current_value():\n    return 1\n"
-        (self.workspace / "app.py").write_text(content, encoding="utf-8")
+        (self.workspace / "app.py").write_text(content, encoding="utf-8", newline="")
         for _ in range(3):
             BE.make_worker_packet(session_id=self.sid, task_id=self.task_id)
 

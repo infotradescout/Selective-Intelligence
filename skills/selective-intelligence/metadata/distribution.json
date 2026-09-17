@@ -308,6 +308,7 @@
     "tests/test_process_interrupt.py",
     "tests/test_production_path.py",
     "tests/test_progress_checkpoint.py",
+    "tests/test_project_index_portability.py",
     "tests/test_release_prompt_budget.py",
     "tests/test_site_review_gate.py",
     "tests/test_product_model_checkpoint.py",
