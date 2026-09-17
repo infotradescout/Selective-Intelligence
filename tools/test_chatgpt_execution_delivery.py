@@ -22,7 +22,8 @@ import zipfile
 REPO = Path(__file__).resolve().parents[1]
 SOURCE = REPO / "skills" / "selective-intelligence"
 CORE = ("build_engine", "capabilities", "checkpoint", "context_budget", "feedback",
-        "intent_contract", "lane_session", "policy_guard", "text_gate")
+        "intent_contract", "lane_session", "policy_guard", "postgres_sessions",
+        "progress_checkpoint", "project_index", "text_gate")
 REQUIRED = {"scripts/" + name + ".py" for name in CORE} | {
     "scripts/lane_registry.py", "lanes/si.execution.json", "lanes/si.planning.json",
     "schemas/lane.schema.json",
