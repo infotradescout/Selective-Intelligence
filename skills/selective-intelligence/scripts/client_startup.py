@@ -60,7 +60,7 @@ def read_record(path: Path, maximum: int = MAX_CHECKPOINT) -> tuple[dict, str]:
 def git_read(root: Path, *args: str) -> str:
     env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
     env["GIT_OPTIONAL_LOCKS"] = "0"
-    proc = subprocess.run(["git", "-C", str(root), *args], env=env,
+    proc = subprocess.run(["git", "-c", "core.fsmonitor=false", "-C", str(root), *args], env=env,
                           capture_output=True, text=True, timeout=5, check=False)
     if proc.returncode:
         raise StartupError("repository_observation_unavailable")

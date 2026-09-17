@@ -121,4 +121,14 @@ class ClientStartupTests(unittest.TestCase):
         with patch.dict(os.environ, {"WSL_DISTRO_NAME": "Ubuntu"}):
             with self.assertRaises(CS.StartupError): CS.normalized_path("//wsl.localhost/Other/home/user")
 
+    @unittest.skipIf(sys.platform == "win32", "POSIX fsmonitor executable fixture")
+    def test_repository_fsmonitor_is_not_executed_by_startup_reads(self):
+        script = self.root / "observe.sh"
+        witness = self.root / "fsmonitor-was-called"
+        script.write_text("#!/bin/sh\nprintf observed > '" + str(witness) + "'\nexit 1\n")
+        script.chmod(0o700)
+        self.git("config", "core.fsmonitor", str(script))
+        CS.project_context(str(self.root))
+        self.assertFalse(witness.exists())
+
 if __name__ == "__main__": unittest.main()
