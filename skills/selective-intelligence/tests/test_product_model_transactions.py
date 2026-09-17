@@ -7,6 +7,7 @@ No live model, external IDE or production product is exercised.
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -97,6 +98,15 @@ class TransactionTests(unittest.TestCase):
         self.assertEqual((self.workspace / "first.txt").read_text(), "original")
         self.assertFalse((self.workspace / "second.txt").exists())
         self.assertNotEqual(LS.global_state(LS.load_session(self.sid)), "VERIFIED_COMPLETE")
+
+    def test_worker_write_preserves_exact_utf8_bytes_and_receipt(self):
+        content = "first\nsecond\r\nthird\rlast \u2713\n"
+        self.apply({"line-endings.txt": content})
+        expected = content.encode("utf-8")
+        self.assertEqual((self.workspace / "line-endings.txt").read_bytes(), expected)
+        saved = LS.load_session(self.sid)
+        self.assertEqual(len(saved["artifacts"]), 1)
+        self.assertEqual(saved["artifacts"][0]["sha256"], hashlib.sha256(expected).hexdigest())
 
     def test_successful_batch_preserves_existing_file_permissions(self):
         target = self.workspace / "first.txt"

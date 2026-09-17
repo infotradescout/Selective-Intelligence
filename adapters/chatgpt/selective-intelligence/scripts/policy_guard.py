@@ -752,7 +752,7 @@ def guarded_write_text(
     if not decision["allowed"]:
         raise PolicyDenied(decision)
     target.parent.mkdir(parents=True, exist_ok=True)
-    # Preserve the supplied bytes; Windows newline translation invalidates the receipt.
+    # Preserve the exact UTF-8 bytes covered by the write receipt on every platform.
     target.write_text(content, encoding="utf-8", newline="")
     decision["adapterInvocationStatus"] = "INVOKED"
     evidence = {
