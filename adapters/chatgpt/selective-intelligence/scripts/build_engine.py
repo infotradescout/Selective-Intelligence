@@ -1182,7 +1182,22 @@ def verify_task(
                           if Path(name).name not in argv[3:]]
             passed = passed and bool(registered) and re.search(r"^# pass [1-9][0-9]*\s*$", output, re.MULTILINE) is not None
         elif argv[1:3] == ["-m", "unittest"]:
-            passed = passed and re.search(r"Ran [1-9][0-9]* tests?\b", output) is not None
+            # Count successful execution from the final runner report, not
+            # fixture stdout, an earlier summary, skips, or expected failures.
+            # Subtest skips can exceed method counts; ambiguous coverage stays
+            # unproved rather than manufacturing a successful execution.
+            report = re.search(
+                r"^Ran ([0-9]+) tests? in [^\r\n]*\r?\n\s*"
+                r"OK(?: \(([^)\r\n]*)\))?\s*\Z",
+                str(evidence.get("stderr", "")), re.MULTILINE,
+            )
+            successful_lower_bound = 0
+            if report:
+                non_successes = sum(int(count) for count in re.findall(
+                    r"(?:skipped|expected failures)=([0-9]+)", report.group(2) or "",
+                ))
+                successful_lower_bound = int(report.group(1)) - non_successes
+            passed = passed and successful_lower_bound > 0
         verification = LS.record_verification(session, task_id, evidence["evidenceId"], passed)
         repair_task = None
         if passed:

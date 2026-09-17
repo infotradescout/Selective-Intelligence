@@ -146,5 +146,61 @@ class RepairHandoffTests(unittest.TestCase):
         self.assertIsNotNone(result["repairTask"])
 
 
+    def verify_repair_fixture(self, source):
+        self.apply(self.repair["taskId"], "correct")
+        (self.workspace / "test_result.py").write_text(source, encoding="utf-8", newline="")
+        return ENGINE.verify_repair(session_id=self.session["sessionId"],
+                                    repair_task_id=self.repair["taskId"], command=self.command)
+
+    def test_skipped_only_unittest_cannot_complete_repair(self):
+        result = self.verify_repair_fixture(
+            'import unittest\nclass Result(unittest.TestCase):\n'
+            ' @unittest.skip("fixture unavailable")\n'
+            ' def test_result(self): self.fail("never executed")\n')
+        self.assertEqual(result["commandEvidence"]["exitCode"], 0)
+        self.assertIn("OK (skipped=1)", result["commandEvidence"]["stderr"])
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["session"]["queue"][self.task["taskId"]]["status"], "repairing")
+        self.assertIsNotNone(result["repairTask"])
+
+    def test_expected_failure_only_unittest_cannot_complete_repair(self):
+        result = self.verify_repair_fixture(
+            'import unittest\nclass Result(unittest.TestCase):\n'
+            ' @unittest.expectedFailure\n'
+            ' def test_result(self): self.assertEqual(1, 2)\n')
+        self.assertEqual(result["commandEvidence"]["exitCode"], 0)
+        self.assertIn("expected failures=1", result["commandEvidence"]["stderr"])
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["session"]["queue"][self.task["taskId"]]["status"], "repairing")
+
+    def test_executed_success_with_optional_skip_still_completes(self):
+        result = self.verify_repair_fixture(
+            'import unittest\nfrom pathlib import Path\nclass Result(unittest.TestCase):\n'
+            ' def test_result(self): self.assertEqual(Path("result.txt").read_text(), "correct")\n'
+            ' @unittest.skip("optional fixture unavailable")\n'
+            ' def test_optional(self): self.fail("never executed")\n')
+        self.assertEqual(result["commandEvidence"]["exitCode"], 0)
+        self.assertTrue(result["passed"])
+        self.assertEqual(result["session"]["queue"][self.task["taskId"]]["status"], "complete")
+
+    def test_stdout_summary_cannot_mask_zero_collected_tests(self):
+        result = self.verify_repair_fixture('print("Ran 9 tests in 0.001s\\n\\nOK")\n')
+        self.assertIn("Ran 0 tests", result["commandEvidence"]["stderr"])
+        self.assertIn("Ran 9 tests", result["commandEvidence"]["stdout"])
+        self.assertFalse(result["passed"])
+        self.assertIsNotNone(result["repairTask"])
+
+    def test_earlier_stderr_summary_cannot_mask_final_skipped_run(self):
+        result = self.verify_repair_fixture(
+            'import unittest, sys\nprint("Ran 9 tests in 0.001s\\n\\nOK", file=sys.stderr)\n'
+            'class Result(unittest.TestCase):\n'
+            ' @unittest.skip("unavailable")\n'
+            ' def test_result(self): self.fail("never executed")\n')
+        self.assertEqual(result["commandEvidence"]["exitCode"], 0)
+        self.assertFalse(result["passed"])
+        self.assertIsNotNone(result["repairTask"])
+
+
+
 if __name__ == "__main__":
     unittest.main()
