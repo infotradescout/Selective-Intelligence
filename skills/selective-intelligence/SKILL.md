@@ -56,6 +56,8 @@ Never collapse:
 
 Bind claims to revision/environment/scope/evidence. Production finishes at required live behavior unless the user specifies otherwise. Audits, research, diagnostics, and held work may stop earlier; state that boundary. See [evidence and completion](references/evidence-and-completion.md).
 
+Product handoff requires [delivery acceptance](references/product-delivery-acceptance.md).
+
 ## Product identity before templates
 
 Software does not imply SaaS; management authority cannot invent product behavior. Current governing intent defines identity; correct assumptions, plans, handoffs, and proof. Preserve approved language, design, responsibilities, memberships, fees, providers, and services. Invent rules only for actual gaps.

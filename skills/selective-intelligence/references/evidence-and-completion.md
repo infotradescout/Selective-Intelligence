@@ -1,6 +1,6 @@
 # Evidence and Completion Model
 
-Use this reference when the output contains public factual claims, identity information, sensitive fields, or conflicting sources.
+Use this reference when the output contains public factual claims, identity information, sensitive fields, conflicting sources, or a product-delivery claim.
 
 ## Governing authority order
 
@@ -95,6 +95,8 @@ External facts with changeable plans, regions, prices, policies, limits, authent
 A result is complete when it performs its intended job without placeholders or invented claims, even if optional information remains unknown. Completeness is measured by usefulness and function, not by filling every possible field.
 
 Closed builds do not imply a closed release. Release completion additionally requires every included requirement, critical journey, prohibition, necessary actor, operational gate, and invalidated prior proof to reconcile at the current baseline.
+
+Before promoting a user-facing product to ready for review, apply [product-delivery-acceptance.md](product-delivery-acceptance.md) through the canonical quality CLI's `--delivery` mode. Preserve automatic versus optional-manual requirements and require one intended product owner, actual workflow evidence and rendered interaction review. Source tests alone remain source validation. A screenshot, imported history, working URL or unstarted observer cannot substitute for the primary workflow. Unresolved user rejection keeps delivery open. The gate never declares user acceptance or proves that all installed clients enforce it.
 
 **Cross-runtime equivalence:** Given the same task, context, and evidence, completion means an equivalently correct user outcome across models and environments—not merely fluent prose from the current runtime. Different wording is fine; different intent, scope, product truth, workflow, quality threshold, or final outcome is not. A runtime that cannot meet the bar must be corrected, retried, or blocked before side effects land. See [model-neutral-execution.md](model-neutral-execution.md#governing-requirement-model-interchangeability). One strong benchmark demonstrates that the quality bar is achievable; repeating that bar without heavy user repair is what counts as reliability.
 
