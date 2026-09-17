@@ -67,6 +67,16 @@ class NativePointerTests(unittest.TestCase):
             self.assertIsNotNone(section)
             self.assertIn(section.group().strip(), guide)
 
+    def test_resume_startup_contract_is_canonical_and_project_scoped(self) -> None:
+        skill_root = ROOT / "skills" / "selective-intelligence"
+        for path in (skill_root / "SKILL.md", skill_root / "AI-GUIDE.md"):
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("scripts/progress_checkpoint.py resume --root <workspace>", text)
+            self.assertIn("before discovery; reconcile drift", text)
+        reference = (skill_root / "references/durable-progress-and-recovery.md").read_text(encoding="utf-8")
+        for phrase in ("grants no execution or release permission", "no_checkpoint", "reconciliation_required", "verified interpreter", "legacy `status` command is not the startup selector"):
+            self.assertIn(phrase, reference)
+
     def test_catalog_visible_prefix_keeps_universal_trigger(self) -> None:
         skill = (ROOT / "skills" / "selective-intelligence" / "SKILL.md").read_text(encoding="utf-8")
         description = next(
