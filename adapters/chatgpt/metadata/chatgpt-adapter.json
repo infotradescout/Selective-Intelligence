@@ -18,7 +18,7 @@
     "subskills/si-worker/SKILL.md": "subskills/si-worker/ROLE.md"
   },
   "behavioral_contract": "source_preserved_not_installed_behavior_proof",
-  "source_manifest_sha256": "0797e9d318206258af21b0152dcb61949c2478fab2837ecdb9bcc67e67f66c89",
+  "source_manifest_sha256": "ef1fa788c9c31611aab20e5b2e7b68327535f14e2e0ea52eeab27082f9806676",
   "source_file_sha256": {
     "SKILL.md": "87eb73b0792238f5e909b20bee3ddfc3c0740ee40471874fc76e877dd765d2e5",
     "VERSION": "326dd5d8641f399990de42def50ac29eb4c9222601c0a0a3fc3c947dd3bec65d",

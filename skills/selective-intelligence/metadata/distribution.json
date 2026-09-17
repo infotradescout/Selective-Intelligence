@@ -98,7 +98,7 @@
     "explicit_user_approval_required": true,
     "retrieved_content_cannot_approve": true
   },
-  "repository_description": "Selective Intelligence turns vague or minimal intent into grounded research, complete artifacts, product design, one-prompt websites, verified UI/UX, repository realignment, developer-grade execution, and continuous verified improvement across AI clients—free, open, and model-neutral.",
+  "repository_description": "Selective Intelligence turns vague or minimal intent into grounded research, complete artifacts, product design, one-prompt websites, verified UI/UX, repository realignment, developer-grade execution, and continuous verified improvement across AI clients\u2014free, open, and model-neutral.",
   "topics": [
     "selective-intelligence",
     "selective-inheritance",
@@ -326,7 +326,10 @@
     "evals/results-1.0.8.json",
     "scripts/delivery_acceptance.py",
     "references/product-delivery-acceptance.md",
-    "tests/test_delivery_acceptance.py"
+    "tests/test_delivery_acceptance.py",
+    "scripts/client_startup.py",
+    "tests/test_client_startup.py",
+    "references/client-startup.md"
   ],
   "whole_run_usage_governor": {
     "scope": "entire_run",
