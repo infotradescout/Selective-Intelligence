@@ -201,7 +201,9 @@
     "subskills/si-planner/SKILL.md",
     "subskills/si-queue-manager/SKILL.md",
     "subskills/si-verifier/SKILL.md",
-    "subskills/si-worker/SKILL.md"
+    "subskills/si-worker/SKILL.md",
+    "scripts/delivery_acceptance.py",
+    "references/product-delivery-acceptance.md"
   ],
   "release_files": [
     "AI-GUIDE.md",
@@ -321,7 +323,10 @@
     "tests/test_product_model_handoff_completeness.py",
     "tests/test_product_model_repair_handoff.py",
     "tests/test_prompt_queue_continuity.py",
-    "evals/results-1.0.8.json"
+    "evals/results-1.0.8.json",
+    "scripts/delivery_acceptance.py",
+    "references/product-delivery-acceptance.md",
+    "tests/test_delivery_acceptance.py"
   ],
   "whole_run_usage_governor": {
     "scope": "entire_run",
