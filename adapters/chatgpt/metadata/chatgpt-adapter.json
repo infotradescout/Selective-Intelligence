@@ -7,7 +7,7 @@
   "adapter_path": "adapters/chatgpt/selective-intelligence",
   "transformation": "runtime_only_with_nested_role_entrypoints_as_role_references",
   "single_skill_entrypoint": "SKILL.md",
-  "runtime_file_count": 59,
+  "runtime_file_count": 61,
   "role_path_map": {
     "subskills/si-aligner/SKILL.md": "subskills/si-aligner/ROLE.md",
     "subskills/si-intake/SKILL.md": "subskills/si-intake/ROLE.md",
@@ -18,7 +18,7 @@
     "subskills/si-worker/SKILL.md": "subskills/si-worker/ROLE.md"
   },
   "behavioral_contract": "source_preserved_not_installed_behavior_proof",
-  "source_manifest_sha256": "e1a569d7f2c6cccae1d652b81011100db01790ae3168da9d43a5d2a23e05abc7",
+  "source_manifest_sha256": "09aac47c8c11717defd8f837391ec4126e7e62696813dd428e7eeb14180f89bf",
   "source_file_sha256": {
     "SKILL.md": "afb4c6e096aa83683105c45b5525ac34ee436654be4dacc9c2a44f01bf2033b1",
     "VERSION": "326dd5d8641f399990de42def50ac29eb4c9222601c0a0a3fc3c947dd3bec65d",
@@ -31,7 +31,8 @@
     "references/activation-and-adoption.md": "04df2423ec610be344366dd646b427e3e9062f90244b0e4143a6fb02218b5f74",
     "references/actual-intent-alignment.md": "3bc1fac79f7fed56c098c5dd01ce7c5e49a973c9a2455606f1ff7c495373a9ad",
     "references/architecture-reuse.md": "5d1c4d09ca8e7407d19c7fc9d68587b2ea0b61be61e5c3448890af2c8766138d",
-    "references/continuity-and-impact.md": "78f93ccaaed14e58544c5a0c78b6bf933922b4c576a597b13d63ac74d0de53e0",
+    "references/continuity-and-impact.md": "ffd9f6b96147ba77d251854f4b3fd2ffbb3cd4b9deccf98b8fcfac849fd109f7",
+    "references/postgres-session-storage.md": "db0d16851060a6563366b85e37657554b4108475d78f30b8215bb570b02c8dce",
     "references/durable-progress-and-recovery.md": "1457eed72572aa6e0f34ab6773b81735e3f1ee22e5427e44a238619b034a609d",
     "references/evidence-and-completion.md": "f05424d0e1b8c68624aab05d3e03361e312a08a92bc3b3338b86e29a1971569f",
     "references/failure-patterns-and-gates.md": "90b4b2fc15069a33cdef3fc39d653b718f4ef4e27345c0db5dab3d7fca5408b5",
@@ -65,8 +66,9 @@
     "scripts/feedback.py": "90bfdc574d03b630ea5e68f22185c848d37ab93e3edca768b0d2b501f7924bbb",
     "scripts/intent_contract.py": "a3bcb84336179e5dc9e18f55c7f02c27bbe777a116aa0942bee807ea82eb58a6",
     "scripts/lane_registry.py": "f9417ae2ac0a3911220c75b9f83cbe5204a30142f948b54611df6e4712846e35",
-    "scripts/lane_session.py": "d20f57cc7c00d84b4e91399d2c2051b130f6f5144331907206b01efd085b17a8",
+    "scripts/lane_session.py": "1119e62d04825221ef8c823bdc9e6ac8ac351458715a5e4e40932fb899bbf89d",
     "scripts/policy_guard.py": "bc8be4706a053114973371ce9bfeb94a13881e3fa42779ac4abea550a1229bbe",
+    "scripts/postgres_sessions.py": "e19ea9cffa6872b62d2870c59e4e08a10f231c2ecfab77018bf0e46341c3b297",
     "scripts/progress_checkpoint.py": "3660538c309ff0c01f87e615037e83a7cb8bd5fc651f66f22569da4cf599e0aa",
     "scripts/project_index.py": "496eb8e316fa7baf85c3c0b35ead76053d41c842846367163a5eadb7e94b755c",
     "scripts/prompt_queue.py": "1f5423659c07bcf842454931e28a0547c3020e19d5afeb58fee5adf6fa1c4f33",
@@ -92,7 +94,8 @@
     "references/activation-and-adoption.md": "04df2423ec610be344366dd646b427e3e9062f90244b0e4143a6fb02218b5f74",
     "references/actual-intent-alignment.md": "3bc1fac79f7fed56c098c5dd01ce7c5e49a973c9a2455606f1ff7c495373a9ad",
     "references/architecture-reuse.md": "5d1c4d09ca8e7407d19c7fc9d68587b2ea0b61be61e5c3448890af2c8766138d",
-    "references/continuity-and-impact.md": "78f93ccaaed14e58544c5a0c78b6bf933922b4c576a597b13d63ac74d0de53e0",
+    "references/continuity-and-impact.md": "ffd9f6b96147ba77d251854f4b3fd2ffbb3cd4b9deccf98b8fcfac849fd109f7",
+    "references/postgres-session-storage.md": "db0d16851060a6563366b85e37657554b4108475d78f30b8215bb570b02c8dce",
     "references/durable-progress-and-recovery.md": "1457eed72572aa6e0f34ab6773b81735e3f1ee22e5427e44a238619b034a609d",
     "references/evidence-and-completion.md": "f05424d0e1b8c68624aab05d3e03361e312a08a92bc3b3338b86e29a1971569f",
     "references/failure-patterns-and-gates.md": "90b4b2fc15069a33cdef3fc39d653b718f4ef4e27345c0db5dab3d7fca5408b5",
@@ -126,8 +129,9 @@
     "scripts/feedback.py": "90bfdc574d03b630ea5e68f22185c848d37ab93e3edca768b0d2b501f7924bbb",
     "scripts/intent_contract.py": "a3bcb84336179e5dc9e18f55c7f02c27bbe777a116aa0942bee807ea82eb58a6",
     "scripts/lane_registry.py": "f9417ae2ac0a3911220c75b9f83cbe5204a30142f948b54611df6e4712846e35",
-    "scripts/lane_session.py": "d20f57cc7c00d84b4e91399d2c2051b130f6f5144331907206b01efd085b17a8",
+    "scripts/lane_session.py": "1119e62d04825221ef8c823bdc9e6ac8ac351458715a5e4e40932fb899bbf89d",
     "scripts/policy_guard.py": "bc8be4706a053114973371ce9bfeb94a13881e3fa42779ac4abea550a1229bbe",
+    "scripts/postgres_sessions.py": "e19ea9cffa6872b62d2870c59e4e08a10f231c2ecfab77018bf0e46341c3b297",
     "scripts/progress_checkpoint.py": "3660538c309ff0c01f87e615037e83a7cb8bd5fc651f66f22569da4cf599e0aa",
     "scripts/project_index.py": "496eb8e316fa7baf85c3c0b35ead76053d41c842846367163a5eadb7e94b755c",
     "scripts/prompt_queue.py": "1f5423659c07bcf842454931e28a0547c3020e19d5afeb58fee5adf6fa1c4f33",
@@ -155,6 +159,7 @@
     "scripts/lane_registry.py",
     "scripts/lane_session.py",
     "scripts/policy_guard.py",
+    "scripts/postgres_sessions.py",
     "scripts/text_gate.py"
   ]
 }

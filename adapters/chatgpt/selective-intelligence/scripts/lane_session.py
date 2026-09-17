@@ -16,6 +16,7 @@ from typing import Any
 
 from intent_contract import classify_intent, concept_tokens, merge_active_contract
 import checkpoint as CP
+from postgres_sessions import configured_store
 
 try:
     import lane_registry as reg  # type: ignore
@@ -72,9 +73,13 @@ def sessions_dir() -> Path:
     return directory.resolve()
 
 
-def session_path(session_id: str) -> Path:
+def _validate_session_id(session_id: str) -> None:
     if not session_id or any(ch not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_" for ch in session_id):
         raise ValueError("invalid session id")
+
+
+def session_path(session_id: str) -> Path:
+    _validate_session_id(session_id)
     return sessions_dir() / f"{session_id}.session.json"
 
 
@@ -89,11 +94,17 @@ _HELD_LOCKS = threading.local()
 
 @contextmanager
 def session_lock(session_id: str):
-    """Serialize cooperative SI writers across threads and local processes.
+    """Serialize cooperative SI writers through the configured storage lock.
 
     Reentrant in one thread. Locks are advisory and do not authenticate hostile
-    filesystem writers or provide distributed/network-filesystem transactions.
+    filesystem writers or fence external actions after a lost database lock.
     """
+    _validate_session_id(session_id)
+    store = configured_store()
+    if store is not None:
+        with store.lock(session_id):
+            yield
+        return
     path = session_path(session_id).with_suffix(".lock")
     key = str(path)
     with _THREAD_LOCKS_GUARD:
@@ -140,12 +151,13 @@ def _revision(session: dict[str, Any]) -> int:
 
 
 def save_session(session: dict[str, Any]) -> None:
-    """Compare revisions under the session lock, then atomically replace JSON.
+    """Compare revisions under the session lock, then atomically persist JSON.
 
     Missing revisions on historical records start at zero; saving upgrades
     storage only and never restores checkpoint or task execution authority.
     """
-    target = session_path(session["sessionId"])
+    _validate_session_id(session["sessionId"])
+    store = configured_store()
     expected = _revision(session)
     with session_lock(session["sessionId"]):
         current = load_session(session["sessionId"])
@@ -158,6 +170,13 @@ def save_session(session: dict[str, Any]) -> None:
         staged["updatedAt"] = _now()
         staged["persistenceRevision"] = actual + 1
         encoded = json.dumps(staged, indent=2, sort_keys=True, allow_nan=False)
+        if store is not None:
+            if not store.save(session["sessionId"], expected, staged):
+                raise SessionConflictError("session changed since it was loaded; reload before saving")
+            session["updatedAt"] = staged["updatedAt"]
+            session["persistenceRevision"] = staged["persistenceRevision"]
+            return
+        target = session_path(session["sessionId"])
         temp = target.with_suffix(f".{uuid.uuid4().hex}.tmp")
         try:
             with temp.open("x", encoding="utf-8") as handle:
@@ -174,19 +193,26 @@ def save_session(session: dict[str, Any]) -> None:
 
 def load_session(session_id: str) -> dict[str, Any] | None:
     try:
-        path = session_path(session_id)
+        _validate_session_id(session_id)
     except ValueError:
         return None
-    if path.is_symlink():
-        raise ValueError("session file must not be a symlink")
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except FileNotFoundError:
-        return None
+    store = configured_store()
+    if store is not None:
+        data = store.load(session_id)
+        if data is None:
+            return None
+    else:
+        path = session_path(session_id)
+        if path.is_symlink():
+            raise ValueError("session file must not be a symlink")
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            return None
     if not isinstance(data, dict) or data.get("schemaVersion") != SCHEMA_VERSION:
         raise ValueError("unsupported session schema")
     if data.get("sessionId") != session_id:
-        raise ValueError("saved session identity differs from its file")
+        raise ValueError("saved session identity differs from its storage key")
     _revision(data)
     return data
 
@@ -688,7 +714,15 @@ def main() -> int:
     show.add_argument("--session", required=True)
     ready = sub.add_parser("ready")
     ready.add_argument("--session", required=True)
+    sub.add_parser("initialize-store", help="Create the optional Postgres session table on the configured database")
     args = parser.parse_args()
+    if args.command == "initialize-store":
+        store = configured_store()
+        if store is None:
+            parser.error("initialize-store requires SI_SESSION_BACKEND=postgres")
+        store.initialize()
+        print(json.dumps({"initialized": True, "backend": "postgres", "namespace": store.namespace}))
+        return 0
     session = load_session(args.session)
     if not session:
         print(json.dumps({"error": "session not found"}))

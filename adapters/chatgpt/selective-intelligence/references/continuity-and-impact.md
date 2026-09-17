@@ -2,6 +2,8 @@
 
 Use this reference when work spans sessions, agents, branches, worktrees, repositories, interrupted runs, or more than one build. The purpose is to preserve one product truth while allowing safe progress.
 
+For native SI workers that need a shared durable session store, see [optional PostgreSQL session persistence](postgres-session-storage.md). This is an opt-in persistence adapter; it does not replace SI governance or move workspace artifacts.
+
 ## Contents
 
 - [Resume from evidence](#resume-from-evidence)

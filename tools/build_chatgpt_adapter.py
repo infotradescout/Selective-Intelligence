@@ -102,6 +102,8 @@ EXECUTION_RUNTIME_FILES = frozenset({
     "scripts/build_engine.py", "scripts/capabilities.py", "scripts/checkpoint.py",
     "scripts/context_budget.py", "scripts/feedback.py", "scripts/intent_contract.py",
     "scripts/lane_registry.py", "scripts/lane_session.py", "scripts/policy_guard.py",
+    "scripts/postgres_sessions.py",
+    "scripts/progress_checkpoint.py", "scripts/project_index.py",
     "scripts/text_gate.py", "lanes/si.execution.json", "lanes/si.planning.json",
     "schemas/lane.schema.json",
 })
