@@ -22,7 +22,7 @@
   "source_file_sha256": {
     "SKILL.md": "39f72989ab4eba2dcd2a5dbcb9937fd348c25806acb22a5339bd30c22ef2468a",
     "VERSION": "326dd5d8641f399990de42def50ac29eb4c9222601c0a0a3fc3c947dd3bec65d",
-    "agents/openai.yaml": "5090139b222271205759e9c1cd34fbe154a0aae91221cb9fea47e7ecaf29e56c",
+    "agents/openai.yaml": "e534ca4016e2bb2b748aec5f0a57b4e16387db63ee497cc871f5d99082d2d5fb",
     "assets/icon.svg": "bbd2fc7be4ae81f8ff16bd26e26eab6d8547ef3ba1d6d7e49ba970c9a28fc77f",
     "evals/evals.json": "ae07d8148293f31cbf25ac2c3034e98963067e38bfa974dbca13e9126008d563",
     "lanes/si.execution.json": "0277bcf9385a1c4059f67146e24fefb2b541ca6051470350acd582b9ca6c4bff",
@@ -85,7 +85,7 @@
   "projected_file_sha256": {
     "SKILL.md": "cb80db519b45b41d6916e310bf1c471bcdf5929b65a4d504a2074b4747ff7791",
     "VERSION": "326dd5d8641f399990de42def50ac29eb4c9222601c0a0a3fc3c947dd3bec65d",
-    "agents/openai.yaml": "5090139b222271205759e9c1cd34fbe154a0aae91221cb9fea47e7ecaf29e56c",
+    "agents/openai.yaml": "e534ca4016e2bb2b748aec5f0a57b4e16387db63ee497cc871f5d99082d2d5fb",
     "assets/icon.svg": "bbd2fc7be4ae81f8ff16bd26e26eab6d8547ef3ba1d6d7e49ba970c9a28fc77f",
     "evals/evals.json": "ae07d8148293f31cbf25ac2c3034e98963067e38bfa974dbca13e9126008d563",
     "lanes/si.execution.json": "44ee0bbf20823093c7b0c82757e33976963c89cd5473131771e2bc84ea1c805b",

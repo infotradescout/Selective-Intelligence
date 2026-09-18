@@ -7,6 +7,6 @@ interface:
   brand_color: "#A65F00"
 policy:
   products:
-    - "CHAT"
+    - "CHATGPT"
     - "CODEX"
   allow_implicit_invocation: true
