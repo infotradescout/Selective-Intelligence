@@ -80,7 +80,7 @@
     "subskills/si-verifier/SKILL.md": "24188bbe576fdf18d05b4ac4cce4d4976ce95de41f3c446b0c81384c101b378d",
     "subskills/si-worker/SKILL.md": "d53d69ba98c734aa6e035a119e42cbf3b353fd9652c7d40d8937412415a0c1bc",
     "scripts/delivery_acceptance.py": "e8749f4141f7397fc42458400e90b87256f429c4963832bbf920dbb8837d40f9",
-    "references/product-delivery-acceptance.md": "574643b517d7a39d5146142bec2bbbaa8a47f5869ad3a021f9fbd271b8fb47f2"
+    "references/product-delivery-acceptance.md": "041eacc95194bfe39683063e09938c780060e565b7908e74cc1a64d108a5b28a"
   },
   "projected_file_sha256": {
     "SKILL.md": "cb80db519b45b41d6916e310bf1c471bcdf5929b65a4d504a2074b4747ff7791",
@@ -143,7 +143,7 @@
     "subskills/si-verifier/ROLE.md": "24188bbe576fdf18d05b4ac4cce4d4976ce95de41f3c446b0c81384c101b378d",
     "subskills/si-worker/ROLE.md": "d53d69ba98c734aa6e035a119e42cbf3b353fd9652c7d40d8937412415a0c1bc",
     "scripts/delivery_acceptance.py": "e8749f4141f7397fc42458400e90b87256f429c4963832bbf920dbb8837d40f9",
-    "references/product-delivery-acceptance.md": "574643b517d7a39d5146142bec2bbbaa8a47f5869ad3a021f9fbd271b8fb47f2"
+    "references/product-delivery-acceptance.md": "041eacc95194bfe39683063e09938c780060e565b7908e74cc1a64d108a5b28a"
   },
   "execution_entrypoint": "scripts/build_engine.py",
   "execution_dependencies": [
