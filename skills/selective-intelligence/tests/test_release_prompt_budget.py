@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -13,6 +14,36 @@ import release  # noqa: E402
 
 
 class ReleasePromptBudgetTests(unittest.TestCase):
+    def _openai_product_errors(self, products):
+        with tempfile.TemporaryDirectory(prefix="si-openai-products-") as temporary:
+            root = Path(temporary)
+            agent_config = root / "agents" / "openai.yaml"
+            agent_config.parent.mkdir()
+            agent_config.write_text(
+                'interface:\n'
+                '  display_name: "Selective Intelligence"\n'
+                '  short_description: "Recover failed work with verified execution"\n'
+                '  default_prompt: "Use $selective-intelligence to complete this task."\n'
+                'policy:\n'
+                '  products:\n'
+                + ''.join(f'    - "{product}"\n' for product in products)
+                + '  allow_implicit_invocation: true\n',
+                encoding="utf-8",
+            )
+            return release.skill_loader_metadata_errors(root, [agent_config])
+
+    def test_openai_products_accept_current_chatgpt_and_codex_identifiers(self):
+        self.assertEqual(self._openai_product_errors(["CHATGPT", "CODEX"]), [])
+
+    def test_openai_products_reject_legacy_chat_and_unsupported_api(self):
+        for product in ("CHAT", "api"):
+            with self.subTest(product=product):
+                errors = self._openai_product_errors([product, "CODEX"])
+                self.assertTrue(
+                    any(f"unsupported policy products: {product}" in error for error in errors),
+                    errors,
+                )
+
     def test_all_skill_frontmatter_uses_supported_loader_fields_only(self):
         metadata, metadata_errors = release.read_distribution_metadata(SKILL_ROOT)
         self.assertEqual(metadata_errors, [])
