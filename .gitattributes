@@ -1,0 +1,3 @@
+# Keep portable SI source and its generated adapter byte-identical across hosts.
+skills/selective-intelligence/** text eol=lf
+adapters/chatgpt/** text eol=lf

@@ -61,6 +61,14 @@ Connector read and connector write are different permissions. Repository read, l
 
 Objector and Aligner roles are read-only by default. A recommendation in their response is not permission to execute it.
 
+## External tool refusals
+
+Keep three decisions distinct: the person's existing authorization, SI's own action classification, and an external platform or connector's automatic review. A denial from the last category is evidence only that the named operation was refused in that environment at that time. It does not revoke the person's earlier authorization, prove an SI Objector opposed the work, or create a new permission question for unrelated actions. Never invent the reviewer identity or a broader permanent policy from a raw error.
+
+On a refusal, stop the exact operation. Do not retry it through a different shell, path, API, account, or tool to evade the review. Save the operation, target, stated reason, partial effects, and any legitimate retry condition in the progress checkpoint; avoid secret-bearing paths or values in shared receipts. Report the fresh refusal as the host requires. In later updates, mention it only when it remains material to the requested outcome or a human action; do not turn an optional cleanup into a portfolio-wide release gate. Continue independent work already authorized. If the refused operation is itself necessary for the requested outcome and no approved route exists, state that precise limit without claiming completion.
+
+Design disposable verification so cleanup is straightforward: use synthetic credentials and isolated lockfile-installed dependencies. Do not hardlink a real authentication file or junction an active dependency directory into a temporary workspace. These links can preserve sensitive or active state and leave cleanup subject to a separate tool review. This prevention rule does not authorize deletion of any existing link.
+
 ## PolicyGuard command allowlist (v1)
 
 `scripts/policy_guard.py` authorizes process execution against a **fixed, narrow** structured allowlist (read-only Git subcommands, Python `unittest` / version queries, and a few version probes). Wrappers, ambiguous resolution, shell/interpreter indirection, installs, deploys, and Git mutation fail closed before any adapter runs.

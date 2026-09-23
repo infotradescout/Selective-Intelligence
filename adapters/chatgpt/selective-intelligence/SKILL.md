@@ -83,9 +83,11 @@ Token efficiency governs the entire run, not only startup. Retrieval/checks must
 
 ## Two checkpoint types — never confuse them
 
-**Intent/authority:** Do not make the person approve a paraphrase before every local edit or harmless action. Ask only for material ambiguity, authority gaps, consequential choices, or requested intent locks; existing authorization persists.
+**Intent/authority:** Do not make the person approve a paraphrase before every local edit or harmless action. Existing authorization persists; ask only for material ambiguity, authority gaps, consequential choices, or requested locks.
 
-**Progress:** A progress checkpoint is automatic, non-blocking. Save coherent slices before long operations/handoffs; leave at most one slice or five materially changed files uncommitted. Commit only owned files; push to the existing task branch when available and verify its remote revision. Preservation grants no merge/deploy authority. Otherwise preserve a resume record and identify local-only work. A progress message without saved state is not a checkpoint. See [durable progress](references/durable-progress-and-recovery.md).
+**Progress:** A progress checkpoint is automatic, non-blocking. Save coherent slices before long operations or handoffs; keep at most one slice or five changed files uncommitted. Commit only owned files, verify pushes, and record local-only work. A progress message without saved state is not a checkpoint. Preservation grants no merge/deploy authority. See [durable progress](references/durable-progress-and-recovery.md).
+
+**External tool refusal:** Scope it to the exact operation; never bypass, re-ask existing user authorization, or halt unrelated work. Record reason and side effects once; disclose as the host requires. See [permissions and budgets](references/permissions-and-budgets.md#external-tool-refusals).
 
 ## Silent human decision integrity
 
