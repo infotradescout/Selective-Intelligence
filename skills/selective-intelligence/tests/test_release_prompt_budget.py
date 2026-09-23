@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 import unittest
@@ -61,6 +62,21 @@ class ReleasePromptBudgetTests(unittest.TestCase):
         self.assertLessEqual(metrics["core_words"], release.CORE_SKILL_MAX_WORDS)
         self.assertLessEqual(metrics["core_characters"], release.CORE_SKILL_MAX_CHARACTERS)
 
+    def test_distribution_advertises_the_standing_role_default(self):
+        metadata = json.loads((SKILL_ROOT / "metadata" / "distribution.json").read_text(encoding="utf-8"))
+        self.assertEqual(metadata["execution_default"], "lean_orchestrator_worker_objector")
+        self.assertEqual(release.jumpstart_errors(SKILL_ROOT, "0.3.0"), [])
+
+    def test_jumpstart_checks_intent_before_index_refresh_or_worker_dispatch(self):
+        text = (SKILL_ROOT / "JUMPSTART.md").read_text(encoding="utf-8")
+        discovery = text.index("Use bounded read-only evidence to reconstruct the active outcome")
+        challenge = text.index("Before Worker dispatch or work, Objector double-checks")
+        execution = text.index("After resolving the check, begin the highest-value reversible work")
+        index_refresh = text.index("create or refresh `.selective-intelligence/project-index.json`")
+        self.assertLess(discovery, challenge)
+        self.assertLess(challenge, execution)
+        self.assertLess(challenge, index_refresh)
+
     def test_rejects_heavy_default_regression(self):
         skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
         _, errors = release.prompt_budget_errors(
@@ -74,13 +90,41 @@ class ReleasePromptBudgetTests(unittest.TestCase):
         _, errors = release.prompt_budget_errors(skill_text)
         self.assertTrue(any("missing lean execution contract" in error for error in errors))
 
-    def test_rejects_paraphrased_automatic_role_default(self):
+    def test_requires_prework_intent_challenge_and_postwork_review(self):
+        skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        required = (
+            "Every work turn carries Orchestrator, Worker/Builder, and Objector.",
+            "Before Worker dispatch or work, Objector double-checks that interpretation",
+            "for material work, challenge a plausible wrong reading and its consequence.",
+            "Objector checks result and proof before Orchestrator reports.",
+            "label checks degraded, never independent.",
+        )
+        for phrase in required:
+            with self.subTest(phrase=phrase):
+                _, errors = release.prompt_budget_errors(skill_text.replace(phrase, ""))
+                self.assertTrue(any("missing lean execution contract" in error for error in errors))
+        self.assertLess(skill_text.index("Before Worker dispatch or work"), skill_text.index("Worker executes"))
+        self.assertLess(skill_text.index("Worker executes"), skill_text.index("Objector checks result"))
+
+    def test_ordinary_material_case_does_not_spoon_feed_roles(self):
+        cases = json.loads((SKILL_ROOT / "evals" / "behavior-cases.json").read_text(encoding="utf-8"))["cases"]
+        case = next(item for item in cases if item["id"] == "intent-ordinary-material-work-role-sequence")
+        for role in ("Orchestrator", "Worker", "Objector", "Council"):
+            self.assertNotIn(role, case["worker_prompt"])
+        self.assertIn("Before dispatching Worker", case["required_invariants"][1]["statement"])
+
+    def test_standing_worker_objector_roles_do_not_trigger_heavy_default(self):
+        skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        _, errors = release.prompt_budget_errors(skill_text + "\nAlways run Worker and Objector checks.\n")
+        self.assertFalse(any("automatic extra-role escalation" in error for error in errors))
+
+    def test_rejects_automatic_aligner_escalation(self):
         skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
         _, errors = release.prompt_budget_errors(
             skill_text
             + "\nAutomatically spawn Worker, Objector, and Aligner agents for persistent work.\n"
         )
-        self.assertTrue(any("automatic multi-role execution" in error for error in errors))
+        self.assertTrue(any("automatic extra-role escalation" in error for error in errors))
 
     def test_rejects_approval_before_every_local_edit(self):
         skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
@@ -109,9 +153,9 @@ class ReleasePromptBudgetTests(unittest.TestCase):
         for phrase in (
             "Two checkpoint types — never confuse them",
             "A progress checkpoint is automatic, non-blocking",
-            "five materially changed files",
-            "push to the existing task branch",
-            "verify its remote revision",
+            "five changed files",
+            "Commit only owned files, verify pushes",
+            "record local-only work",
             "A progress message without saved state is not a checkpoint.",
         ):
             self.assertIn(phrase, skill_text)

@@ -200,7 +200,7 @@ def rewrite_text(relative: str, text: str, mapping: dict[str, str]) -> str:
         anchor = "<!-- SELECTIVE_INTELLIGENCE_RUNTIME_PROJECTION -->"
         addition = """
 
-Public plugin rule: this package intentionally contains exactly one `SKILL.md`. The seven Council role instructions are preserved as `subskills/*/ROLE.md` reference files. Before assigning a bounded Intake, Planner, Worker, Queue Manager, Objector, Aligner, or Verifier role, read that role's reference file and pass only its bounded packet. These role references are part of this one public skill; they are not independently invocable skills.
+Public plugin rule: this package contains one `SKILL.md`; seven role modules are `subskills/*/ROLE.md` references, not independently invocable skills. Orchestrator, Worker/Builder, and Objector responsibilities apply on every work turn. Read the relevant reference before assigning a separate bounded context; extra Council roles need their own trigger.
 """
         if anchor not in text:
             raise ValueError("master skill public-plugin anchor is missing")
@@ -211,7 +211,7 @@ Public plugin rule: this package intentionally contains exactly one `SKILL.md`. 
         version = (SKILL_ROOT / "VERSION").read_text(encoding="utf-8").strip()
         addition = f"""
 
-> **Public plugin projection.** This generated skills-only package preserves canonical {version} behavior while satisfying the public directory's one-`SKILL.md` rule. The seven Council roles are complete `ROLE.md` references inside the one skill. The repository remains the canonical source; this package is a submission candidate until OpenAI review and publisher publication are complete.
+> **Public plugin projection.** This generated skills-only package preserves canonical {version} behavior while satisfying the public directory's one-`SKILL.md` rule. Seven role modules are `ROLE.md` references inside the one skill. The repository remains the canonical source; this package is a submission candidate until OpenAI review and publisher publication are complete.
 """
         if not text.startswith(anchor):
             raise ValueError("public-plugin README heading is missing")
@@ -219,16 +219,16 @@ Public plugin rule: this package intentionally contains exactly one `SKILL.md`. 
 
     if relative == "subskills/README.md":
         text = text.replace(
-            "Selective Intelligence is now split into small, separately runnable modules so one agent can do one job at a time.",
-            "Selective Intelligence keeps each Council role in a small reference module so one agent can do one bounded job at a time.",
+            "Selective Intelligence includes small, separately runnable role modules.",
+            "Selective Intelligence includes small role reference modules.",
         )
         text = text.replace(
             "Each sub-skill is built in plain, easy-to-understand language:",
             "Each role reference is built in plain, easy-to-understand language:",
         )
         text = text.replace(
-            "The parent `selective-intelligence` skill can still run the same full flow, but this split lets you hand each phase to a separate agent/context.",
-            "The parent `selective-intelligence` skill runs the full flow and may hand each phase to a separate agent/context after reading the matching `ROLE.md` reference.",
+            "The parent `selective-intelligence` skill carries the full flow. Role labels alone never prove independent review.",
+            "The parent `selective-intelligence` skill carries the full flow. Read the matching `ROLE.md` before assigning a separate context; role labels alone never prove independent review.",
         )
 
     if relative == "scripts/eval.py":

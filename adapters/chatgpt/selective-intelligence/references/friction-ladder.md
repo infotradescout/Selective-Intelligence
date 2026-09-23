@@ -13,12 +13,13 @@ These never scale down. Everything else is proportional ceremony.
 
 Use Lean when the outcome is clear, the work is bounded, and the next actions are reversible. Examples include a correction, focused research, a document edit, a local code repair, a routine repository continuation, or a small feature with an existing owner.
 
-- Use one context and the minimum relevant evidence.
+- Carry Orchestrator, Worker/Builder, and Objector responsibilities with the minimum relevant evidence. For material project work, use separate bounded contexts when available; label same-context checks degraded, never independent.
+- Before Worker dispatch or work, double-check the authoritative intent. For material work, challenge a plausible wrong reading and its consequence. Objector reviews the result and proof before final claims; trivial self-contained checks stay lightweight.
 - Begin useful reversible work without an intent checkpoint.
 - Do not create a Start Pack, queue, Resume Packet, or Council packet merely because the result will persist or has users.
 - Validate the actual result proportionately and report only meaningful proof or limits.
 
-Persistence changes what must be checked; it does not by itself require multiple agents.
+Persistence changes what must be checked; it does not by itself require Council packets or extra roles.
 
 ## Guarded — material but reversible
 
@@ -26,7 +27,7 @@ Promote to Guarded when the work crosses several owners or surfaces, changes a d
 
 - Keep a concise outcome, scope, prohibition, and proof record.
 - Inspect affected dependencies and competing owners.
-- Use one fresh Objector or verifier only when it can catch a material failure that deterministic checks cannot.
+- Give the standing Objector a fresh context when available and a bounded material-risk question; use a verifier as needed for separate technical proof.
 - Reconcile the finding in the working context. Do not automatically add Planner, Queue Manager, Aligner, or Reserve roles.
 
 Guarded is a bounded review step, not a complete Council workflow.
@@ -42,7 +43,7 @@ Promote to Council only when the person explicitly asks for it or at least one c
 - a repeated failure survived Lean and Guarded correction; or
 - an existing human governance rule requires independent review.
 
-Council uses the minimum sufficient roles. A Worker and one independent reviewer are the normal starting pair. Add an Aligner only for conflicting findings and a Reserve only for genuine capacity or continuity risk.
+Council adds formal packets and controls to the standing Orchestrator, Worker, and Objector roles. Add an Aligner only for conflicting findings and a Reserve only for genuine capacity or continuity risk.
 
 ## Checkpoint trigger
 

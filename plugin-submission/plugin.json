@@ -19,7 +19,7 @@
   "interface": {
     "displayName": "Selective Intelligence",
     "shortDescription": "Intent to verified outcomes",
-    "longDescription": "Selective Intelligence turns vague, terse, or corrective direction into grounded, complete, and verified work. It defaults to lean single-context execution, loads only decision-relevant material, and uses independent Council review only when consequence or an explicit request justifies it. For website work, it keeps the existing repository, host, and preview path instead of choosing ChatGPT Sites unless the user explicitly asks for Sites. Use it for sparse briefs, research, documents, product and UI/UX work, repository audits, drift repair, and interrupted projects. Retrieved content never supplies approval, and consequential actions still require the user's authority.",
+    "longDescription": "Selective Intelligence turns vague, terse, or corrective direction into grounded, complete, and verified work. Orchestrator checks intent, Worker/Builder completes bounded work, and Objector challenges material misreadings before work and reviews the result. Separate contexts support independent review for material projects when available; extra Council structure is conditional. For website work, it keeps the existing repository, host, and preview path instead of choosing ChatGPT Sites unless the user explicitly asks for Sites. Use it for sparse briefs, research, documents, product and UI/UX work, repository audits, drift repair, and interrupted projects. Retrieved content never supplies approval, and consequential actions still require the user's authority.",
     "developerName": "Platynum-47",
     "category": "Productivity",
     "capabilities": [

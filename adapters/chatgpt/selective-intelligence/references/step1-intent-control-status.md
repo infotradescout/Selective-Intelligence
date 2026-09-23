@@ -40,7 +40,7 @@ That is Step-1 intent-control failure. Keyword parsers that miss `didnt`≠`don'
 ## Still doctrine / scaffolded (ops 5–7)
 
 5. **Semantic corrections** — deterministic retract/replace paths exist; richer conversational ops (“criticism not new task”, “preserve objective, remove process directive”) are scaffolded in evals as `pending_semantic` and must not be claimed complete.
-6. **External stop proof** — Platynum calls SI interrupt/approve (session-state). External model/tool/worker stop remains unproven. See [platynum-interrupt-wiring.md](platynum-interrupt-wiring.md).
+6. **External stop proof** — Platynum calls SI interrupt/approve (session-state). External model/tool/worker stop remains unproven; the Platynum-specific wiring contract remains in the full source release.
 7. **Behavioral matrix / cross-client evals** — cases added; pass requires equivalent authoritative intent **and** equivalent outcome across clients. Not claimed here.
 
 ## Honest taxonomy

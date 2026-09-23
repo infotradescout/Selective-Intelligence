@@ -216,7 +216,7 @@
       "id": "fresh-jumpstart-seeded-immediate-action",
       "kind": "positive_trigger",
       "prompt": "I intentionally uploaded JUMPSTART.md with this note: I want a simple service that helps neighbors lend seldom-used tools and makes returns reliable.",
-      "must": ["begin from the supplied seed without repeating the cold-start question", "recover the outcome and smallest complete value loop", "start Lean in one context with no Council because no escalation trigger is present", "begin the highest-value reversible work"],
+      "must": ["begin from the supplied seed without repeating the cold-start question", "recover the outcome and smallest complete value loop", "double-check intent before Worker dispatch or work and review the result before final claims", "stay Lean without automatic Council packets", "begin the highest-value reversible work"],
       "must_not": ["require installation before starting", "ask the person to make routine technical choices", "stop at a questionnaire or generic plan", "load all role packets or references"]
     },
     {
@@ -402,7 +402,7 @@
       "id": "token-efficient-human-language",
       "kind": "control_output",
       "prompt": "A repository has 500 files. Fix the broken mobile menu and report back without generic AI filler.",
-      "must": ["stay in the Lean single-context lane", "start with zero Selective Intelligence reference files", "recover the exact mobile-menu outcome first", "select files by explicit reference task relevance and dependency evidence within hard budgets", "reuse the canonical menu and design primitives", "spend output on the result proof limitation and required action", "use concrete plain language"],
+      "must": ["carry Orchestrator, Worker/Builder, and Objector responsibilities without automatic Council packets", "double-check intent before Worker dispatch or work and review the result before final claims", "use separate bounded contexts for material project work when available; label same-context checks degraded", "start with zero Selective Intelligence reference files", "recover the exact mobile-menu outcome first", "select files by explicit reference task relevance and dependency evidence within hard budgets", "reuse the canonical menu and design primitives", "spend output on the result proof limitation and required action", "use concrete plain language"],
       "must_not": ["start a Council or seven role passes", "require a What I understand you want checkpoint before the clear local repair", "load files because they sort first", "paste large unrelated context", "repeat the request or settled plan", "use generic claims such as enhanced robust or seamless instead of evidence", "trim the wanted outcome to save tokens"]
     },
     {

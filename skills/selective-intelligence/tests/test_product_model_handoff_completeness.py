@@ -222,11 +222,13 @@ class NativeRoleContractTests(unittest.TestCase):
                 self.assertIn(marker, text)
         self.assertIn("model-neutral-execution.md#product-identity-and-corrected-execution", text)
 
-    def test_existing_lean_boundaries_remain_in_both_roles(self):
+    def test_standing_worker_and_conditional_planner_boundaries(self):
         planner = (ROOT / "subskills/si-planner/SKILL.md").read_text(encoding="utf-8")
         worker = (ROOT / "subskills/si-worker/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("Clear bounded work does not invoke this role", planner)
-        self.assertIn("Do not invoke it merely because the task involves repository edits", worker)
+        self.assertIn("after the Orchestrator reconstructs intent and the Objector double-checks it", worker)
+        self.assertIn("before Worker dispatch", worker)
+        self.assertIn("A formal Council packet applies only when that lane is selected", worker)
         self.assertNotIn("Trade" + "Scout", planner + worker)
 
 

@@ -29,6 +29,46 @@ class ProgressCheckpointTests(unittest.TestCase):
         subprocess.run(["git", "commit", "-m", "baseline"], cwd=root, check=True, capture_output=True)
         return root
 
+    def test_json_write_uses_short_same_directory_temporary_for_deep_checkpoint(self):
+        with tempfile.TemporaryDirectory(prefix="si-progress-deep-") as temporary:
+            parent = Path(temporary)
+            while len(str(parent)) < 190:
+                parent /= "nested-checkpoints"
+            parent.mkdir(parents=True)
+            target = parent / "progress-20260923T171410Z-54667622.json"
+            old_temporary = parent / f".{target.name}.{'a' * 32}.tmp"
+            self.assertLess(len(str(target)), 260)
+            self.assertGreater(len(str(old_temporary)), 259)
+
+            created = []
+            original_mkstemp = tempfile.mkstemp
+
+            def capture_temporary(*args, **kwargs):
+                descriptor, name = original_mkstemp(*args, **kwargs)
+                created.append(Path(name))
+                return descriptor, name
+
+            payload = {"schemaVersion": "si.test", "outcome": "preserved"}
+            with patch.object(progress_checkpoint.tempfile, "mkstemp", side_effect=capture_temporary):
+                progress_checkpoint._write_json(target, payload)
+
+            self.assertEqual(json.loads(target.read_text(encoding="utf-8")), payload)
+            self.assertEqual(len(created), 1)
+            self.assertEqual(created[0].parent, parent)
+            self.assertLess(len(created[0].name), len(target.name))
+            self.assertFalse(created[0].exists())
+
+    def test_json_write_removes_temporary_if_replace_fails(self):
+        with tempfile.TemporaryDirectory(prefix="si-progress-replace-") as temporary:
+            root = Path(temporary)
+            target = root / "latest.json"
+            target.write_text("previous", encoding="utf-8")
+            with patch.object(progress_checkpoint.os, "replace", side_effect=OSError("replace failed")):
+                with self.assertRaisesRegex(OSError, "replace failed"):
+                    progress_checkpoint._write_json(target, {"outcome": "new"})
+            self.assertEqual(target.read_text(encoding="utf-8"), "previous")
+            self.assertEqual(list(root.glob(".si-*.tmp")), [])
+
     def test_preserves_unrelated_staged_and_unstaged_work_with_ignored_state(self):
         with tempfile.TemporaryDirectory(prefix="si-progress-selective-") as temporary:
             root = self.make_repository(Path(temporary))
