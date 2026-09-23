@@ -83,7 +83,7 @@ CORRECT: <instruction>
 
 Both map to the same SI transactions (`approve` / `interrupt`) via `scripts/text_gate.py` and `build_engine text-gate`. The triggered action stays locked until a valid gate response is applied.
 
-Authoritative interrupt, checkpoint binding, and fail-closed stale-hash checks live in the SI runtime (`scripts/checkpoint.py`, `build_engine interrupt|approve|text-gate`). SI interrupt is an **atomic session-state** transaction until product wiring proves external model/tool/worker stop. See [step1-intent-control-status.md](step1-intent-control-status.md) and [platynum-interrupt-wiring.md](platynum-interrupt-wiring.md).
+Authoritative interrupt, checkpoint binding, and fail-closed stale-hash checks live in the SI runtime (`scripts/checkpoint.py`, `build_engine interrupt|approve|text-gate`). SI interrupt is an **atomic session-state** transaction; it does not prove external model/tool/worker stop. See [step1-intent-control-status.md](step1-intent-control-status.md) for the current proof boundary. The Platynum-specific wiring contract remains in the full source release.
 
 These live steering checkpoints are the **pre-action drift-catch mechanism for model interchangeability** when consequence or disputed meaning justifies a gate. Read [first-checkpoint.md](first-checkpoint.md) only for its documented trigger. See also [guided-council.md](guided-council.md#pre-action-intent-steering).
 

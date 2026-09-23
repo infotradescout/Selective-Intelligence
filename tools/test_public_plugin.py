@@ -55,6 +55,9 @@ class PublicPluginTests(unittest.TestCase):
                 self.assertLessEqual(len(names), public_plugin.MAX_RUNTIME_ENTRIES)
                 self.assertIn(".codex-plugin/plugin.json", names)
                 self.assertIn("assets/icon.svg", names)
+                self.assertIn("skills/selective-intelligence/references/activation-and-adoption.md", names)
+                self.assertNotIn("skills/selective-intelligence/references/platynum-interrupt-wiring.md", names)
+                self.assertNotIn("skills/selective-intelligence/references/token-efficiency-and-language.md", names)
                 self.assertIn("skills/selective-intelligence/subskills/si-worker/ROLE.md", names)
                 self.assertNotIn("skills/selective-intelligence/subskills/si-worker/SKILL.md", names)
                 self.assertFalse(any("/tests/" in name for name in names))
@@ -68,6 +71,8 @@ class PublicPluginTests(unittest.TestCase):
                 self.assertEqual(manifest["name"], "selective-intelligence")
                 self.assertEqual(manifest["skills"], "./skills/")
                 self.assertEqual(manifest["version"], (public_plugin.SKILL_ROOT / "VERSION").read_text().strip())
+                self.assertIn("Orchestrator checks intent", manifest["interface"]["longDescription"])
+                self.assertIn("Objector challenges material misreadings before work", manifest["interface"]["longDescription"])
                 master = archive.read("skills/selective-intelligence/SKILL.md").decode("utf-8")
                 self.assertIn("Public plugin rule:", master)
                 self.assertIn(
