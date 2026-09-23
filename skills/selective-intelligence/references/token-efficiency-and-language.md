@@ -84,7 +84,7 @@ Technical terms are useful only when they identify evidence or a real constraint
 ## Completion check
 
 - Did every context expense change a decision, reduce risk, or prove acceptance?
-- Did the run stay single-context unless a real escalation trigger was recorded?
+- Did Orchestrator, Worker/Builder, and Objector each serve a bounded purpose, using separate contexts for material project work when available and labeling same-context checks degraded?
 - Were batches held to 12 files and 64 KB, then consolidated?
 - Did the usage ledger stop duplicate ownership and a fourth undecided batch?
 - Was progress saved before context pressure or a long operation?

@@ -29,9 +29,9 @@ The exact wordmark, any unmistakable request for a named responsibility, and any
 
 After that direct trigger or explicit yes, Selective Intelligence stays active for the whole task. A person can change or cancel the wanted outcome, but an accidental request to skip the checks cannot silently disable the intent, reuse, safety, token, correction, or proof gates.
 
-Token efficiency is the first operating priority. Selective Intelligence now defaults to one context, zero extra references before useful action, no Council, and no intent checkpoint for clear reversible work. It loads only decision-relevant context, reuses existing owners, and reports without repeated plans or generic filler. It does not save tokens by cutting the result or omitting proof.
+Token efficiency is the first operating priority. Selective Intelligence carries Orchestrator, Worker/Builder, and Objector responsibilities on every work turn, with zero extra references before useful action, no automatic Council, and no intent checkpoint for clear reversible work. Objector double-checks intent before Worker dispatch or work and reviews the result before final claims. For material project work, use separate bounded contexts when available; label a same-context fallback degraded. It does not save tokens by cutting the result or omitting proof.
 
-[JUMPSTART.md](JUMPSTART.md) remains a complete copy-and-paste fallback only when a client cannot reach the public web or discover installed skills. Its multi-role workflow runs only for an explicit Council request or documented high-consequence trigger.
+[JUMPSTART.md](JUMPSTART.md) remains a complete copy-and-paste fallback only when a client cannot reach the public web or discover installed skills. Its formal Council packets require an explicit request or documented high-consequence trigger.
 
 ## Not a developer? Use this mode only
 
@@ -50,7 +50,7 @@ If any surface output ever asks you for a command line, env var, or API key past
 1. Download or copy `JUMPSTART.md`.
 2. Upload or paste it into ChatGPT with whatever you have—an idea, URL, file, note, screenshot, or existing repository. JumpStart inspects the available context and begins without a setup questionnaire.
 3. For continuing product or brand work, follow its prompt to create or open one dedicated ChatGPT Project. Choose project-only memory at creation when isolation is appropriate and the option is available.
-4. Let it recover intent and complete the work in one context unless an explicit or high-consequence Council trigger requires independent review.
+4. Let it check intent before work, complete the bounded task, and review the result. For material project work, use separate contexts when available; a same-context pass is degraded.
 
 Agent spawning is never a trigger by itself. For exceptional Council work, use the minimum selected roles—normally a Worker and one independent reviewer—and fall back to sequential contexts when spawning is unavailable. Another AI subscription is optional.
 
@@ -73,7 +73,7 @@ Use it when you want an agent to:
 
 - understand terse, corrective, or evolving intent without turning criticism into a new task or invented halt;
 - bridge a non-developer's product direction into exact journeys, design, architecture, implementation, operations, and proof without technical homework;
-- match effort to consequence: keep clear reversible work Lean even when durable, then add a bounded reviewer or full Council only for broad drift, ambiguity, money, security, sensitive data, destructive operations, or consequential release;
+- match effort to consequence: keep clear reversible work Lean with the standing Objector checks, and add formal Council controls for broad drift, ambiguity, money, security, sensitive data, destructive operations, or consequential release;
 - define a new product, smallest complete MVP, architecture, data, APIs, UI/UX, build order, and proof before coding;
 - resume a project across models, agents, branches, or interrupted sessions without losing the governing truth;
 - crawl a repository and reconcile intended behavior with routes, components, services, schemas, permissions, tests, deployment, and live surfaces;
@@ -92,15 +92,15 @@ The repository is designed for both human and machine discovery through the open
 
 ## Use in ChatGPT and Codex
 
-The public route is a skills-only Plugin Directory candidate shared by ChatGPT and Codex. The repository packager projects this canonical source into one skill entrypoint while preserving the seven Council roles as `ROLE.md` references. A listing becomes public only after OpenAI review, the publisher's separate publication action, and successful outside-account installation verification.
+The public route is a skills-only Plugin Directory candidate shared by ChatGPT and Codex. The repository packager projects this canonical source into one skill entrypoint while preserving seven role modules as `ROLE.md` references. A listing becomes public only after OpenAI review, the publisher's separate publication action, and successful outside-account installation verification.
 
 [Open Selective Intelligence in ChatGPT](https://chatgpt.com/skills?skill_id=6a60f7ecb940819186be4dffa3094f85) when the personal saved skill is enabled for your account. That account-specific route is not evidence of a public listing.
 
 Public listing inputs: [website](https://infotradescout.github.io/Selective-Intelligence/), [support](https://github.com/infotradescout/Selective-Intelligence/issues), [privacy policy](https://github.com/infotradescout/Selective-Intelligence/blob/main/PRIVACY.md), and [terms](https://github.com/infotradescout/Selective-Intelligence/blob/main/TERMS.md).
 
-## Optional Council roles
+## Standing roles and optional Council helpers
 
-Non-developers do not need to run a multi-agent workflow. Ordinary work stays in one AI context. When consequence or an explicit request justifies Council, the role references under `skills/selective-intelligence/subskills/` are available:
+Non-developers do not need to manage agents. Orchestrator reconstructs intent; Objector double-checks it before Worker dispatch or work; Worker/Builder executes bounded work; Objector reviews the result before final claims. For material project work, separate contexts help when available; one context is a degraded fallback. The role references under `skills/selective-intelligence/subskills/` support this flow and optional Council controls:
 
 - `si-intake` — captures the goal in one simple question.
 - `si-planner` — writes the full plan and what only a human must do.
@@ -110,8 +110,7 @@ Non-developers do not need to run a multi-agent workflow. Ordinary work stays in
 - `si-aligner` — merges results and decides if it is aligned.
 - `si-verifier` — gives a plain-language final handoff.
 
-Start with `si-worker` and one independent `si-objector` or `si-verifier`. Use `si-intake` for unresolved competing interpretations, `si-aligner` only when findings conflict, `si-queue-manager` only for a real queue, and another context only for continuity or capacity risk.
-If separate AI contexts are not available, run only the selected review role in a fresh sequential chat and use the same bounded packet handoff format.
+For material work, Objector challenges a plausible wrong reading and its consequence before Worker dispatch. Use `si-intake` for formal competing Council interpretations, `si-aligner` only when findings conflict, and `si-queue-manager` only for a real queue. When separate AI contexts are unavailable, perform the checks in one context and label them degraded rather than independent.
 No technical setup is required from the user for delegation, only plain answers and approvals that
 a human must do.
 
@@ -119,8 +118,8 @@ a human must do.
 
 If your goal is “build fast on phone or low-code setup”:
 
-1. Start in one Lean context and build the highest-value reversible result.
-2. If a real Council trigger appears, use a Worker and one independent reviewer; add another role only for a documented conflict, queue, or continuity need.
+1. Check intent with Objector before Worker dispatch or work, build the highest-value reversible result, then review its proof.
+2. Use separate contexts for material project work when available. Add formal Council controls only for a documented trigger.
 3. Pass only a bounded handoff packet when the context actually changes.
 4. Keep each result in plain language and do not ask any model, command, token, or secret setup from the person.
 

@@ -1,6 +1,6 @@
 interface:
   display_name: "Selective Intelligence"
-  short_description: "Recover failed work with lean, verified execution"
+  short_description: "Check intent, build, object, and verify each turn"
   default_prompt: "Use $selective-intelligence to recover this task and complete the intended outcome."
   icon_small: "./assets/icon.svg"
   icon_large: "./assets/icon.svg"

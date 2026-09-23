@@ -41,7 +41,7 @@
   "developer_judgment_over_pattern_matching": true,
   "always_on_after_activation_or_approved_adoption": true,
   "token_efficiency_is_first_operating_priority": true,
-  "execution_default": "lean_single_context",
+  "execution_default": "lean_orchestrator_worker_objector",
   "council_escalation": "explicit_or_high_consequence",
   "full_checkpoint": "consequence_triggered",
   "prompt_budget": {

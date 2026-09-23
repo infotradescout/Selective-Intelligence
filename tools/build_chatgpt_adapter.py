@@ -45,7 +45,7 @@ def rewrite_text(relative: str, text: str, mapping: dict[str, str]) -> str:
         anchor = "<!-- SELECTIVE_INTELLIGENCE_RUNTIME_PROJECTION -->"
         addition = """
 
-ChatGPT adapter: this bundle has one `SKILL.md`; the seven Council roles are `subskills/*/ROLE.md` references, not independently invocable skills. Read the selected role before assigning it and pass only its bounded packet.
+ChatGPT adapter: this bundle has one `SKILL.md`; the seven role modules are `subskills/*/ROLE.md` references, not independently invocable skills. Orchestrator, Worker/Builder, and Objector apply on every work turn. Read the selected reference before assigning a separate bounded context; extra Council roles need their own trigger.
 """
         if anchor not in text:
             raise ValueError("master skill adapter anchor is missing")
@@ -56,7 +56,7 @@ ChatGPT adapter: this bundle has one `SKILL.md`; the seven Council roles are `su
         version = (PORTABLE_ROOT / "VERSION").read_text(encoding="utf-8").strip()
         addition = f"""
 
-> **ChatGPT adapter.** This generated bundle preserves the canonical {version} behavior while satisfying ChatGPT's one-`SKILL.md` bundle rule. The portable source remains `skills/selective-intelligence/`; nested Council roles are reference files here so ChatGPT can store and load the complete package.
+> **ChatGPT adapter.** This generated bundle preserves the canonical {version} behavior while satisfying ChatGPT's one-`SKILL.md` bundle rule. The portable source remains `skills/selective-intelligence/`; nested roles are reference files here so ChatGPT can store and load the complete package.
 """
         if not text.startswith(anchor):
             raise ValueError("adapter README heading is missing")
@@ -64,16 +64,16 @@ ChatGPT adapter: this bundle has one `SKILL.md`; the seven Council roles are `su
 
     if relative == "subskills/README.md":
         text = text.replace(
-            "Selective Intelligence is now split into small, separately runnable modules so one agent can do one job at a time.",
-            "Selective Intelligence keeps each Council role in a small reference module so one agent can do one bounded job at a time.",
+            "Selective Intelligence includes small, separately runnable role modules.",
+            "Selective Intelligence includes small role reference modules.",
         )
         text = text.replace(
             "Each sub-skill is built in plain, easy-to-understand language:",
             "Each role reference is built in plain, easy-to-understand language:",
         )
         text = text.replace(
-            "The parent `selective-intelligence` skill can still run the same full flow, but this split lets you hand each phase to a separate agent/context.",
-            "The parent `selective-intelligence` skill runs the full flow and may hand each phase to a separate agent/context after reading the matching `ROLE.md` reference.",
+            "The parent `selective-intelligence` skill carries the full flow. Role labels alone never prove independent review.",
+            "The parent `selective-intelligence` skill carries the full flow. Read the matching `ROLE.md` before assigning a separate context; role labels alone never prove independent review.",
         )
     if relative == "scripts/release.py":
         portable_archive = 'expected_archive = f"selective-intelligence-{version}.zip" if version else None'

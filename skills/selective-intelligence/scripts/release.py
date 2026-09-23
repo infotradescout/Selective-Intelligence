@@ -171,6 +171,11 @@ CORE_SKILL_MAX_WORDS = 1_500
 CORE_SKILL_MAX_CHARACTERS = 12_000
 LEAN_EXECUTION_CONTRACT = (
     "Lean execution is the default",
+    "Every work turn carries Orchestrator, Worker/Builder, and Objector.",
+    "Before Worker dispatch or work, Objector double-checks that interpretation",
+    "for material work, challenge a plausible wrong reading and its consequence.",
+    "Objector checks result and proof before Orchestrator reports.",
+    "label checks degraded, never independent.",
     "No reference is mandatory merely because the skill activated.",
     "Do not make the person approve a paraphrase before every local edit or harmless action.",
     "Use Guided Council only when the person explicitly requests it or when at least one condition is present",
@@ -186,10 +191,10 @@ FORBIDDEN_HEAVY_DEFAULTS = (
 )
 FORBIDDEN_HEAVY_DEFAULT_PATTERNS = (
     (
-        "automatic multi-role execution",
+        "automatic extra-role escalation",
         re.compile(
             r"\b(?:automatically|always)\s+(?:spawn|run|use)\b[^\n]{0,120}"
-            r"\b(?:worker|objector|aligner|council)\b",
+            r"\b(?:aligner|reserve|council)\b",
             re.IGNORECASE,
         ),
     ),
@@ -673,7 +678,7 @@ def jumpstart_errors(root: Path, council_version: str | None) -> list[str]:
         "seedless_behavior": "activate_discover_and_begin_without_handing_work_back",
         "empty_context_response": "Selective Intelligence is active. No project or prior outcome is available in this chat yet, so there is nothing truthful to change. I’ll apply it automatically to your next request.",
         "seeded_behavior": "begin_immediately",
-        "execution_default": "lean_single_context",
+        "execution_default": "lean_orchestrator_worker_objector",
         "checkpoint_default": "consequence_triggered",
         "initial_reference_files": 0,
         "project_index": "auto_refresh_before_new_code",
@@ -697,14 +702,18 @@ def jumpstart_errors(root: Path, council_version: str | None) -> list[str]:
     roles = payload.get("role_execution")
     if (
         not isinstance(roles, dict)
-        or roles.get("default") != "none"
+        or roles.get("default") != ["orchestrator", "worker", "objector"]
+        or roles.get("prework_intent_check") != "before_worker_dispatch_or_work"
+        or roles.get("material_challenge") != "plausible_wrong_reading_and_consequence"
+        or roles.get("result_review") != "before_final_claims"
         or not isinstance(roles.get("council_minimum"), list)
         or set(roles["council_minimum"]) != {"worker", "objector"}
         or not isinstance(roles.get("conditional"), list)
-        or set(roles["conditional"]) != {"intent_objector", "aligner", "reserve"}
+        or set(roles["conditional"]) != {"formal_intent_objector_packet", "aligner", "reserve"}
         or roles.get("fallback") != "separate_sequential_contexts"
+        or roles.get("degraded_fallback") != "same_context_not_independent"
     ):
-        errors.append("JUMPSTART.md must default to no roles and declare a minimal conditional Council fallback")
+        errors.append("JUMPSTART.md must declare standing core roles, prework and result checks, and conditional Council helpers")
     authority = payload.get("authority")
     if (
         not isinstance(authority, dict)
