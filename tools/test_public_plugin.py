@@ -37,6 +37,8 @@ class PublicPluginTests(unittest.TestCase):
         result = public_plugin.doctor()
         self.assertEqual(result["errors"], [], result)
         self.assertEqual(result["status"], "pass")
+        distribution = json.loads((public_plugin.SKILL_ROOT / "metadata" / "distribution.json").read_text(encoding="utf-8"))
+        self.assertEqual(public_plugin.MAX_RUNTIME_ENTRIES, len(distribution["runtime_files"]) + 2)
 
         first = Path(tempfile.mkdtemp(prefix="si-plugin-first-", dir=REPO_ROOT))
         second = Path(tempfile.mkdtemp(prefix="si-plugin-second-", dir=REPO_ROOT))
@@ -133,6 +135,14 @@ description: Recover failed work.
 
             too_long = self.write_fixture_archive(root, ["a" * (public_plugin.MAX_PATH_BYTES + 1)])
             self.assertTrue(any("UTF-8 bytes" in error for error in public_plugin.zip_errors(too_long)))
+
+            too_many = self.write_fixture_archive(
+                root, [f"safe-{index}.txt" for index in range(public_plugin.MAX_RUNTIME_ENTRIES + 1)]
+            )
+            self.assertTrue(any(
+                f"{public_plugin.MAX_RUNTIME_ENTRIES}-file lean limit" in error
+                for error in public_plugin.zip_errors(too_many)
+            ))
         finally:
             shutil.rmtree(root, ignore_errors=True)
 

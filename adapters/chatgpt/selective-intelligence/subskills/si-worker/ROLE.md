@@ -1,15 +1,16 @@
 ---
 name: si-worker
-description: Use only when a selected Selective Intelligence Council assigns a bounded implementation packet; ordinary Lean work remains in the parent context.
+description: Use for the bounded Worker/Builder responsibility on every Selective Intelligence work turn; use a separate context for material project work when available.
 ---
 
 # SI Sub-Skill: Worker
 
 ## What this skill does (plain language)
-It performs one bounded Council implementation packet. Do not invoke it merely because the task involves repository edits.
+It executes one bounded task after the Orchestrator reconstructs intent and the Objector double-checks it. For material work, the Objector challenges a plausible wrong interpretation and consequence before Worker dispatch. A formal Council packet applies only when that lane is selected.
 
 ## Inputs
-- `si-planner` output packet
+- Orchestrator's bounded task, authoritative user intent, and resolved pre-work challenge
+- Current formal Worker Packet when an SI engine or Council owns execution
 - Active repository files, issue state, and existing implementation
 
 ## Existing execution owner
@@ -23,7 +24,7 @@ For this engine-owned path, return the format specified by the packet's `require
 Do not relabel old work, invent missing bindings, or redirect a result to another task. After a correction, discard dependent stale work and obtain the fresh packet. Report external-worker shutdown only with actual stop evidence. Returning a valid packet does not itself prove correct behavior or installed-client adoption.
 
 ## Steps
-1. Read the plan and current code.
+1. Read the authoritative intent, resolved challenge, bounded task, and current code. Do not mutate while a material interpretation remains unresolved.
 2. Make only the edits needed for this slice.
 3. Keep code in canonical folders and avoid parallel duplicate paths.
 4. Record what changed and what was skipped.
@@ -41,7 +42,7 @@ Return:
 - `next_skill`: `si-objector`
 
 ## Non-negotiable rules
-- Match every changed behavior to the locked plan.
+- Match every changed behavior to the governing intent and any formal Intent Lock.
 - Never claim tests passed without proof.
 - Avoid asking the user to do technical steps that can be done in code.
 - Explain any technical point in plain, non-developer language.

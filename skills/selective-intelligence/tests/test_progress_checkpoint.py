@@ -200,5 +200,135 @@ class ProgressCheckpointTests(unittest.TestCase):
                 )
 
 
+class ProjectResumeTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix="si-startup-resume-")
+        self.addCleanup(temporary.cleanup)
+        self.root = ProgressCheckpointTests.make_repository(self, Path(temporary.name))
+        self.private = self.root / ".git/selective-intelligence/progress/latest.json"
+        self.tracked = self.root / ".selective-intelligence/progress/latest.json"
+
+    def save(self, outcome="current task", commit=False):
+        return progress_checkpoint.save_checkpoint(root=self.root, outcome=outcome,
+            next_safe_action="Verify only the next dependency", paths=["owned.txt"],
+            completed=["Prior repair is complete"], do_not_repeat=["Do not rebuild the old fixture"],
+            prohibitions=["No production changes"], commit=commit)
+
+    def test_resume_selects_newer_private_instead_of_older_tracked(self):
+        self.save("older tracked", commit=True)
+        self.save("newer private")
+        self.assertEqual(progress_checkpoint.checkpoint_status(self.root)["latestCheckpoint"]["outcome"], "older tracked")
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertEqual((result["state"], result["outcome"], result["checkpointSource"]), ("ready", "newer private", "private"))
+        self.assertFalse(result["executionAuthorized"])
+        self.assertFalse(result["releaseAuthorized"])
+
+    def test_containing_commit_is_validated_as_current(self):
+        operation = self.save(commit=True)
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertEqual(result["state"], "ready")
+        self.assertEqual(result["expectedHead"], operation["commitSha"])
+
+    def test_subdirectory_finds_only_owning_project(self):
+        self.save()
+        child = self.root / "nested"; child.mkdir()
+        result = progress_checkpoint.resume_checkpoint(child)
+        self.assertEqual(result["projectRoot"], str(self.root.resolve()))
+        self.assertEqual(result["state"], "ready")
+
+    def test_absent_checkpoint_does_not_invent_work(self):
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertEqual(result["state"], "no_checkpoint")
+        self.assertIsNone(result["nextSafeAction"])
+
+    def test_malformed_private_cannot_fall_back_to_tracked(self):
+        self.save(commit=True)
+        self.private.parent.mkdir(parents=True, exist_ok=True)
+        self.private.write_text('{"invalid":', encoding="utf-8")
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertEqual(result["state"], "reconciliation_required")
+        self.assertIsNone(result["nextSafeAction"])
+
+    def test_equal_time_conflicting_records_fail_closed(self):
+        self.save()
+        record = json.loads(self.private.read_text())
+        record["outcome"] = "conflicting task"
+        self.tracked.parent.mkdir(parents=True, exist_ok=True)
+        self.tracked.write_text(json.dumps(record))
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertEqual(result["state"], "reconciliation_required")
+        self.assertIsNone(result["nextSafeAction"])
+
+    def test_selected_file_drift_requires_reconciliation(self):
+        self.save()
+        (self.root / "owned.txt").write_text("changed after checkpoint")
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertEqual(result["state"], "reconciliation_required")
+        self.assertIn("saved_file_changed:owned.txt", result["issues"])
+        self.assertIsNone(result["nextSafeAction"])
+
+    def test_branch_drift_requires_reconciliation(self):
+        self.save()
+        subprocess.run(["git", "checkout", "-b", "task/different"], cwd=self.root, check=True, capture_output=True)
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertIn("source_branch_changed", result["issues"])
+        self.assertIsNone(result["nextSafeAction"])
+
+    def test_revision_drift_requires_reconciliation(self):
+        self.save()
+        subprocess.run(["git", "commit", "--allow-empty", "-m", "later change"], cwd=self.root, check=True, capture_output=True)
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertIn("source_revision_changed", result["issues"])
+
+    def test_resume_does_not_rewrite_state(self):
+        self.save()
+        before = {str(p): p.read_bytes() for p in self.private.parent.rglob("*") if p.is_file()}
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        after = {str(p): p.read_bytes() for p in self.private.parent.rglob("*") if p.is_file()}
+        self.assertEqual(result["state"], "ready")
+        self.assertEqual(before, after)
+
+    def test_git_failure_is_not_reported_as_no_checkpoint(self):
+        with patch.object(progress_checkpoint.subprocess, "run", side_effect=FileNotFoundError("git unavailable")):
+            result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertEqual(result["state"], "reconciliation_required")
+        self.assertIsNone(result["nextSafeAction"])
+
+    def test_unsafe_saved_path_never_reads_sibling_files(self):
+        self.save()
+        record = json.loads(self.private.read_text())
+        record["savedFiles"] = [{"path": "../foreign.txt", "sha256": "0" * 64}]
+        self.private.write_text(json.dumps(record))
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertEqual(result["state"], "reconciliation_required")
+
+    def test_oversize_checkpoint_is_rejected_before_json_parse(self):
+        self.save()
+        self.private.write_text(" " * (progress_checkpoint.MAX_BATCH_BYTES + 1))
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertEqual(result["state"], "reconciliation_required")
+
+    def test_changed_tracked_checkpoint_cannot_claim_its_old_commit(self):
+        self.save(commit=True)
+        record = json.loads(self.tracked.read_text())
+        record["outcome"] = "uncommitted replacement"
+        self.tracked.write_text(json.dumps(record))
+        result = progress_checkpoint.resume_checkpoint(self.root)
+        self.assertEqual(result["state"], "reconciliation_required")
+        self.assertIsNone(result["nextSafeAction"])
+
+
+    def test_fresh_process_cli_returns_current_saved_action(self):
+        self.save()
+        command = [sys.executable, "-B", str(SCRIPTS / "progress_checkpoint.py"), "resume", "--root", str(self.root)]
+        result = subprocess.run(command, capture_output=True, text=True, check=False)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)["nextSafeAction"], "Verify only the next dependency")
+        (self.root / "owned.txt").write_text("later change")
+        changed = subprocess.run(command, capture_output=True, text=True, check=False)
+        self.assertEqual(changed.returncode, 2)
+        self.assertIsNone(json.loads(changed.stdout)["nextSafeAction"])
+
+
 if __name__ == "__main__":
     unittest.main()

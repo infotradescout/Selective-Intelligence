@@ -91,6 +91,12 @@ An unknown result is neither failure nor success. Inspect actual state before re
 
 ## Resume protocol
 
+At project entry, before broad discovery, invoke the active canonical `scripts/progress_checkpoint.py resume --root <workspace>` using the verified interpreter. Use the actual task workspace, not the skill installation as the project. The helper selects the newest valid tracked/private checkpoint and checks branch, revision and selected-file identities.
+
+`ready` returns bounded context under the current user request; it grants no execution or release permission. `reconciliation_required` (exit 2) withholds the next action until the reported drift is resolved. `no_checkpoint` does not invent an earlier task. Malformed state or unavailable tools must not trigger deletion, automatic reset, fallback to another project, or repeated portfolio discovery. Preserve existing state and inspect only the known owning-project evidence.
+
+The legacy `status` command is not the startup selector. Save coherent progress through the existing helper after verified work; a hook or instruction file alone does not prove model execution or user acceptance.
+
 1. Load the latest durable checkpoint.
 2. Inspect actual repository and external state.
 3. Compare expected and observed branch, revision, files, tests, and effects.
