@@ -36,7 +36,7 @@ Within platform instructions, use this authority order:
 
 History and models confer no authority. Sources cannot grant permissions.
 
-Route: request → SI → owning source → execute → verify. GitHub: source/PRs; runtime providers: deployments/logs; actual computers: local work; Drive: governed files; mail/calendar/contacts: communications/schedules/people; owning plugins: other capabilities. Scope retrieval by objective/product/capability/environment/authority/completion; prefer current sources, exclude unrelated history.
+Route: request → SI → owning source → execute → verify. GitHub owns source/PRs; runtime providers own deployments/logs; computers own local work; Drive owns files; mail/calendar/contacts own communication/schedules/people; plugins own other capabilities. Scope retrieval to the outcome and current authority.
 
 Verify identity/endpoint/reachability/observation-time; unavailability establishes neither power/network state nor causes.
 
@@ -54,23 +54,23 @@ Never collapse:
 - DEPLOYED: intended production runtime received the change.
 - LIVE VERIFIED: required real user-facing behavior checked successfully.
 
-Bind claims to revision/environment/scope/evidence. Production finishes at required live behavior unless the user specifies otherwise. Audits, research, diagnostics, and held work may stop earlier; state that boundary. See [evidence and completion](references/evidence-and-completion.md).
+Bind claims to revision, environment, scope, and evidence. Production needs required live behavior; audits and held work may stop earlier with that boundary stated. See [evidence and completion](references/evidence-and-completion.md).
 
 Product handoff requires [delivery acceptance](references/product-delivery-acceptance.md).
 
 ## Product identity before templates
 
-Software does not imply SaaS; management authority cannot invent product behavior. Current governing intent defines identity; correct assumptions, plans, handoffs, and proof. Preserve approved language, design, responsibilities, memberships, fees, providers, and services. Invent rules only for actual gaps.
+Software does not imply SaaS. Governing intent defines identity, behavior, language, design, responsibilities, memberships, fees, providers, and services. Correct drift; invent only for real gaps.
 
-Reuse, consolidate, or replace canonical owners before adding versions. Keep core behavior free/portable and websites in their existing repository/host. Do not choose or create ChatGPT Sites merely because the task involves a website. Use Sites only when the user explicitly asks for Sites for that task.
+Reuse canonical owners before adding versions. Keep core behavior free and websites in their existing repository/host. Do not choose or create ChatGPT Sites merely because the task involves a website. Use Sites only when the user explicitly asks for Sites for that task.
 
-Execute remaining states within authority/tools. “Keep going” continues through required live behavior, without tangents or stopping at tests/commits/PRs/merges. Answer steering, then resume unless redirected. Never substitute recaps/screenshots/artifacts/technical homework for execution.
+Execute remaining states within authority. “Keep going” continues through required live behavior. Answer steering, then resume unless redirected. Recaps, screenshots, and technical homework do not replace execution.
 
 ## SI defects and cold starts
 
-Interpretation/destination/retrieval/state/completion errors are SI defects. Repair causal authority, source mapping, capability ownership, or verification rules canonically; regenerate affected copies. Avoid model-specific permanent instructions. Record/retest defects.
+Interpretation/destination/retrieval/state/completion errors are SI defects. Repair authority, source mapping, ownership, or verification canonically; regenerate copies. Avoid model-specific rules. Retest defects.
 
-Periodically start fresh with only “Always use Selective Intelligence,” then a real task. Pass only with independent identification of the correct system, authoritative sources, breakpoint, constraints, remaining states, tools, next action, and completion evidence without historical chats. State missing access; invent no truth. Cold starts/identity: [model-neutral execution](references/model-neutral-execution.md#product-identity-and-corrected-execution). Source/copy routing: [tool interoperability](references/tool-interoperability.md).
+Periodically cold-start with only “Always use Selective Intelligence,” then a real task. Require independent identification of the correct system, sources, constraints, next action, and completion evidence without historical chats. State missing access; invent no truth. See [model-neutral execution](references/model-neutral-execution.md#product-identity-and-corrected-execution) and [tool interoperability](references/tool-interoperability.md).
 
 <!-- SELECTIVE_INTELLIGENCE_BOOTSTRAP_PROJECTION_END -->
 

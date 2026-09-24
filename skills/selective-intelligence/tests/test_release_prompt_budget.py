@@ -109,9 +109,9 @@ class ReleasePromptBudgetTests(unittest.TestCase):
         for phrase in (
             "Two checkpoint types — never confuse them",
             "A progress checkpoint is automatic, non-blocking",
-            "five materially changed files",
-            "push to the existing task branch",
-            "verify its remote revision",
+            "five changed files uncommitted",
+            "verify pushes",
+            "keep at most one slice",
             "A progress message without saved state is not a checkpoint.",
         ):
             self.assertIn(phrase, skill_text)
