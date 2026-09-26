@@ -172,6 +172,7 @@
     "references/platynum-interrupt-wiring.md",
     "references/portability-conformance.md",
     "references/product-design-intelligence.md",
+    "references/public-profile-tier-parity.md",
     "references/project-index-and-reuse-gate.md",
     "references/prompt-queue.md",
     "references/repository-intelligence.md",
@@ -257,6 +258,7 @@
     "references/platynum-interrupt-wiring.md",
     "references/portability-conformance.md",
     "references/product-design-intelligence.md",
+    "references/public-profile-tier-parity.md",
     "references/project-index-and-reuse-gate.md",
     "references/prompt-queue.md",
     "references/repository-intelligence.md",
@@ -366,5 +368,11 @@
     "instruction": "Always use Selective Intelligence",
     "scope": "every_task_until_user_changes_instruction",
     "repeat_adoption_question": false
+  },
+  "public_profile_tier_parity": {
+    "baseline_discovery_tier_neutral": true,
+    "paid_tier_required_for_public_discovery": false,
+    "non_public_reason_required": true,
+    "account_privacy_must_not_be_widened_implicitly": true
   }
 }

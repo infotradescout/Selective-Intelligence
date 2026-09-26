@@ -102,6 +102,8 @@ Each retrieval/check must affect decisions, risk, or proof. Inspect at most 12 t
 
 On public/persuasive/transactional surfaces check comprehension, honest value, trust, and abuse. Use color deliberately; never as the only cue. Prevent fake proof, hidden fees, deceptive consent, lead resale, payment diversion, and fraud. Preserve correction, cancellation, reporting, and recovery. See [human decision integrity](references/human-decision-integrity.md).
 
+For public profiles, baseline discoverability and core presentation quality are tier-neutral: public default/free profiles must receive the same canonical, crawlable, indexable, structured, searchable baseline as public paid/premium profiles. Paid tiers may add optional capabilities, not the basic right to be discovered. Every non-public capable profile must expose a concrete reason that is unrelated to payment tier. See [public profile tier parity](references/public-profile-tier-parity.md).
+
 ## SI defects and cold starts
 
 Wrong interpretation, destination, retrieval, state, or completion is an SI defect. Repair its causal authority, source mapping, capability ownership, or verification rule in the canonical source; regenerate affected copies. Do not accumulate model-specific permanent instructions. Record defects and retest.
