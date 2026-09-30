@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 import os
@@ -22,6 +23,7 @@ MAX_BATCH_FILES = 12
 MAX_BATCH_BYTES = 65_536
 MAX_BATCHES_BEFORE_DECISION = 3
 MAX_USAGE_EVENTS = 20
+HANDOFF_USAGE_SCHEMA = "si.worker-handoff-usage.v1"
 SECRET_PATTERNS = (
     re.compile(r"-----BEGIN (?:RSA |OPENSSH |EC |DSA |PGP )?PRIVATE KEY-----"),
     re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
@@ -569,6 +571,59 @@ def usage_decide(root: Path, *, action: str, summary: str) -> dict[str, Any]:
 
 def usage_status(root: Path) -> dict[str, Any]:
     return _usage_status(_usage_load(root))
+
+
+def validate_worker_handoff_size(*, file_count: int, byte_count: int) -> None:
+    for value, maximum, label in (
+        (file_count, MAX_BATCH_FILES, "files"),
+        (byte_count, MAX_BATCH_BYTES, "UTF-8 payload bytes"),
+    ):
+        if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= maximum:
+            raise ProgressCheckpointError(f"worker handoff exceeds {maximum} {label}; narrow the complete task or context")
+
+
+def admit_worker_handoff(
+    state: dict[str, Any] | None,
+    *,
+    task_id: str,
+    checkpoint_id: str,
+    intent_hash: str,
+    progress_id: str,
+) -> dict[str, Any]:
+    """Reserve retrieval using engine-observed progress, before reading context.
+
+    The engine stores the returned ledger in its locked session transaction.
+    Failed retrievals consume the window; successful exports are counted by the
+    engine after size/coverage checks. This does not govern unrelated tool use.
+    """
+    for value in (task_id, checkpoint_id, intent_hash, progress_id):
+        if not isinstance(value, str) or not value.strip():
+            raise ProgressCheckpointError("handoff requires current task, checkpoint, intent and progress identities")
+    if state is None:
+        state = {"schemaVersion": HANDOFF_USAGE_SCHEMA, "tasks": {}, "totalRetrievals": 0,
+                 "totalExports": 0, "totalPayloadBytes": 0}
+    if not isinstance(state, dict) or state.get("schemaVersion") != HANDOFF_USAGE_SCHEMA:
+        raise ProgressCheckpointError("invalid worker handoff usage ledger")
+    ledger = copy.deepcopy(state)
+    if not isinstance(ledger.get("tasks"), dict):
+        raise ProgressCheckpointError("invalid worker handoff task ledger")
+    for field in ("totalRetrievals", "totalExports", "totalPayloadBytes"):
+        if type(ledger.get(field)) is not int or ledger[field] < 0:
+            raise ProgressCheckpointError("invalid worker handoff usage totals")
+    binding = {"checkpointId": checkpoint_id, "intentHash": intent_hash, "progressId": progress_id}
+    previous = ledger["tasks"].get(task_id)
+    if previous is not None and (not isinstance(previous, dict)
+            or type(previous.get("retrievals")) is not int or previous["retrievals"] < 0):
+        raise ProgressCheckpointError("invalid worker handoff progress window")
+    window = previous if previous and all(previous.get(k) == v for k, v in binding.items()) else {**binding, "retrievals": 0}
+    if window["retrievals"] >= MAX_BATCHES_BEFORE_DECISION:
+        raise ProgressCheckpointError(
+            "three worker handoff retrievals for this task have no accepted progress; "
+            "apply the result, verify work, or correct the task before another export"
+        )
+    ledger["tasks"][task_id] = {**window, "retrievals": window["retrievals"] + 1}
+    ledger["totalRetrievals"] += 1
+    return ledger
 
 
 def _checkpoint_self_test(base: Path) -> dict[str, Any]:

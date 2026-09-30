@@ -19,6 +19,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import tempfile
 from functools import wraps
 import sys
@@ -37,6 +38,8 @@ import context_budget as CB  # noqa: E402
 import feedback as FB  # noqa: E402
 import intent_contract as IC  # noqa: E402
 import lane_session as LS  # noqa: E402
+import progress_checkpoint as PC  # noqa: E402
+import project_index as PI  # noqa: E402
 from policy_guard import PolicyDenied, PolicyGuard, guarded_run, guarded_write_text  # noqa: E402
 
 
@@ -60,7 +63,9 @@ def _serialized_session(function):
 
 
 @_serialized_session
-def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
+def make_worker_packet(*, session_id: str, task_id: str, transport: str = "packet") -> dict[str, Any]:
+    if transport not in {"packet", "build"}:
+        raise EngineError("unsupported worker handoff transport")
     session = LS.load_session(session_id)
     if not session:
         raise EngineError("session not found")
@@ -73,6 +78,40 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
         raise EngineError("task not found")
     if task["status"] not in {"ready", "repairing", "failed"}:
         raise EngineError(f"task is not available for worker handoff: {task['status']}")
+    # Session-owned evidence is the progress source. Rewording a request,
+    # exporting a packet or re-approving the same checkpoint cannot reset it.
+    current_binding = {"authorized_checkpoint_id": session.get("authorizedCheckpointId"),
+                       "authorized_intent_hash": session.get("authorizedIntentHash")}
+    evidence_by_id = {item.get("evidenceId"): item for item in session.get("commandEvidence", [])}
+    verification_progress = set()
+    for attempt in session.get("verificationAttempts", []):
+        evidence = evidence_by_id.get(attempt.get("commandEvidenceId"))
+        if (attempt.get("taskId") == task_id and isinstance(evidence, dict)
+                and evidence.get("taskId") == task_id and evidence.get("sessionId") == session_id
+                and not evidence.get("cancelled") and not evidence.get("invalidated")
+                and all(item.get(k) == v for item in (attempt, evidence) for k, v in current_binding.items())
+                and attempt.get("command_evidence_hash") == CP._material_hash(evidence)):
+            verification_progress.add(_plan_hash({"argv": evidence.get("argv"), "cwd": evidence.get("cwd"),
+                                                   "exitCode": evidence.get("exitCode"), "passed": attempt.get("passed")}))
+    progress = {
+        # Fresh receipt IDs, identical writes and repeated identical failed
+        # checks do not create fresh material progress or renew the budget.
+        "artifacts": sorted({(item.get("relativePath", ""), item.get("sha256", ""))
+                             for item in session.get("artifacts", [])
+                             if item.get("taskId") == task_id and not item.get("tainted")
+                             and item.get("changed") is not False
+                             and not item.get("rolledBack")
+                             and all(item.get(k) == v for k, v in current_binding.items())}),
+        "verification": sorted(verification_progress),
+    }
+    usage_binding = {"task_id": task_id,
+                     "checkpoint_id": session["authorizedCheckpointId"],
+                     "intent_hash": session["authorizedIntentHash"],
+                     "progress_id": _plan_hash(progress)}
+    try:
+        usage = PC.admit_worker_handoff(session.get("workerHandoffUsage"), **usage_binding)
+    except PC.ProgressCheckpointError as exc:
+        raise EngineError(str(exc)) from exc
     workspace = Path(session["workspace"]).resolve()
     verified_adapters = [
         {
@@ -90,6 +129,14 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
                                allow_nan=False).encode("utf-8"))
     if task_bytes > 65_536:
         raise EngineError("task instructions exceed the bounded handoff; reconcile a smaller complete task")
+    try:
+        CB.validate_task_context(task_material)
+    except ValueError as exc:
+        raise EngineError(str(exc)) from exc
+    # Persist admission before retrieval, including attempts that fail coverage
+    # or serialization. A new process cannot restart an exhausted window.
+    session["workerHandoffUsage"] = usage
+    LS.save_session(session)
     try:
         context_bundle = CB.select_context(
             workspace,
@@ -153,20 +200,52 @@ def make_worker_packet(*, session_id: str, task_id: str) -> dict[str, Any]:
             ),
         },
     }
+    if task.get("metadata", {}).get("kind") == "repair":
+        metadata = task["metadata"]
+        failure = evidence_by_id.get(metadata.get("failureEvidenceId"))
+        if (not isinstance(failure, dict) or failure.get("sessionId") != session_id
+                or failure.get("taskId") != metadata.get("originalTaskId")
+                or failure.get("cancelled") or failure.get("invalidated")
+                or any(failure.get(key) != value for key, value in current_binding.items())
+                or not any(attempt.get("taskId") == metadata.get("originalTaskId")
+                           and attempt.get("commandEvidenceId") == failure.get("evidenceId")
+                           and attempt.get("passed") is False
+                           and attempt.get("command_evidence_hash") == CP._material_hash(failure)
+                           and all(attempt.get(key) == value for key, value in current_binding.items())
+                           for attempt in session.get("verificationAttempts", []))):
+            raise EngineError("repair failure evidence is missing, changed, or belongs to another task")
+        packet["failureEvidence"] = {
+            **{key: copy.deepcopy(failure.get(key)) for key in (
+                "evidenceId", "taskId", "argv", "cwd", "exitCode", "stdoutSha256", "stderrSha256")},
+            **current_binding,
+            "stdout": str(failure.get("stdout", ""))[-4096:],
+            "stderr": str(failure.get("stderr", ""))[-4096:],
+            "outputExcerpted": any(len(str(failure.get(key, ""))) > 4096 for key in ("stdout", "stderr")),
+        }
+    event_payload = {
+        "packetId": packet["packetId"], "taskId": task_id,
+        "selectedContextFiles": len(packet["contextBundle"]["selected"]),
+        "authorized_checkpoint_id": packet["authorized_checkpoint_id"],
+        "authorized_intent_hash": packet["authorized_intent_hash"],
+    }
     event = LS.record_event(
-        session,
-        "worker.packet_exported",
-        {
-            "packetId": packet["packetId"],
-            "taskId": task_id,
-            "selectedContextFiles": len(packet["contextBundle"]["selected"]),
-            "authorized_checkpoint_id": packet["authorized_checkpoint_id"],
-            "authorized_intent_hash": packet["authorized_intent_hash"],
-        },
+        session, "worker.packet_exported", event_payload,
     )
     packet["eventId"] = event["eventId"]
+    try:
+        # Match the packet CLI's JSON formatting, including its final newline.
+        # Instructions, facts, attempts and the final event ID all count.
+        delivery = _build_handoff_response(session, task, packet) if transport == "build" else packet
+        payload_bytes = len((json.dumps(delivery, indent=2, allow_nan=False) + "\n").encode("utf-8"))
+        PC.validate_worker_handoff_size(file_count=len(context_bundle["selected"]), byte_count=payload_bytes)
+    except (PC.ProgressCheckpointError, ValueError) as exc:
+        raise EngineError(str(exc)) from exc
+    event_payload["payloadBytes"] = payload_bytes
+    usage["totalExports"] += 1
+    usage["totalPayloadBytes"] += payload_bytes
+    usage["tasks"][task_id].update(lastPayloadBytes=payload_bytes, lastFileCount=len(context_bundle["selected"]))
     LS.save_session(session)
-    return packet
+    return delivery
 
 
 def _now() -> str:
@@ -825,11 +904,35 @@ def apply_worker_artifact(
         if any(parent.exists() and not parent.is_dir() for parent in target.parents):
             raise EngineError("file target has a non-directory parent")
         targets.add(target)
+        before = target.read_bytes() if target.exists() else None
         prepared.append({"relative": relative, "target": target, "content": content,
-                         "before": target.read_bytes() if target.exists() else None,
+                         "before": before, "changed": before != content.encode("utf-8"),
                          "mode": target.stat().st_mode & 0o777 if target.exists() else None})
     if any(parent in targets for target in targets for parent in target.parents):
         raise EngineError("file targets conflict with another file's parent directory")
+
+    proposed_sources = {
+        item["target"].relative_to(workspace).as_posix(): item["content"]
+        for item in prepared
+        if item["changed"] and item["target"].suffix.lower() in PI.SOURCE_EXTENSIONS
+    }
+    if proposed_sources:
+        baseline = PI.build_index(workspace, PI.load_existing(workspace / PI.DEFAULT_INDEX))
+        prospective = PI.build_index(workspace, baseline, proposed_files=proposed_sources)
+        inherited = [item for item in baseline["findings"] if item["code"] in {"PI001", "PI002"}]
+        introduced = [
+            item for item in prospective["findings"]
+            if item["code"] in {"PI001", "PI002"}
+            and not any(
+                old["code"] == item["code"] and old["message"] == item["message"]
+                and set(item["paths"]).issubset(old["paths"])
+                for old in inherited
+            )
+        ]
+        if introduced:
+            raise EngineError("proposed source introduces duplicate ownership: " + "; ".join(
+                f"{item['code']}: {', '.join(item['paths'])}" for item in introduced
+            ))
 
     # Stage the complete batch before replacing any original. Keep preimages
     # until the session save succeeds; recover caught failures without claiming
@@ -838,12 +941,15 @@ def apply_worker_artifact(
     committed: list[dict[str, Any]] = []
     created_dirs: list[Path] = []
     written: list[dict[str, Any]] = []
+    unchanged: list[dict[str, Any]] = []
     original_revision = session.get("persistenceRevision", 0)
     try:
         ok, reason = LS.transition_task(session, task_id, "running")
         if not ok:
             raise EngineError(reason)
         for item in prepared:
+            if not item["changed"]:
+                continue
             target = item["target"]
             missing = []
             parent = target.parent
@@ -874,36 +980,46 @@ def apply_worker_artifact(
             if (target.is_symlink() or actual != item["before"]
                     or (item["mode"] is not None and target.stat().st_mode & 0o777 != item["mode"])):
                 raise EngineError("file changed during staging; refusing to overwrite other work")
-            decision = guard.authorize(session_id=session_id, task_id=task_id,
-                                       action={"kind": "filesystem.write", "path": str(target)})
-            if not decision["allowed"]:
-                raise PolicyDenied(decision)
-            os.replace(item["stage"], target)
-            committed.append(item)
-            evidence = item["evidence"]
-            LS.record_policy_decision(session, decision)
+            if item["changed"]:
+                decision = guard.authorize(session_id=session_id, task_id=task_id,
+                                           action={"kind": "filesystem.write", "path": str(target)})
+                if not decision["allowed"]:
+                    raise PolicyDenied(decision)
+                os.replace(item["stage"], target)
+                committed.append(item)
+                evidence = item["evidence"]
+                LS.record_policy_decision(session, decision)
+            else:
+                # Observe the current bytes for this task without inventing a
+                # write or trusting an older task's artifact receipt.
+                evidence = {"evidenceId": f"artifact-{uuid.uuid4().hex}", "timestamp": _now(),
+                            "sha256": hashlib.sha256(actual).hexdigest(), "bytes": len(actual)}
             record = {"artifactId": evidence["evidenceId"], "taskId": task_id,
                       "artifactType": "file", "relativePath": item["relative"].as_posix(),
                       "absolutePath": str(target), "sha256": evidence["sha256"],
                       "bytes": evidence["bytes"], "producer": artifact["producer"],
+                      "changed": item["changed"],
                       "createdAt": evidence["timestamp"],
                       "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
                       "authorized_intent_hash": session.get("authorizedIntentHash")}
             LS.record_artifact(session, record)
-            written.append(record)
+            (written if item["changed"] else unchanged).append(record)
         task["attempts"].append({
             "attemptId": f"attempt-{len(task['attempts']) + 1}",
             "type": "structured_worker_artifact", "producer": artifact["producer"],
-            "fileArtifactIds": [record["artifactId"] for record in written], "timestamp": _now(),
+            "fileArtifactIds": [record["artifactId"] for record in [*written, *unchanged]], "timestamp": _now(),
             "authorized_checkpoint_id": session.get("authorizedCheckpointId"),
             "authorized_intent_hash": session.get("authorizedIntentHash"),
         })
         ok, reason = LS.transition_task(session, task_id, "verifying")
         if not ok:
             raise EngineError(reason)
-        CP.receipt(session, action="filesystem.write", details={"taskId": task_id, "files": [w["relativePath"] for w in written]})
+        if written:
+            CP.receipt(session, action="filesystem.write", details={"taskId": task_id, "files": [w["relativePath"] for w in written]})
+        if unchanged:
+            CP.receipt(session, action="artifact.reuse", details={"taskId": task_id, "files": [w["relativePath"] for w in unchanged]})
         LS.save_session(session)
-        return {"session": session, "written": written}
+        return {"session": session, "written": written, "unchanged": unchanged}
     except Exception as exc:
         unresolved = []
         for item in reversed(committed):
@@ -1058,6 +1174,15 @@ def verify_task(
             return {"session": session, "passed": False, "cancelled": True,
                     "verification": None, "commandEvidence": evidence, "repairTask": None}
         passed = evidence["exitCode"] == 0
+        # A successful runner process with no executed tests is not behavioral
+        # evidence. Preserve its actual exit code while keeping the task open.
+        output = str(evidence.get("stdout", "")) + "\n" + str(evidence.get("stderr", ""))
+        if argv[1:3] == ["--test", "--test-reporter=tap"]:
+            registered = [name for name in re.findall(r"^# Subtest: (.+)$", output, re.MULTILINE)
+                          if Path(name).name not in argv[3:]]
+            passed = passed and bool(registered) and re.search(r"^# pass [1-9][0-9]*\s*$", output, re.MULTILINE) is not None
+        elif argv[1:3] == ["-m", "unittest"]:
+            passed = passed and re.search(r"Ran [1-9][0-9]* tests?\b", output) is not None
         verification = LS.record_verification(session, task_id, evidence["evidenceId"], passed)
         repair_task = None
         if passed:
@@ -1086,6 +1211,13 @@ def verify_task(
 def verify_repair(
     *, session_id: str, repair_task_id: str, command: dict[str, Any],
 ) -> dict[str, Any]:
+    with LS.session_lock(session_id):
+        session = LS.load_session(session_id)
+        repair = (session or {}).get("queue", {}).get(repair_task_id) or {}
+        if repair.get("metadata", {}).get("kind") != "repair":
+            raise EngineError("verification requires an engine-issued repair task")
+        if command != repair["metadata"].get("verificationCommand"):
+            raise EngineError("repair verification must rerun the original failed command")
     result = verify_task(session_id=session_id, task_id=repair_task_id, command=command)
     if not result["passed"]:
         return result
@@ -1099,18 +1231,31 @@ def verify_repair(
         except CP.CheckpointError as exc:
             raise EngineError("repair authority changed before completion: " + str(exc)) from exc
         original_id = repair_task.get("metadata", {}).get("originalTaskId")
-        if original_id and session["queue"].get(original_id, {}).get("status") == "repairing":
-            ok, reason = LS.transition_task(session, original_id, "complete", reason=f"repair task {repair_task_id} passed verification")
+        ancestors = []
+        visited = {repair_task_id}
+        current_id = original_id
+        while current_id:
+            if current_id in visited:
+                raise EngineError("repair lineage contains a cycle")
+            visited.add(current_id)
+            original = session["queue"].get(current_id)
+            if not original or original.get("status") != "repairing":
+                raise EngineError("repair lineage no longer belongs to an awaiting original task")
+            CP.assert_binding(session, original)
+            ancestors.append(current_id)
+            current_id = original.get("metadata", {}).get("originalTaskId") if original.get("metadata", {}).get("kind") == "repair" else None
+        for completed_id in ancestors:
+            ok, reason = LS.transition_task(session, completed_id, "complete", reason=f"repair task {repair_task_id} passed verification")
             if not ok:
                 raise EngineError(reason)
-        session["completionEvidence"].append({
-            "completionId": f"complete-{len(session['completionEvidence']) + 1}", "timestamp": _now(),
-            "originalTaskId": original_id, "repairTaskId": repair_task_id,
-            "verificationId": result["verification"]["verificationId"],
-            "commandEvidenceId": result["commandEvidence"]["evidenceId"],
-            "authorized_checkpoint_id": session["authorizedCheckpointId"],
-            "authorized_intent_hash": session["authorizedIntentHash"],
-        })
+            session["completionEvidence"].append({
+                "completionId": f"complete-{len(session['completionEvidence']) + 1}", "timestamp": _now(),
+                "originalTaskId": completed_id, "repairTaskId": repair_task_id,
+                "verificationId": result["verification"]["verificationId"],
+                "commandEvidenceId": result["commandEvidence"]["evidenceId"],
+                "authorized_checkpoint_id": session["authorizedCheckpointId"],
+                "authorized_intent_hash": session["authorizedIntentHash"],
+            })
         LS.save_session(session)
         result["session"] = session
         return result
@@ -1313,7 +1458,8 @@ def cmd_apply(args: argparse.Namespace) -> int:
     except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "apply_failed"}))
         return 2
-    print(json.dumps({"sessionId": args.session, "written": result["written"], "state": LS.global_state(result["session"])}, indent=2))
+    print(json.dumps({"sessionId": args.session, "written": result["written"],
+                      "unchanged": result["unchanged"], "state": LS.global_state(result["session"])}, indent=2))
     return 0
 
 
@@ -1341,7 +1487,7 @@ def cmd_verify_repair(args: argparse.Namespace) -> int:
     except (EngineError, LS.SessionConflictError, ValueError, OSError, json.JSONDecodeError) as exc:
         print(json.dumps({"error": str(exc), "code": "repair_verify_failed"}))
         return 2
-    print(json.dumps({"sessionId": args.session, "passed": result["passed"], "commandEvidence": result["commandEvidence"], "state": LS.global_state(result["session"])}, indent=2))
+    print(json.dumps({"sessionId": args.session, "passed": result["passed"], "commandEvidence": result["commandEvidence"], "repairTask": result.get("repairTask"), "state": LS.global_state(result["session"])}, indent=2))
     return 0 if result["passed"] else 5
 
 
@@ -1409,6 +1555,15 @@ def cmd_plan(args: argparse.Namespace) -> int:
     ))
 
 
+def _build_handoff_response(session: dict[str, Any], task: dict[str, Any], packet: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "sessionId": session["sessionId"], "code": "worker_input_required",
+        "task": task, "workerPacket": packet, "humanActions": [],
+        "state": LS.global_state(session),
+        "note": "Generate from this packet; return its unchanged bindings with the actual result.",
+    }
+
+
 def cmd_build(args: argparse.Namespace) -> int:
     if args.artifact:
         return cmd_apply(argparse.Namespace(session=args.session, task=None, artifact=args.artifact))
@@ -1421,16 +1576,11 @@ def cmd_build(args: argparse.Namespace) -> int:
         if not task:
             print(json.dumps({"error": "no ready worker task", "code": "no_ready_task"}))
             return 4
-        packet = make_worker_packet(session_id=session["sessionId"], task_id=task["taskId"])
+        response = make_worker_packet(session_id=session["sessionId"], task_id=task["taskId"], transport="build")
     except (EngineError, LS.SessionConflictError, ValueError, OSError) as exc:
         print(json.dumps({"error": str(exc), "code": "build_handoff_failed"}))
         return 2
-    print(json.dumps({
-        "sessionId": session["sessionId"], "code": "worker_input_required",
-        "task": task, "workerPacket": packet, "humanActions": [],
-        "state": LS.global_state(session),
-        "note": "Generate from this packet; return its unchanged bindings with the actual result.",
-    }, indent=2))
+    print(json.dumps(response, indent=2))
     return 3
 
 

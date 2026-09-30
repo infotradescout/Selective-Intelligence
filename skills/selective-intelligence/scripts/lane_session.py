@@ -599,7 +599,23 @@ def _verified_task(session: dict[str, Any], task: dict[str, Any], seen: set[str]
         if completion.get("originalTaskId") != task_id or not matches(completion):
             continue
         repair = session.get("queue", {}).get(completion.get("repairTaskId"))
-        if (repair and repair.get("metadata", {}).get("originalTaskId") == task_id
+        # A later successful repair can prove an earlier failed ancestor only
+        # through the current, bound engine-issued repair chain.
+        ancestor = repair
+        lineage_seen = set()
+        while ancestor and ancestor.get("metadata", {}).get("originalTaskId") != task_id:
+            ancestor_id = ancestor.get("taskId")
+            if ancestor_id in lineage_seen or ancestor.get("metadata", {}).get("kind") != "repair" or ancestor.get("status") != "complete":
+                ancestor = None
+                break
+            lineage_seen.add(ancestor_id)
+            try:
+                CP.assert_binding(session, ancestor)
+            except (CP.CheckpointError, TypeError, ValueError):
+                ancestor = None
+                break
+            ancestor = session.get("queue", {}).get(ancestor.get("metadata", {}).get("originalTaskId"))
+        if (repair and ancestor and ancestor.get("metadata", {}).get("kind") == "repair"
                 and any(a.get("verificationId") == completion.get("verificationId")
                         and a.get("commandEvidenceId") == completion.get("commandEvidenceId")
                         and a.get("taskId") == repair["taskId"] for a in session.get("verificationAttempts", []))

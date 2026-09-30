@@ -1,7 +1,56 @@
 # Roadmap
 
-Planned work for Selective Intelligence. Everything here is **plan-only** until explicitly
-started; nothing on this list is designed or built yet.
+## Product outcome and runtime audit — September 8, 2026
+
+The user's current product goal is that Selective Intelligence solves AI drift,
+duplication, unnecessary compute and storage, and enables a vibe coder to complete
+full-stack development. SI must carry an ordinary-language request through the
+technical work needed for a working result: preserve intent, reuse existing owners,
+choose relevant context and tools, build the necessary frontend/backend/data paths,
+verify them, preserve progress, and deliver within the user's authority.
+
+An AI harness describes the machinery supporting this outcome. A token limiter,
+collection of prompts, successful unit suite, or generated frontend alone does not
+prove the product outcome. The user's latest corrections govern the work.
+
+### Instructed, implemented, and verified
+
+Audit baseline: repository revision `d15220aea58553b08d9f577cf527ff3118f42edf`.
+The changes described as this branch require integration and client adoption before
+they can be called installed behavior. No Platynum installation was tested in this audit.
+
+| Responsibility | Instructed | Runtime implementation | Evidence and remaining boundary |
+| --- | --- | --- | --- |
+| Preserve intent and prevent drift | Canonical SKILL and intent/checkpoint contracts | `intent_contract.py`, `checkpoint.py`, `build_engine.py`: current intent/checkpoint binding, invalidation, correction, guarded writes | Existing production-path and correction tests exercise local transactions. Rich conversational interpretation and equivalent behavior across clients remain unproved. |
+| Avoid duplicate implementations | Reuse the canonical owner before creating another | `project_index.py` detects exact source duplicates and component/hook collisions; this branch connects prospective checks to artifact application | Test introduced duplication and inherited debt separately. General semantic duplication is beyond this detector's evidence. |
+| Avoid unnecessary compute/context | Whole-run usage governor, bounded retrieval, one owner per question | This branch connects `progress_checkpoint.py` admission to worker retrieval, persists per-task windows, caps complete handoffs, and preserves excluded dependency identities in coverage | Focused engine tests include process restart, concurrent admission, failed retrievals, and both packet/build serialization. Other model calls, arbitrary host tool use, repository scan cost, and provider billing are outside this boundary. |
+| Avoid unnecessary storage/writes | Preserve coherent progress and reuse artifacts | Session storage is atomic; temporary write stages are cleaned; this branch recognizes unchanged target bytes during artifact application | Unchanged files must not be rewritten or claimed as new writes. Long-term history retention, checkpoint compaction, and storage budgets still need implementation with proof-reference preservation. |
+| Resume work | Recover from durable current state without retelling old chats | `lane_session.py` persists queues, intent, evidence, and transactions; progress helper supports explicit commit/push checkpoints | Local persistence is tested. Default session storage is temporary unless the host sets a durable `SI_SESSION_DIR`; automatic host invocation and checkpoint cadence remain integration gaps. |
+| Execute full-stack work | Product-complete output and developer-grade execution | Engine accepts source-bound plans and worker artifacts, applies policy checks, runs allowed verification, and creates repair tasks | The packet-to-apply-to-verify path is locally executable. Capability probes are not a model dispatcher; no automatic model/tool execution loop was found in the inspected integration paths. |
+| Prove and deliver the real result | Distinguish implemented, proved, pushed, integrated, deployed, and live verified | Task-bound command evidence and completion checks exist; behavioral-evidence validation exists | Current 1.0.8 model evaluation says `not_run`. The legacy live eval caller's v1 output does not supply the captured outputs required by the v2 validator. Full-stack live completion and cross-client equivalence are not established. |
+
+### Remaining work in outcome order
+
+1. Integrate and verify the runtime admission/reuse changes in the actual client
+   execution path. Loading the skill or packaging scripts is insufficient proof.
+2. Connect an available, authorized model transport to the existing plan/worker/
+   verification/repair transactions. Reuse those owners; avoid a parallel engine.
+   Transport failures must preserve state and expose the actual next action.
+3. Bind project state to durable storage selected by the host. Bound retained
+   histories and avoid duplicate artifacts while preserving current acceptance,
+   correction, and verification evidence.
+4. Make the real execution driver produce behavioral evidence accepted by the
+   existing validator; include corrections, restart, reuse, failed verification,
+   and repair. Deterministic fixtures do not substitute for real-model runs.
+5. Prove an ordinary-language full-stack task through a real client: modify an
+   existing project, reuse its owners, implement the needed data/API/interface
+   paths, handle a mid-build correction, recover after interruption, verify the
+   result, and deliver it to the authorized target. The person should not have to
+   supply the missing engineering, repeat context, or manually operate the tools.
+
+The following older Platynum proposals are retained as historical planning input.
+Their dates, product assumptions, and shipped claims require reconciliation against
+current intent and source/runtime evidence; they are not this audit's conclusions.
 
 ## Upcoming
 

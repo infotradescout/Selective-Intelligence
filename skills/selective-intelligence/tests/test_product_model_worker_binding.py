@@ -52,6 +52,7 @@ class WorkerBindingTests(unittest.TestCase):
         modules["context_budget"].select_context = mock.Mock(return_value={
             "outcomeCoverage": {"complete": True}, "selected": []
         })
+        modules["context_budget"].validate_task_context = mock.Mock()
         spec = importlib.util.spec_from_file_location("si_worker_binding_engine", SCRIPT_DIR / "build_engine.py")
         assert spec and spec.loader
         self.engine = importlib.util.module_from_spec(spec)

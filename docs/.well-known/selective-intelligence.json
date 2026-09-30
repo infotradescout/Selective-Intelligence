@@ -269,7 +269,7 @@
     "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.5.json",
     "cross_client_equivalence_claimed": false,
     "publication_is_not_adoption_proof": true,
-    "source_contract_sha256": "bafe37b72b6b580e473306e01a24b4a8787bb0369633d94e7a4512ea5565f967"
+    "source_contract_sha256": "afb4c6e096aa83683105c45b5525ac34ee436654be4dacc9c2a44f01bf2033b1"
   },
   "companion": {
     "name": "Platynum-47",
