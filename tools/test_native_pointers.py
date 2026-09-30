@@ -63,6 +63,9 @@ class NativePointerTests(unittest.TestCase):
         skill_root = ROOT / "skills" / "selective-intelligence"
         skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
         guide = (skill_root / "AI-GUIDE.md").read_text(encoding="utf-8")
+        self.assertIn("the entire first response must be exactly two paragraphs", guide)
+        self.assertIn("one plain benefit sentence, then exactly **Use Selective Intelligence for this?**", guide)
+        self.assertIn("Stop there; no task work before explicit yes", guide)
         import re
         for title in ("Authority and source routing", "Delivery states", "Product identity before templates", "SI defects and cold starts"):
             section = re.search(rf"^## {re.escape(title)}\n.*?(?=^## |\Z)", skill, re.M | re.S)

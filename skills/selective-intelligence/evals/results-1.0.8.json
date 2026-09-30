@@ -2,7 +2,7 @@
   "schema_version": 1,
   "skill": "selective-intelligence",
   "version": "1.0.8",
-  "observed_at": "2026-09-30T21:33:28.202483+00:00",
+  "observed_at": "2026-09-30T22:15:39.013740+00:00",
   "status": "local_release_candidate_pass",
   "deterministic_controls": {
     "result": "pass",
@@ -96,19 +96,23 @@
   },
   "prompt_budget_evaluation": {
     "result": "pass",
-    "current_core_words": 1099,
-    "current_core_characters": 8867,
+    "current_core_words": 1100,
+    "current_core_characters": 9107,
     "measurement": "Whitespace words and Unicode characters; not measured billing."
   },
   "behavior_suite": {
     "artifact": "evals/behavior-cases.json",
     "case_count": 17,
-    "status": "declared_not_fully_executed"
+    "status": "restricted_core_only_response_evaluation_failed_full_workflow_open"
   },
   "model_behavior_evaluation": {
-    "result": "not_run",
-    "reason": "The full repeated evidence-bearing suite has not been executed for this candidate. A focused fresh-context reset assessment reported by the parent executor correctly identified current source, installed-copy drift, actual delivery states, and approval blockers; it does not establish universal model behavior.",
-    "evidence": []
+    "result": "fail",
+    "reason": "Restricted core-only response evaluation on the unchanged 17-case suite produced 25 passing and 9 failing runs across two fresh suite contexts. Independent grading assessed each invariant. This is not the full Orchestrator/Worker/Objector workflow, 34 isolated cold starts, application execution, or free-client conformance. Prior failed runs remain preserved; no public passing behavior claim.",
+    "evidence": [],
+    "local_failure_artifact_sha256": "efab51be360bededa30eab87dd89414a08c1ba3472d7dc97bb618c86fd4b3d38",
+    "local_failure_suite_digest": "5c052d69caeb2ca74e1901e9dae90af56faa1599127eb2b6d0eebbf20854b772",
+    "tested_source_revision": "5d5017f10a537d9a6f5368fae7bd42385941d8c8",
+    "observed_at": "2026-09-30T22:14:14.043437+00:00"
   },
   "free_tier_conformance": {
     "result": "fail",
@@ -133,6 +137,6 @@
   "historical_observation_provenance": {
     "free_tier_conformance": "Carried forward from evals/results-1.0.7.json; no new no-paid client claim."
   },
-  "delivery_state": "PROVED within fresh local deterministic scope; current package, model behavior, public release, installation, and adoption are separate proof.",
+  "delivery_state": "Local candidate only. Windows fixes and source/discovery tests are proved within their recorded scope. Final quality/package checks, passing full-workflow behavior and genuine free-client conformance, publication, installation and live adoption remain separate.",
   "authorization_observation": "Owner explicitly authorized this existing public release scope and independent GPT-6.1 Sol Objector review on 2026-09-30; model/client and publisher gates remain."
 }
