@@ -111,7 +111,7 @@ This keeps context from drifting when users are spamming requests.
 
 ## Portable installation
 
-The canonical portable source is the complete [`skills/selective-intelligence/`](https://github.com/infotradescout/Selective-Intelligence/tree/main/skills/selective-intelligence) directory. [Download versioned release archives and checksums](https://github.com/infotradescout/Selective-Intelligence/releases). Keep that directory intact: `SKILL.md`, `agents/`, `references/`, `schemas/`, `scripts/`, `metadata/`, `evals/`, `lanes/`, `subskills/`, and `tests/` form one skill.
+The canonical portable source is the complete [`skills/selective-intelligence/`](https://github.com/infotradescout/Selective-Intelligence/tree/main/skills/selective-intelligence) directory. Versioned archives and checksums are pending publication; [view release status](https://github.com/infotradescout/Selective-Intelligence/releases). Use the canonical source directory for portable installation and keep it intact: `SKILL.md`, `agents/`, `references/`, `schemas/`, `scripts/`, `metadata/`, `evals/`, `lanes/`, `subskills/`, and `tests/` form one skill.
 
 Client adapters are generated from that portable source and may change only packaging, never the behavioral contract. The supported ChatGPT adapter is rebuilt and tested with [`tools/build_chatgpt_adapter.py`](tools/build_chatgpt_adapter.py) and [`tools/test_chatgpt_adapter.py`](tools/test_chatgpt_adapter.py).
 
