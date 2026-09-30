@@ -181,7 +181,7 @@ Common project-level destinations are:
 
 Use the canonical repository or versioned release archive as the source for every destination. Client paths are adapters, not separate editions.
 
-Filesystem access is required for repository and Start modes. Python 3.10 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
+Filesystem access is required for repository and Start modes. Python 3.11 or newer runs the dependency-free validators. Live web evidence needs browser or network access. When a capability is unavailable, the skill narrows the blocker and preserves the same truth standard.
 
 The current v1 release-candidate evidence is recorded in [evals/results-1.0.7.json](evals/results-1.0.7.json). Deterministic controls and production-path tests pass locally; the complete hidden-oracle behavior suite, public directory update review and publication, outside-account installation, and genuine free-tier portability gate remain open until fresh evidence satisfies them. Cross-client equivalence is not claimed without execution proof.
 

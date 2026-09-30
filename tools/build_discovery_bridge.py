@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 SITE_URL = "https://infotradescout.github.io/Selective-Intelligence/"
 REPOSITORY = "https://github.com/infotradescout/Selective-Intelligence"
+RELEASES_URL = f"{REPOSITORY}/releases"
 PUBLISHER_PROFILE_URL = REPOSITORY.rsplit("/", 1)[0]
 SKILL_URL = f"{REPOSITORY}/blob/main/skills/selective-intelligence/SKILL.md"
 SKILL_RAW_URL = "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/SKILL.md"
@@ -432,6 +433,7 @@ def build_manifest() -> dict:
             "public_site": SITE_URL,
             "public_plugin_directory": PLUGIN_DIRECTORY_URL,
             "repository": REPOSITORY,
+            "releases": RELEASES_URL,
             "skill": SKILL_URL,
             "skill_raw": SKILL_RAW_URL,
             "skill_public_mirror": f"{SITE_URL}SKILL.md",
@@ -611,7 +613,7 @@ def site_css() -> str:
 
 def navigation() -> str:
     count = sum(len(cluster["queries"]) for cluster in query_map()["clusters"])
-    return f"""<nav class="site-nav" aria-label="Primary"><div class="wrap"><a class="wordmark" href="{SITE_URL}">Selective Intelligence</a><div class="nav-links"><a href="{SITE_URL}try/">Try it</a><a href="{SITE_URL}problems/">Problems</a><a href="{SITE_URL}questions/">{count} questions</a><a href="{REPOSITORY}">Source</a><a href="{PLUGIN_DIRECTORY_URL}">Install</a></div></div></nav>"""
+    return f"""<nav class="site-nav" aria-label="Primary"><div class="wrap"><a class="wordmark" href="{SITE_URL}">Selective Intelligence</a><div class="nav-links"><a href="{SITE_URL}try/">Try it</a><a href="{SITE_URL}problems/">Problems</a><a href="{SITE_URL}questions/">{count} questions</a><a href="{RELEASES_URL}">Downloads</a><a href="{REPOSITORY}">Source</a><a href="{PLUGIN_DIRECTORY_URL}">Install</a></div></div></nav>"""
 
 
 def page_head(title: str, description: str, canonical: str, structured: dict) -> str:

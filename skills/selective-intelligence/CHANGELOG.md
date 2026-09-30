@@ -2,13 +2,17 @@
 
 All notable behavior changes to Selective Intelligence are recorded here.
 
-## 1.0.8 — Canonical Work-mode bootstrap (candidate)
+## 1.0.8 - 2026-09-30
 
 - Apply standing SI adoption before every task, including explicit maintenance of SI itself.
 - Resolve current authoritative source owners before retrieval; preserve the seven-level authority order.
 - Distinguish INTENT, IMPLEMENTED, PROVED, PUSHED, INTEGRATED, DEPLOYED, and LIVE VERIFIED.
 - Continue the active objective through its required completion condition; repair interpretation, routing, and verification defects in one canonical behavior across clients.
 - Generate the strict-guide bootstrap from the core and add fresh-context behavioral cases. Candidate creation does not prove publication, installation, or model behavior.
+- Check intent independently before material work and review the actual result before claiming completion; preserve the same workflow in the public skill, guide, role references and loader metadata.
+- Preserve supplied LF, CRLF and UTF-8 bytes during guarded Windows writes. Preserve read-only originals on rejection and clean only the transaction's own temporary files.
+- Keep all 118 portable source files while fitting the unchanged runtime file and byte limits. Keep free/default public profiles on the same discovery baseline as paid profiles.
+- Publish accurate discovery dates and publisher links, expose versioned downloads, and keep directory availability, installation and live outcomes distinct from source/package proof.
 
 ## 1.0.7 - 2026-09-04
 

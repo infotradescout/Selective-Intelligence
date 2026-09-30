@@ -10,6 +10,7 @@
     "public_site": "https://infotradescout.github.io/Selective-Intelligence/",
     "public_plugin_directory": "https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence",
     "repository": "https://github.com/infotradescout/Selective-Intelligence",
+    "releases": "https://github.com/infotradescout/Selective-Intelligence/releases",
     "skill": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md",
     "skill_raw": "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/SKILL.md",
     "skill_public_mirror": "https://infotradescout.github.io/Selective-Intelligence/SKILL.md",
@@ -271,7 +272,7 @@
     "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.5.json",
     "cross_client_equivalence_claimed": false,
     "publication_is_not_adoption_proof": true,
-    "source_contract_sha256": "11fc9578441ba122cd00fa9856ca5e76738c9e7cd368f350d410ba26ee78e011"
+    "source_contract_sha256": "145d86b7fdf1b94a770045c9587f5d38201f296870fdd34d72228d1f0987fc41"
   },
   "companion": {
     "name": "Platynum-47",
