@@ -4,7 +4,7 @@ Token efficiency governs the whole run because wasted context causes drift, repe
 
 ## Startup budget
 
-- Start Lean work with the master skill only: zero references, zero role packets, and one active context.
+- Start Lean work from the master skill with standing Orchestrator, Worker/Builder, and Objector responsibilities. Keep references and formal packets minimal; use separate bounded contexts for material work when available.
 - Load at most one reference before the first useful action unless a recorded safety or Council trigger requires more.
 - Pass only the outcome, prohibitions, relevant evidence, authority boundary, artifact, and proof question to another worker.
 - Prefer deterministic search, validators, indexes, targeted ranges, and exact owners over broad ingestion.
@@ -67,12 +67,12 @@ Resume from the saved artifact and current source state. Do not reconstruct the 
 
 ## Spend in this order
 
-1. Recover intent.
-2. Inspect the named target.
+1. Recover intent and inspect the named target read-only as needed.
+2. Have the Objector double-check intent before Worker dispatch or work; challenge a plausible wrong reading and its consequence for material work.
 3. Reuse the canonical owner.
 4. Build the smallest complete authorized slice.
 5. Save the slice.
-6. Verify the result.
+6. Verify the result and have the Objector review it before final claims.
 7. Report result, proof, limitation, and next authority step.
 
 ## Write like a person
@@ -84,7 +84,7 @@ Technical terms are useful only when they identify evidence or a real constraint
 ## Completion check
 
 - Did every context expense change a decision, reduce risk, or prove acceptance?
-- Did the run stay single-context unless a real escalation trigger was recorded?
+- Did Orchestrator, Worker/Builder, and Objector each serve a bounded purpose, using separate contexts for material project work when available and labeling same-context checks degraded?
 - Were batches held to 12 files and 64 KB, then consolidated?
 - Did the usage ledger stop duplicate ownership and a fourth undecided batch?
 - Was progress saved before context pressure or a long operation?

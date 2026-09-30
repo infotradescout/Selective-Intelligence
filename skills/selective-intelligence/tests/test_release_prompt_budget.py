@@ -12,9 +12,25 @@ SCRIPTS = SKILL_ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 import release  # noqa: E402
+import quality_gate  # noqa: E402
 
 
 class ReleasePromptBudgetTests(unittest.TestCase):
+    def test_quality_children_do_not_generate_bytecode_in_release_source(self):
+        with tempfile.TemporaryDirectory(prefix="si-quality-bytecode-") as temporary:
+            root = Path(temporary)
+            (root / "probe_owned_module.py").write_text("VALUE = 1\n", encoding="utf-8")
+            grandchild = f"import sys; sys.path.insert(0, {str(root)!r}); import probe_owned_module"
+            child = f"import subprocess, sys; subprocess.run([sys.executable, '-c', {grandchild!r}], check=True)"
+            result = quality_gate._run("bytecode-child", [sys.executable, "-c", child])
+            self.assertTrue(result["passed"], result)
+            self.assertFalse(list(root.rglob("*.pyc")))
+
+    def test_quality_child_failure_still_fails_its_check(self):
+        result = quality_gate._run("failure-child", [sys.executable, "-c", "raise SystemExit(7)"])
+        self.assertFalse(result["passed"], result)
+        self.assertEqual(result["exitCode"], 7)
+
 
     def _openai_product_errors(self, products):
         with tempfile.TemporaryDirectory(prefix="si-openai-products-") as temporary:
