@@ -735,7 +735,7 @@ def guarded_write_text(
     if not decision["allowed"]:
         raise PolicyDenied(decision)
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(content, encoding="utf-8")
+    target.write_text(content, encoding="utf-8", newline="")
     decision["adapterInvocationStatus"] = "INVOKED"
     evidence = {
         "evidenceId": _id("write"),
