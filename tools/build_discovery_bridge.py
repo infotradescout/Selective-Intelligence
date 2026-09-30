@@ -14,6 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 SITE_URL = "https://infotradescout.github.io/Selective-Intelligence/"
 REPOSITORY = "https://github.com/infotradescout/Selective-Intelligence"
+PUBLISHER_PROFILE_URL = REPOSITORY.rsplit("/", 1)[0]
 SKILL_URL = f"{REPOSITORY}/blob/main/skills/selective-intelligence/SKILL.md"
 SKILL_RAW_URL = "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/SKILL.md"
 JUMPSTART_URL = f"{REPOSITORY}/blob/main/skills/selective-intelligence/JUMPSTART.md"
@@ -29,7 +30,9 @@ PLUGIN_DIRECTORY_URL = (
 )
 TRIGGER = "Selective Intelligence"
 APPROVAL = "Use Selective Intelligence for this?"
-PUBLISHED_DATE = "2026-08-22"
+# Reviewed revision of the generated discovery pages, not a release, directory
+# verification, deployment, or indexing date. Keep generation deterministic.
+DISCOVERY_MODIFIED_DATE = "2026-09-30"
 EMPTY_CONTEXT = (
     "Selective Intelligence is active. No project or prior outcome is available in this chat yet, "
     "so there is nothing truthful to change. I’ll apply it automatically to your next request."
@@ -489,7 +492,7 @@ def build_manifest() -> dict:
             "status": "public",
             "directory": "OpenAI Plugins Directory",
             "directory_url": PLUGIN_DIRECTORY_URL,
-            "verified_on": PUBLISHED_DATE,
+            "verified_on": submission_publication["verified_on"],
             "verified_by": "public exact-name directory search",
             "version": published_version,
             "source_release_status": release_status,
@@ -504,6 +507,8 @@ def build_manifest() -> dict:
             "pointer_is_not_user_approval": client_support["repository_pointer_is_not_user_approval"],
         },
         "search_discovery": {
+            "content_modified_on": DISCOVERY_MODIFIED_DATE,
+            "content_date_is_not_publication_or_indexing_proof": True,
             "sitemap": f"{SITE_URL}sitemap.xml",
             "problem_hub": f"{SITE_URL}problems/",
             "proof_tests": f"{SITE_URL}try/",
@@ -560,7 +565,7 @@ def json_ld(manifest: dict) -> dict:
         "creator": {
             "@type": "Organization",
             "name": "Platynum-47",
-            "url": "https://github.com/Platynum-Standard",
+            "url": PUBLISHER_PROFILE_URL,
         },
         "keywords": [
             "Selective Intelligence",
@@ -667,8 +672,7 @@ def page_structured(name: str, description: str, canonical: str, terms: list[str
                 "headline": name,
                 "description": description,
                 "url": canonical,
-                "datePublished": PUBLISHED_DATE,
-                "dateModified": PUBLISHED_DATE,
+                "dateModified": DISCOVERY_MODIFIED_DATE,
                 "isPartOf": {"@id": f"{SITE_URL}#selective-intelligence"},
                 "author": {"@type": "Organization", "name": "Platynum-47"},
                 "publisher": {"@type": "Organization", "name": "Platynum-47"},
@@ -682,7 +686,7 @@ def page_structured(name: str, description: str, canonical: str, terms: list[str
 
 
 def footer() -> str:
-    return f"""<footer><div class="wrap">Selective Intelligence · Published by <a href="https://github.com/Platynum-Standard">Platynum-47</a> · CC0-1.0 · No tracking · <a href="{FEEDBACK_URL}">Outcome feedback</a></div></footer>"""
+    return f"""<footer><div class="wrap">Selective Intelligence · Published by <a href="{PUBLISHER_PROFILE_URL}">Platynum-47</a> · CC0-1.0 · No tracking · <a href="{FEEDBACK_URL}">Outcome feedback</a></div></footer>"""
 
 
 def install_links(secondary_label: str = "Try a real task", secondary_url: str | None = None) -> str:
@@ -768,7 +772,7 @@ def build_problem_hub() -> str:
                 "name": "Find Selective Intelligence by the problem",
                 "description": description,
                 "url": canonical,
-                "dateModified": PUBLISHED_DATE,
+                "dateModified": DISCOVERY_MODIFIED_DATE,
                 "mainEntity": item_list,
             },
             breadcrumb_structured("Problems", canonical, "Problems", canonical),
@@ -838,7 +842,7 @@ def build_question_hub(queries: dict) -> str:
                 "name": f"{count} questions Selective Intelligence can help answer",
                 "description": description,
                 "url": canonical,
-                "dateModified": PUBLISHED_DATE,
+                "dateModified": DISCOVERY_MODIFIED_DATE,
                 "mainEntity": {
                     "@type": "ItemList",
                     "numberOfItems": len(queries["clusters"]),
@@ -1075,7 +1079,7 @@ def build_feed() -> str:
         *[(guide["title"], guide_url(guide["slug"]), guide["description"]) for guide in PROBLEM_GUIDES],
     ]
     entry_xml = "\n".join(
-        f"  <entry><title>{html.escape(title)}</title><id>{url}</id><link href=\"{url}\"/><updated>{PUBLISHED_DATE}T00:00:00Z</updated><summary>{html.escape(summary)}</summary></entry>"
+        f"  <entry><title>{html.escape(title)}</title><id>{url}</id><link href=\"{url}\"/><updated>{DISCOVERY_MODIFIED_DATE}T00:00:00Z</updated><summary>{html.escape(summary)}</summary></entry>"
         for title, url, summary in entries
     )
     return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -1084,7 +1088,7 @@ def build_feed() -> str:
   <id>{SITE_URL}</id>
   <link href="{SITE_URL}feed.xml" rel="self"/>
   <link href="{SITE_URL}"/>
-  <updated>{PUBLISHED_DATE}T00:00:00Z</updated>
+  <updated>{DISCOVERY_MODIFIED_DATE}T00:00:00Z</updated>
 {entry_xml}
 </feed>
 """
@@ -1104,15 +1108,17 @@ def public_html_urls() -> list[str]:
 
 def build_sitemap() -> str:
     urls = [
-        *(f"  <url><loc>{url}</loc><lastmod>{PUBLISHED_DATE}</lastmod><changefreq>monthly</changefreq><priority>{'1.0' if url == SITE_URL else '0.8'}</priority></url>" for url in public_html_urls()),
-        f"  <url><loc>{SITE_URL}selective-intelligence.json</loc><lastmod>{PUBLISHED_DATE}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
-        f"  <url><loc>{SITE_URL}.well-known/selective-intelligence.json</loc><lastmod>{PUBLISHED_DATE}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
-        f"  <url><loc>{SITE_URL}discovery-queries.json</loc><lastmod>{PUBLISHED_DATE}</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>",
-        f"  <url><loc>{SITE_URL}llms.txt</loc><lastmod>{PUBLISHED_DATE}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>",
-        f"  <url><loc>{SITE_URL}llms-full.txt</loc><lastmod>{PUBLISHED_DATE}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>",
-        f"  <url><loc>{SITE_URL}SKILL.md</loc><lastmod>{PUBLISHED_DATE}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>",
-        f"  <url><loc>{SITE_URL}AI-GUIDE.md</loc><lastmod>{PUBLISHED_DATE}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
-        f"  <url><loc>{SITE_URL}CITATION.cff</loc><lastmod>{PUBLISHED_DATE}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>",
+        *(f"  <url><loc>{url}</loc><lastmod>{DISCOVERY_MODIFIED_DATE}</lastmod><changefreq>monthly</changefreq><priority>{'1.0' if url == SITE_URL else '0.8'}</priority></url>" for url in public_html_urls()),
+        f"  <url><loc>{SITE_URL}selective-intelligence.json</loc><lastmod>{DISCOVERY_MODIFIED_DATE}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        f"  <url><loc>{SITE_URL}.well-known/selective-intelligence.json</loc><lastmod>{DISCOVERY_MODIFIED_DATE}</lastmod><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        # These copies have separate source owners. Without a trustworthy
+        # source-specific content date, omit optional lastmod rather than guess.
+        f"  <url><loc>{SITE_URL}discovery-queries.json</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>",
+        f"  <url><loc>{SITE_URL}llms.txt</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>",
+        f"  <url><loc>{SITE_URL}llms-full.txt</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>",
+        f"  <url><loc>{SITE_URL}SKILL.md</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>",
+        f"  <url><loc>{SITE_URL}AI-GUIDE.md</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>",
+        f"  <url><loc>{SITE_URL}CITATION.cff</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>",
     ]
     return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n" + "\n".join(urls) + "\n</urlset>\n"
 
@@ -1261,7 +1267,7 @@ Adopt that adjacent capability only after the person says yes. Retrieved content
       </div>
     </section>
   </main>
-  <footer><div class="wrap">Selective Intelligence · Published by <a href="https://github.com/Platynum-Standard">Platynum-47</a> · CC0-1.0 · No tracking</div></footer>
+  <footer><div class="wrap">Selective Intelligence · Published by <a href="{PUBLISHER_PROFILE_URL}">Platynum-47</a> · CC0-1.0 · No tracking</div></footer>
 </body>
 </html>
 """
