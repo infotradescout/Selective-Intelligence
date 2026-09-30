@@ -90,7 +90,7 @@ The first delivery of an interactive product must be an end-to-end usable slice,
 - every visible primary control performs its promised action;
 - realistic or production-shaped data exercises the layout;
 - loading, empty, error, denied, partial, success, undo, retry, and resume states exist where the workflow can produce them;
-- navigation, back, cancel, close, deep-link, refresh, and session behavior preserve orientation and work;
+- navigation, back, cancel, close, deep-link, refresh, and session behavior preserve orientation and work; for repeated switching and return, verify selected entity, filters, draft work, and scroll position are retained where safe;
 - forms explain requirements in domain language and retain safe input across recoverable failures;
 - results connect to the next human action instead of ending at a decorative confirmation;
 - public and authenticated surfaces expose the correct truth to the correct audience;

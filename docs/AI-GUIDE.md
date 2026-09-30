@@ -38,7 +38,7 @@ Software does not imply SaaS. Preserve governing product identity and approved h
 
 Execute authorized states; answer steering, then resume unless redirected. Recaps/artifacts/homework never replace execution.
 
-Trace every governing requirement/relationship into acceptance proof, including terminology across titles/roles, modes, mobile journeys, and exceptions. Preserve full briefs through implementation; checklists/passing artifacts cannot replace relational/user-flow proof. Classify findings by severity/disposition/remaining risk.
+Prove governing requirements/relationships, including terminology across titles/roles, data labels, tests, generated surfaces, modes, mobile journeys, and exceptions. Preserve full briefs and relational/user-flow proof; passing artifacts cannot substitute. Classify findings by severity/disposition/remaining risk.
 
 ## SI defects and cold starts
 

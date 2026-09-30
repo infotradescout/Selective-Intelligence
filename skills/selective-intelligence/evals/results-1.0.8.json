@@ -97,7 +97,7 @@
   "prompt_budget_evaluation": {
     "result": "pass",
     "current_core_words": 1100,
-    "current_core_characters": 9107,
+    "current_core_characters": 9094,
     "measurement": "Whitespace words and Unicode characters; not measured billing."
   },
   "behavior_suite": {
@@ -138,5 +138,12 @@
     "free_tier_conformance": "Carried forward from evals/results-1.0.7.json; no new no-paid client claim."
   },
   "delivery_state": "Local candidate only. Windows fixes and source/discovery tests are proved within their recorded scope. Final quality/package checks, passing full-workflow behavior and genuine free-client conformance, publication, installation and live adoption remain separate.",
-  "authorization_observation": "Owner explicitly authorized this existing public release scope and independent GPT-6.1 Sol Objector review on 2026-09-30; model/client and publisher gates remain."
+  "authorization_observation": "Owner explicitly authorized this existing public release scope and independent GPT-6.1 Sol Objector review on 2026-09-30; model/client and publisher gates remain.",
+  "causal_correction": {
+    "observed_at": "2026-09-30T22:53:21.027801+00:00",
+    "status": "implemented_response_verification_pending",
+    "scope": "Explicit terminology data-label/test/generated-surface coverage and operation-switching entity/filter/draft/scroll preservation. Existing refusal, ambiguity recommendation and release-risk rules remain their canonical owners.",
+    "historical_restricted_core_response_result": "25 passed / 9 failed, preserved unchanged",
+    "current_targeted_source_checks": "26 affected native/discovery/personal/public-package tests passed; original full gate is not repeated."
+  }
 }

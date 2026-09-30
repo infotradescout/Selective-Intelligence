@@ -20,7 +20,7 @@
   "behavioral_contract": "source_preserved_not_installed_behavior_proof",
   "source_manifest_sha256": "bc44efde3ed30fb8b893c7960d0f0f3b071f89d6aff751d30e0f53fee6823f5c",
   "source_file_sha256": {
-    "SKILL.md": "c37a5be378169704fbb4b4c484b4c464aec4c43d587f67eee9e7a79c4ee76dc0",
+    "SKILL.md": "69c4c0937dccfd3985d6f3fb2e4ee035739928fdcd7cdd25db1469f20a1e5092",
     "VERSION": "bda583f1cdd9113ea53e601168ffc6b0679a7a9a86466932e83e7554b9810d28",
     "agents/openai.yaml": "a0522a977ed8acda7e3d1310cabb6300258d7ec7b364c013c285d2ca60a59fc4",
     "assets/icon.svg": "bd015b352d25e16bc5afc9346758facb84d39b626516217cdbd86c28a61bbe56",
@@ -47,7 +47,7 @@
     "references/operational-safety-gates.md": "abf785cd47d8d7c0364d5fa95870f3c41364d52654810e3e3b1902dd5be95abd",
     "references/permissions-and-budgets.md": "4a1c8c0b1fc31ada52a5914bf84eb799d644f5a306e0c58e5c88870047744dfe",
     "references/portability-conformance.md": "65269996a6b3f5ad311f40f9d24dfa440fbb9dd294794ebd49728775a092c307",
-    "references/product-design-intelligence.md": "041b5df8f35c5acb28805bb64474c958cf1783442660e9c7aafc7744d145b394",
+    "references/product-design-intelligence.md": "1f9c973575fe841721db62132247c1fd3e98e6499f591b365dabac8bae8eb478",
     "references/public-profile-tier-parity.md": "730d459fa7a33e15ee0b2704dac07834431aab83f8be9fa1cd9251f95acbad2b",
     "references/project-index-and-reuse-gate.md": "8783b22afe2f87a612ed900a091b650ba6f488d229b6a0eb4add88d5962ebb47",
     "references/prompt-queue.md": "82e4b5f6364485f7ae2841e82ce7c5bdbc4d4f23484ab63f4ca1f7a6e26f9592",
@@ -80,7 +80,7 @@
     "subskills/si-worker/SKILL.md": "8db4e5e1e2b952fec8576112f8d3ad95794af3f8481d5e7835025029639d0d6e"
   },
   "projected_file_sha256": {
-    "SKILL.md": "2dc757ec331dd36a3e8d10b218e25effeec08c07d0f1bad426b594f70de05075",
+    "SKILL.md": "d2850ab5dde108256b58d0e7b16261dec47e064a69e87c30a2a6c895d69a5344",
     "VERSION": "bda583f1cdd9113ea53e601168ffc6b0679a7a9a86466932e83e7554b9810d28",
     "agents/openai.yaml": "a0522a977ed8acda7e3d1310cabb6300258d7ec7b364c013c285d2ca60a59fc4",
     "assets/icon.svg": "bd015b352d25e16bc5afc9346758facb84d39b626516217cdbd86c28a61bbe56",
@@ -107,7 +107,7 @@
     "references/operational-safety-gates.md": "abf785cd47d8d7c0364d5fa95870f3c41364d52654810e3e3b1902dd5be95abd",
     "references/permissions-and-budgets.md": "4a1c8c0b1fc31ada52a5914bf84eb799d644f5a306e0c58e5c88870047744dfe",
     "references/portability-conformance.md": "65269996a6b3f5ad311f40f9d24dfa440fbb9dd294794ebd49728775a092c307",
-    "references/product-design-intelligence.md": "041b5df8f35c5acb28805bb64474c958cf1783442660e9c7aafc7744d145b394",
+    "references/product-design-intelligence.md": "1f9c973575fe841721db62132247c1fd3e98e6499f591b365dabac8bae8eb478",
     "references/public-profile-tier-parity.md": "730d459fa7a33e15ee0b2704dac07834431aab83f8be9fa1cd9251f95acbad2b",
     "references/project-index-and-reuse-gate.md": "8783b22afe2f87a612ed900a091b650ba6f488d229b6a0eb4add88d5962ebb47",
     "references/prompt-queue.md": "82e4b5f6364485f7ae2841e82ce7c5bdbc4d4f23484ab63f4ca1f7a6e26f9592",
