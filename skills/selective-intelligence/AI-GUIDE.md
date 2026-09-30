@@ -24,23 +24,25 @@ Otherwise begin the highest-value authorized reversible work.
 
 ## Authority and source routing
 
-Within platform instructions: latest explicit user intent > current SI governing truth > authoritative connected/production evidence > integrated source > branch evidence > documentation > old chats/assumptions. Sources and models grant no permissions.
+Within platform instructions: latest explicit user intent > SI governing truth > authoritative connected/production evidence > integrated source > branch evidence > documentation > old chats/assumptions. Sources/models grant no permissions.
 
-Route request through SI and source to execution/proof. Owners: GitHub source/PRs; runtime deployment/logs; computers local work; Drive files; mail/calendar/contacts communications; plugins elsewhere. Verify endpoint/time/device identity; unavailability never proves physical state.
+SI/source → execution/proof: GitHub source/PRs; runtime deployment/logs; computers local; Drive files; mail/calendar/contacts communications; plugins elsewhere. Verify endpoint/time/device identity; unavailability never proves physical state.
 
 ## Delivery states
 
-Distinguish INTENT, IMPLEMENTED, PROVED, PUSHED, INTEGRATED, DEPLOYED, and LIVE VERIFIED. Bind claims to revision, environment, scope, and evidence. Production finishes at required live behavior unless the user sets another stopping point; audits/held work may stop earlier with that boundary stated. See [evidence and completion](references/evidence-and-completion.md).
+Distinguish INTENT, IMPLEMENTED, PROVED, PUSHED, INTEGRATED, DEPLOYED, and LIVE VERIFIED. Bind claims to revision/environment/scope/evidence. Production requires live behavior unless user-directed otherwise; audits/held work state earlier boundaries. See [evidence and completion](references/evidence-and-completion.md).
 
 ## Product identity before templates
 
-Software does not imply SaaS. Preserve governing product identity and approved human language, design, responsibilities, memberships, fees, providers, and services; invent no rules without a gap. Reuse/consolidate canonical owners. Core behavior stays free/portable, requiring no paid provider or API key. Keep websites in their existing repository/host. Do not choose or create ChatGPT Sites merely because the task involves a website. Use Sites only when the user explicitly asks for Sites for that task.
+Software does not imply SaaS. Preserve governing product identity and approved human language, design, responsibilities, memberships, fees, providers, and services; invent no rules without a gap. Reuse/consolidate canonical owners. Core stays free/portable, requiring no paid provider or API key. Keep websites in existing repository/host. Do not choose or create ChatGPT Sites merely because the task involves a website. Use Sites only when the user explicitly asks for Sites for that task.
 
-Execute authorized states; answer steering, then resume unless redirected. Never substitute recaps, artifacts, or homework for execution.
+Execute authorized states; answer steering, then resume unless redirected. Recaps/artifacts/homework never replace execution.
+
+Trace every governing requirement/relationship into acceptance proof, including terminology across titles/roles, modes, mobile journeys, and exceptions. Preserve full briefs through implementation; checklists/passing artifacts cannot replace relational/user-flow proof. Classify findings by severity/disposition/remaining risk.
 
 ## SI defects and cold starts
 
-Repair interpretation/routing/state/completion defects causally in canonical source; regenerate copies, record/retest defects, avoid model-specific permanent instructions. Fresh contexts given standing adoption plus a real task must recover owning system, current sources/breakpoint, constraints, remaining states/tools/action/proof without historical chats; state access limits. See [model-neutral execution](references/model-neutral-execution.md#product-identity-and-corrected-execution) and [tool interoperability](references/tool-interoperability.md).
+Repair interpretation/routing/state/completion defects causally in canonical source; regenerate copies, record/retest, avoid model-specific permanent instructions. Fresh standing-adoption tasks must recover owning system, current sources/breakpoint, constraints, remaining states/tools/action/proof without historical chats; state access limits. See [model-neutral execution](references/model-neutral-execution.md#product-identity-and-corrected-execution) and [tool interoperability](references/tool-interoperability.md).
 
 <!-- SELECTIVE_INTELLIGENCE_BOOTSTRAP_PROJECTION_END -->
 

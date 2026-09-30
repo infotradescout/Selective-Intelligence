@@ -20,7 +20,7 @@
   "behavioral_contract": "source_preserved_not_installed_behavior_proof",
   "source_manifest_sha256": "bc44efde3ed30fb8b893c7960d0f0f3b071f89d6aff751d30e0f53fee6823f5c",
   "source_file_sha256": {
-    "SKILL.md": "145d86b7fdf1b94a770045c9587f5d38201f296870fdd34d72228d1f0987fc41",
+    "SKILL.md": "c37a5be378169704fbb4b4c484b4c464aec4c43d587f67eee9e7a79c4ee76dc0",
     "VERSION": "bda583f1cdd9113ea53e601168ffc6b0679a7a9a86466932e83e7554b9810d28",
     "agents/openai.yaml": "a0522a977ed8acda7e3d1310cabb6300258d7ec7b364c013c285d2ca60a59fc4",
     "assets/icon.svg": "bd015b352d25e16bc5afc9346758facb84d39b626516217cdbd86c28a61bbe56",
@@ -80,7 +80,7 @@
     "subskills/si-worker/SKILL.md": "8db4e5e1e2b952fec8576112f8d3ad95794af3f8481d5e7835025029639d0d6e"
   },
   "projected_file_sha256": {
-    "SKILL.md": "dfd224ef7fad0c0a2cbdc43323d545d113ca12ea768efe0da98a5fd386824fde",
+    "SKILL.md": "2dc757ec331dd36a3e8d10b218e25effeec08c07d0f1bad426b594f70de05075",
     "VERSION": "bda583f1cdd9113ea53e601168ffc6b0679a7a9a86466932e83e7554b9810d28",
     "agents/openai.yaml": "a0522a977ed8acda7e3d1310cabb6300258d7ec7b364c013c285d2ca60a59fc4",
     "assets/icon.svg": "bd015b352d25e16bc5afc9346758facb84d39b626516217cdbd86c28a61bbe56",
