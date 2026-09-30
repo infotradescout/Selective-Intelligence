@@ -226,7 +226,8 @@ class NativeRoleContractTests(unittest.TestCase):
         planner = (ROOT / "subskills/si-planner/SKILL.md").read_text(encoding="utf-8")
         worker = (ROOT / "subskills/si-worker/SKILL.md").read_text(encoding="utf-8")
         self.assertIn("Clear bounded work does not invoke this role", planner)
-        self.assertIn("Do not invoke it merely because the task involves repository edits", worker)
+        self.assertIn("bounded Worker/Builder responsibility on every Selective Intelligence work turn", worker)
+        self.assertIn("A formal Council packet applies only when that lane is selected", worker)
         self.assertNotIn("Trade" + "Scout", planner + worker)
 
 

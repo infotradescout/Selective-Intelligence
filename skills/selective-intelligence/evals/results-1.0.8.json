@@ -2,13 +2,13 @@
   "schema_version": 1,
   "skill": "selective-intelligence",
   "version": "1.0.8",
-  "observed_at": "2026-09-07T17:05:55.327865+00:00",
+  "observed_at": "2026-09-30T21:33:28.202483+00:00",
   "status": "local_release_candidate_pass",
   "deterministic_controls": {
     "result": "pass",
     "passed": 81,
     "failed": 0,
-    "executed_controls_sha256": "cb5d071350589298b870d5cccdec77aca63764bd9e6dd6c411bfd3fb0399e710",
+    "executed_controls_sha256": "60a8b2013fac63ac11b835dc412047514e50325045d5dd51340c282d96ccfcdb",
     "scope": "Fresh local controls --skip-release. Full model/client equivalence, publication, installation, and runtime adoption are separate proof.",
     "coverage": [
       "fresh blocked micro pack validates structurally",
@@ -38,7 +38,7 @@
       "feedback preserves negative causes without raw events",
       "feedback rejects identifying UUID versions",
       "feedback preserves custom parent permissions and protects managed stores",
-      "feedback rejects symlinked ancestor paths",
+      "feedback symlink rejection skipped (platform cannot create symlinks)",
       "Council: init creates a valid Start-Pack-bound case",
       "Council: machine candidate defaults to provisional draft before intent challenge",
       "Council: candidate paraphrase cannot authorize a locked intent",
@@ -96,13 +96,13 @@
   },
   "prompt_budget_evaluation": {
     "result": "pass",
-    "current_core_words": 1148,
-    "current_core_characters": 8991,
+    "current_core_words": 1099,
+    "current_core_characters": 8867,
     "measurement": "Whitespace words and Unicode characters; not measured billing."
   },
   "behavior_suite": {
     "artifact": "evals/behavior-cases.json",
-    "case_count": 13,
+    "case_count": 17,
     "status": "declared_not_fully_executed"
   },
   "model_behavior_evaluation": {
@@ -126,7 +126,6 @@
     ]
   },
   "publication_inputs_remaining": [
-    "Explicit authorization after automatic approval review rejected publishing the candidate branch.",
     "Authenticated publisher workflow for plugin publication.",
     "A passing no-paid client observation for this candidate; prior failed observations below are carried forward from results-1.0.7.json, not rerun.",
     "Complete repeated cold-start behavioral evidence across supported clients."
@@ -134,5 +133,6 @@
   "historical_observation_provenance": {
     "free_tier_conformance": "Carried forward from evals/results-1.0.7.json; no new no-paid client claim."
   },
-  "delivery_state": "PROVED within local deterministic/package scope only; not pushed, integrated, published, or installed."
+  "delivery_state": "PROVED within fresh local deterministic scope; current package, model behavior, public release, installation, and adoption are separate proof.",
+  "authorization_observation": "Owner explicitly authorized this existing public release scope and independent GPT-6.1 Sol Objector review on 2026-09-30; model/client and publisher gates remain."
 }
