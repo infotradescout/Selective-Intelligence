@@ -118,7 +118,12 @@ class RefreshTests(unittest.TestCase):
     def test_symbolic_link_destination_is_rejected(self):
         link = self.root / '.claude/skills/selective-intelligence'
         link.parent.mkdir(parents=True)
-        link.symlink_to(self.destination, target_is_directory=True)
+        try:
+            link.symlink_to(self.destination, target_is_directory=True)
+        except OSError as exc:
+            if os.name != "nt" or getattr(exc, "winerror", None) != 1314:
+                raise
+            self.skipTest("Windows fixture requires unavailable symlink privilege (1314)")
         with self.assertRaises(ValueError):
             refresh.refresh(link, apply=True, source=self.archive())
 
@@ -150,7 +155,7 @@ class RefreshTests(unittest.TestCase):
         git_root = self.root / 'git-proof'
         shutil.copytree(self.source, git_root)
         subprocess.run(['git', 'init', '-q', str(git_root)], check=True)
-        subprocess.run(['git', '-C', str(git_root), 'add', '.'], check=True)
+        subprocess.run(['git', '-c', 'core.autocrlf=false', '-C', str(git_root), 'add', '.'], check=True)
         tree = subprocess.check_output(['git', '-C', str(git_root), 'write-tree'], text=True).strip()
         self.assertEqual(tree, self.expected)
 

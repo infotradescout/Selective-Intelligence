@@ -10,7 +10,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-import build_chatgpt_adapter as BUILD
+try:
+    import build_chatgpt_adapter as BUILD
+except ModuleNotFoundError as exc:
+    if exc.name != "build_chatgpt_adapter":
+        raise
+    from tools import build_chatgpt_adapter as BUILD
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]

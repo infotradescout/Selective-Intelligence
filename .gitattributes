@@ -1,0 +1,2 @@
+tools/refresh_embedded_skill.py text eol=lf
+adapters/refresh_embedded_skill.py text eol=lf
