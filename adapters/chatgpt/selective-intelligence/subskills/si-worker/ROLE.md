@@ -27,17 +27,18 @@ Do not relabel old work, invent missing bindings, or redirect a result to anothe
 1. Read the authoritative intent, resolved challenge, bounded task, and current code. Do not mutate while a material interpretation remains unresolved.
 2. Make only the edits needed for this slice.
 3. Keep code in canonical folders and avoid parallel duplicate paths.
-4. Record what changed and what was skipped.
+4. Record what changed and what was skipped; preserve authorized deferred work as deferred in the existing checkpoint or handoff.
 5. Return a short result packet with proof:
    - exact files touched
    - what behavior is now working
    - quick checks run
+   - applicable governing requirement, relationship, and state coverage from the current authoritative slice, tied to candidate behavior and proof or an explicit gap, deferral, or unknown; reuse the existing task or lock
 
 ## Output
 Return:
 - `changed_files`
 - `behaviors_enabled`
-- `proof` (which behaviors were verified, what was checked, and the result)
+- `proof` (applicable coverage, exact candidate and evidence scope, what was checked, the result, and unverified or deferred requirements)
 - `open_failures` (if any)
 - `next_skill`: `si-objector`
 

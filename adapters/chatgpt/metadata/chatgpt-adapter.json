@@ -33,7 +33,7 @@
     "references/architecture-reuse.md": "b752b645e9b72f34ff8636f14400fdc8d61596cd7b2434003209e760c7274871",
     "references/continuity-and-impact.md": "0fbb61bee10e8c8acb7a738a478be1b3f668fd8950455b822c430b22b57b7d91",
     "references/durable-progress-and-recovery.md": "b21fc6cc1b8484ab2d1948e439c180771418b8face6ef06aa7c8d3d4de8118b6",
-    "references/evidence-and-completion.md": "5890949a900672af96e27ded0df6a58fcd445b9c7d6f1e0eca77dbe15b4b4835",
+    "references/evidence-and-completion.md": "d6516b416141b59767eab0e15a16b4fad39e461709981a7e83e0d4d18af82d45",
     "references/failure-patterns-and-gates.md": "035a5fff42b4e040903a60adc93d16194e03a59f57a007ea989dc6fdecc40309",
     "references/feedback-and-learning-loop.md": "2cfc91b7d6bb17e1ed0509d948bd472de247804d835cfbd3aaaaa33ac89b9497",
     "references/first-checkpoint.md": "1ae201655326ec6c38de3944a5d5e7237a52363d066453a92dc71bc7e68567f8",
@@ -73,11 +73,11 @@
     "scripts/text_gate.py": "6547fda4f0ec6ed8c0174bedf05b49f71f3c025db963468605ff4d569c91c10f",
     "subskills/si-aligner/SKILL.md": "1ad6e17123e3e022e3f7835957b73dd9b275ee14009deaaa392928ec494b2efc",
     "subskills/si-intake/SKILL.md": "e5929e02e0e6b193abe6607f6126c458659ebd7fb0dd2e30770b9620909bc2f3",
-    "subskills/si-objector/SKILL.md": "520b32c8ab8c56f39e619387f06df5441e7a16c219b62e2192917c298068a600",
+    "subskills/si-objector/SKILL.md": "e14f1f97e534391bb14f4ee55b5b6ecc76b73d3270291a2916c623a0e66570cd",
     "subskills/si-planner/SKILL.md": "e4872f3615b24fa49cc823c3d9231c0cdb3c58568f78ec9c08049fdce574a716",
     "subskills/si-queue-manager/SKILL.md": "d28a0da189e7423d9eab6585b397862c29fbd26477050a4f0e98073f2ad4b83d",
     "subskills/si-verifier/SKILL.md": "16ee1873abe5600c6c3fbae62a579406da92a067efc68c40cd307173f3709b05",
-    "subskills/si-worker/SKILL.md": "8db4e5e1e2b952fec8576112f8d3ad95794af3f8481d5e7835025029639d0d6e"
+    "subskills/si-worker/SKILL.md": "598bde11da1a8845c92ddf3a5270193a0c3b7c4e5b4c7f9b8d317fafec478eb5"
   },
   "projected_file_sha256": {
     "SKILL.md": "d2850ab5dde108256b58d0e7b16261dec47e064a69e87c30a2a6c895d69a5344",
@@ -93,7 +93,7 @@
     "references/architecture-reuse.md": "b752b645e9b72f34ff8636f14400fdc8d61596cd7b2434003209e760c7274871",
     "references/continuity-and-impact.md": "0fbb61bee10e8c8acb7a738a478be1b3f668fd8950455b822c430b22b57b7d91",
     "references/durable-progress-and-recovery.md": "b21fc6cc1b8484ab2d1948e439c180771418b8face6ef06aa7c8d3d4de8118b6",
-    "references/evidence-and-completion.md": "5890949a900672af96e27ded0df6a58fcd445b9c7d6f1e0eca77dbe15b4b4835",
+    "references/evidence-and-completion.md": "d6516b416141b59767eab0e15a16b4fad39e461709981a7e83e0d4d18af82d45",
     "references/failure-patterns-and-gates.md": "035a5fff42b4e040903a60adc93d16194e03a59f57a007ea989dc6fdecc40309",
     "references/feedback-and-learning-loop.md": "2cfc91b7d6bb17e1ed0509d948bd472de247804d835cfbd3aaaaa33ac89b9497",
     "references/first-checkpoint.md": "1ae201655326ec6c38de3944a5d5e7237a52363d066453a92dc71bc7e68567f8",
@@ -133,11 +133,11 @@
     "scripts/text_gate.py": "6547fda4f0ec6ed8c0174bedf05b49f71f3c025db963468605ff4d569c91c10f",
     "subskills/si-aligner/ROLE.md": "1ad6e17123e3e022e3f7835957b73dd9b275ee14009deaaa392928ec494b2efc",
     "subskills/si-intake/ROLE.md": "e5929e02e0e6b193abe6607f6126c458659ebd7fb0dd2e30770b9620909bc2f3",
-    "subskills/si-objector/ROLE.md": "520b32c8ab8c56f39e619387f06df5441e7a16c219b62e2192917c298068a600",
+    "subskills/si-objector/ROLE.md": "e14f1f97e534391bb14f4ee55b5b6ecc76b73d3270291a2916c623a0e66570cd",
     "subskills/si-planner/ROLE.md": "e4872f3615b24fa49cc823c3d9231c0cdb3c58568f78ec9c08049fdce574a716",
     "subskills/si-queue-manager/ROLE.md": "d28a0da189e7423d9eab6585b397862c29fbd26477050a4f0e98073f2ad4b83d",
     "subskills/si-verifier/ROLE.md": "16ee1873abe5600c6c3fbae62a579406da92a067efc68c40cd307173f3709b05",
-    "subskills/si-worker/ROLE.md": "8db4e5e1e2b952fec8576112f8d3ad95794af3f8481d5e7835025029639d0d6e"
+    "subskills/si-worker/ROLE.md": "598bde11da1a8845c92ddf3a5270193a0c3b7c4e5b4c7f9b8d317fafec478eb5"
   },
   "execution_entrypoint": "scripts/build_engine.py",
   "execution_dependencies": [

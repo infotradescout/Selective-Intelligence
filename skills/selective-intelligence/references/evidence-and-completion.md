@@ -96,6 +96,8 @@ A result is complete when it performs its intended job without placeholders or i
 
 Closed builds do not imply a closed release. Release completion additionally requires every included requirement, critical journey, prohibition, necessary actor, operational gate, and invalidated prior proof to reconcile at the current baseline.
 
+For material work, the final report carries the concrete prework challenge, observable consequence and resolution before Worker dispatch, and the necessary source basis for that interpretation. Preserve applicable coverage and proof limits at the highest evidenced state, unresolved findings, remaining risk, blocking versus deferred disposition, deferred authorized work, and the next authorized transition. Use compact references where sufficient. Report what actually happened; a proposed sequence or review verdict is not execution proof. Keep trivial checks lightweight and reuse the current governing slice rather than creating a separate checklist or broader audit.
+
 **Cross-runtime equivalence:** Given the same task, context, and evidence, completion means an equivalently correct user outcome across models and environments—not merely fluent prose from the current runtime. Different wording is fine; different intent, scope, product truth, workflow, quality threshold, or final outcome is not. A runtime that cannot meet the bar must be corrected, retried, or blocked before side effects land. See [model-neutral-execution.md](model-neutral-execution.md#governing-requirement-model-interchangeability). One strong benchmark demonstrates that the quality bar is achievable; repeating that bar without heavy user repair is what counts as reliability.
 
 ## Council provenance

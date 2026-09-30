@@ -11,12 +11,12 @@ It double-checks intent before Worker dispatch or work, then checks the bounded 
 ## Inputs
 - Authoritative user seed and Orchestrator's candidate intent before work
 - `si-worker` result packet after work
-- Relevant evidence references (tests, commits, routes, files)
+- Current authoritative governing slice and triggered sources, resolved challenge, and candidate-specific evidence references (tests, commits, routes, files)
 
 ## Steps
 1. Before Worker dispatch or work, double-check the candidate against the authoritative seed. For material work, name a plausible wrong interpretation and its observable consequence; return it to the Orchestrator for resolution. Keep trivial self-contained checks lightweight.
-2. After Worker work, compare the result to governing intent, the resolved challenge, and any formal lock.
-3. Verify claims with evidence and list missing work, weak evidence, drift, and scope skips.
+2. After Worker work, independently derive applicable acceptance from those authoritative sources, including governing relationships and required states. Compare it with the exact candidate and proof, governing intent, resolved challenge, and any formal lock. Do not infer coverage from the Worker's summary or passing checks alone, or create requirements outside the authorized slice.
+3. Verify claims with evidence and list missing work, weak evidence, drift, and scope skips. Preserve the concrete challenge, consequence and disposition, uncovered states, and risk-based blocking or deferred findings in the existing result.
 4. Mark each finding with severity and exact place; recommend the smallest fix for each block.
 
 ## Output
