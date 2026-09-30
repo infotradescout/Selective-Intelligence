@@ -4,7 +4,7 @@ Selective Intelligence—formerly Selective Inheritance—is a free, open-source
 
 **[Install Selective Intelligence from the public Plugins Directory](https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence)** · [Try five real pass/fail tasks](https://infotradescout.github.io/Selective-Intelligence/try/) · [Share the ready launch copy](LAUNCH.md)
 
-Published by [Platynum-47](https://github.com/Platynum-Standard). The canonical source is [infotradescout/Selective-Intelligence](https://github.com/infotradescout/Selective-Intelligence).
+Published by [Platynum-47](https://github.com/infotradescout). The canonical source is [infotradescout/Selective-Intelligence](https://github.com/infotradescout/Selective-Intelligence).
 
 > **Platynum-47 is a separate companion project in development.** It is being built as a phone-friendly workspace for non-developers. Its unfinished source remains private for now; Selective Intelligence stays independent, public, free, and usable without it.
 
@@ -28,13 +28,13 @@ The exact wordmark, any unmistakable request for a named Selective Intelligence 
 
 After a direct trigger or that explicit yes, Selective Intelligence stays active for the entire task. The person can explicitly change or cancel the wanted outcome, but an accidental instruction to skip the checks cannot silently disable the intent, reuse, safety, token, correction, or proof gates.
 
-Token efficiency is the first operating priority. Selective Intelligence now defaults to one context, zero extra references before useful action, no Council, and no intent checkpoint for clear reversible work. It selects only context that can change the next decision, reuses existing owners, and reports results without repeated plans or filler. It never saves tokens by shrinking the wanted result or dropping proof.
+Token efficiency is the first operating priority. Selective Intelligence defaults to one bounded workflow with standing Orchestrator, Worker/Builder, and Objector responsibilities: understand intent, challenge a consequential misreading before work, execute, and check the result. Material project work uses separate contexts when available; clear reversible work keeps the check lightweight. Extra references and a formal Council are selected only when needed. It reuses existing owners and never saves tokens by shrinking the wanted result or dropping proof.
 
-An AI that can read ordinary text but cannot load Agent Skills should use [AI-GUIDE.md](skills/selective-intelligence/AI-GUIDE.md) as the strict operating guide after any direct match or approved merely adjacent adoption. It must perform the task rather than merely defining Selective Intelligence or summarizing this repository. [JUMPSTART.md](skills/selective-intelligence/JUMPSTART.md) remains the complete intentional-upload fallback; its multi-role workflow runs only for an explicit Council request or a documented high-consequence trigger.
+An AI that can read ordinary text but cannot load Agent Skills should use [AI-GUIDE.md](skills/selective-intelligence/AI-GUIDE.md) as the strict operating guide after any direct match or approved merely adjacent adoption. It must perform the task rather than merely defining Selective Intelligence or summarizing this repository. [JUMPSTART.md](skills/selective-intelligence/JUMPSTART.md) remains the complete intentional-upload fallback and carries the same standing Orchestrator, Worker/Builder, and Objector order; its additional formal Council roles are conditional.
 
 An AI with neither public-web access, installed-skill discovery, file input, nor supplied-text access cannot fetch any external guide from a name alone. It must say which capability is unavailable without inventing an installation, pretending it loaded the guide, or transferring technical setup to the person.
 
-Agent spawning is never a trigger by itself. For exceptional Council work, use the minimum selected roles—normally a Worker and one independent reviewer—and fall back to sequential contexts when spawning is unavailable. Another AI subscription is optional.
+Agent spawning is never a trigger by itself. For material project work, use separate contexts for the standing roles when available; otherwise label the same-context check as degraded. For exceptional Council work, add only the roles the case needs. Another AI subscription is optional.
 
 Along the way, save an approved durable decision, reusable output, or hard-won correction as a Project source so later chats inherit the understanding. Before saving, check ownership and permission to retain it, whether the Project is shared, what data is permitted, and the applicable data-use setting. Do not save secrets, brainstorming, stale prices, false completion claims, or cross-project material.
 
@@ -55,7 +55,7 @@ Use it when you want an agent to:
 
 - understand terse, corrective, or evolving intent without turning criticism into a new task or invented halt;
 - bridge a non-developer's product direction into exact journeys, design, architecture, implementation, operations, and proof without technical homework;
-- match effort to consequence: keep clear reversible work Lean even when durable, then add a bounded reviewer or full Council only for broad drift, ambiguity, money, security, sensitive data, destructive operations, or consequential release;
+- match effort to consequence: keep clear reversible work Lean with standing intent and result checks, and add formal Council controls for broad drift, ambiguity, money, security, sensitive data, destructive operations, or consequential release;
 - define a new product, smallest complete MVP, architecture, data, APIs, UI/UX, build order, and proof before coding;
 - resume a project across models, agents, branches, or interrupted sessions without losing the governing truth;
 - crawl a repository and reconcile intended behavior with routes, components, services, schemas, permissions, tests, deployment, and live surfaces;
@@ -95,9 +95,9 @@ Example requests:
 - “Pick this project back up from its current lock without repeating work or trusting stale evidence.”
 - “Use Selective Intelligence to audit and improve Selective Intelligence.”
 
-### Optional Council roles
+### Standing roles and optional Council helpers
 
-Non-developers do not need to run a seven-pass workflow. Ordinary work stays in one AI context. When consequence or an explicit request justifies Council, start with `si-worker` and one independent `si-objector` or `si-verifier`. Use `si-intake` for unresolved competing interpretations, `si-aligner` only when findings conflict, `si-queue-manager` only for a real queue, and a reserve context only for continuity or capacity risk.
+Non-developers do not need to manage agents. Orchestrator recovers intent; Objector checks it before Worker/Builder executes bounded work, then reviews the result and proof before final claims. Material projects use separate contexts when available; same-context checks are degraded, never independent. Use `si-intake` for unresolved competing Council interpretations, `si-aligner` only when findings conflict, `si-queue-manager` only for a real queue, and a reserve context only for continuity or capacity risk.
 
 ## Keep queued prompts from getting lost
 

@@ -435,7 +435,7 @@
     },
     {
       "id": "public-profile-tier-parity",
-      "kind": "product_quality",
+      "kind": "control_output",
       "prompt": "Selective Intelligence. Our platform has default and premium public profiles. Premium can have extra tools, but public default profiles should be nearly as discoverable and professionally presented. Audit the profile system, fix any pay-to-discover drift, and tell owners why a profile is not public.",
       "must": [
         "treat intentional public visibility rather than payment tier as the baseline discovery gate",
