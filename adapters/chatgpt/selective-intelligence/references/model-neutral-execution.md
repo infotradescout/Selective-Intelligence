@@ -312,7 +312,7 @@ Use [portability-conformance.md](portability-conformance.md) to forward-test maj
 
 ## Guided Council routing
 
-Route roles by the documented Council trigger and observed capability, not a plan or model name. Do not select Council merely because agent spawning is available. When Council is justified, start with a Worker and one independent reviewer; add an Aligner only for conflicting findings and a Reserve only for genuine continuity or capacity risk. One capable model/account is a valid minimum; another provider is an optional independence or capacity route.
+Orchestrator, Worker/Builder, and Objector responsibilities apply to every work turn. Orchestrator may inspect bounded read-only evidence before forming candidate intent; Objector double-checks it before Worker dispatch or work. For material work, challenge a plausible wrong reading and consequence. Review the result before final claims. For material project work, use distinct bounded contexts when available; one context is a degraded fallback and cannot claim independent review. Do not select Council merely because agent spawning is available. Council adds formal controls; add an Aligner only for conflicting findings and a Reserve only for genuine continuity or capacity risk. Another provider is an optional independence or capacity route.
 
 Every route records role, provider label, surface, account ownership, authentication mode, billing pool, data boundary, maximum sensitivity, capacity source/status, and distinct run or context ID. A provider change never weakens intent, permission, proof, or completion requirements. Same-provider spawned agents are not described as external-provider independence, and a single run cannot serve as Worker, Objector, and Aligner merely by changing labels.
 

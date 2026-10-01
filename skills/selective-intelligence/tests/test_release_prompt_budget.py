@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -10,9 +12,98 @@ SCRIPTS = SKILL_ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 import release  # noqa: E402
+import quality_gate  # noqa: E402
 
 
 class ReleasePromptBudgetTests(unittest.TestCase):
+    def test_quality_children_do_not_generate_bytecode_in_release_source(self):
+        with tempfile.TemporaryDirectory(prefix="si-quality-bytecode-") as temporary:
+            root = Path(temporary)
+            (root / "probe_owned_module.py").write_text("VALUE = 1\n", encoding="utf-8")
+            grandchild = f"import sys; sys.path.insert(0, {str(root)!r}); import probe_owned_module"
+            child = f"import subprocess, sys; subprocess.run([sys.executable, '-c', {grandchild!r}], check=True)"
+            result = quality_gate._run("bytecode-child", [sys.executable, "-c", child])
+            self.assertTrue(result["passed"], result)
+            self.assertFalse(list(root.rglob("*.pyc")))
+
+    def test_quality_child_failure_still_fails_its_check(self):
+        result = quality_gate._run("failure-child", [sys.executable, "-c", "raise SystemExit(7)"])
+        self.assertFalse(result["passed"], result)
+        self.assertEqual(result["exitCode"], 7)
+
+
+    def _openai_product_errors(self, products):
+        with tempfile.TemporaryDirectory(prefix="si-openai-products-") as temporary:
+            root = Path(temporary)
+            agent_config = root / "agents" / "openai.yaml"
+            agent_config.parent.mkdir()
+            agent_config.write_text(
+                'interface:\n'
+                '  display_name: "Selective Intelligence"\n'
+                '  short_description: "Recover failed work with verified execution"\n'
+                '  default_prompt: "Use $selective-intelligence to complete this task."\n'
+                'policy:\n'
+                '  products:\n'
+                + ''.join(f'    - "{product}"\n' for product in products)
+                + '  allow_implicit_invocation: true\n',
+                encoding="utf-8",
+            )
+            return release.skill_loader_metadata_errors(root, [agent_config])
+
+
+    def test_openai_products_accept_current_chatgpt_and_codex_identifiers(self):
+        self.assertEqual(self._openai_product_errors(["CHATGPT", "CODEX"]), [])
+
+
+    def test_openai_products_reject_legacy_chat_and_unsupported_api(self):
+        for product in ("CHAT", "api"):
+            with self.subTest(product=product):
+                errors = self._openai_product_errors([product, "CODEX"])
+                self.assertTrue(
+                    any(f"unsupported policy products: {product}" in error for error in errors),
+                    errors,
+                )
+
+
+    def test_distribution_advertises_the_standing_role_default(self):
+        metadata = json.loads((SKILL_ROOT / "metadata" / "distribution.json").read_text(encoding="utf-8"))
+        self.assertEqual(metadata["execution_default"], "lean_orchestrator_worker_objector")
+        self.assertEqual(release.jumpstart_errors(SKILL_ROOT, "0.3.0"), [])
+
+
+    def test_jumpstart_checks_intent_before_index_refresh_or_worker_dispatch(self):
+        text = (SKILL_ROOT / "JUMPSTART.md").read_text(encoding="utf-8")
+        discovery = text.index("Use bounded read-only evidence to reconstruct the active outcome")
+        challenge = text.index("Before Worker dispatch or work, Objector double-checks")
+        execution = text.index("After resolving the check, begin the highest-value reversible work")
+        index_refresh = text.index("create or refresh `.selective-intelligence/project-index.json`")
+        self.assertLess(discovery, challenge)
+        self.assertLess(challenge, execution)
+        self.assertLess(challenge, index_refresh)
+
+
+    def test_requires_prework_intent_challenge_and_postwork_review(self):
+        skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        required = (
+            "Every work turn carries Orchestrator, Worker/Builder, and Objector.",
+            "Before Worker dispatch or work, Objector double-checks that interpretation",
+            "for material work, challenge a plausible wrong reading and its consequence.",
+            "Objector checks result and proof before Orchestrator reports.",
+            "label checks degraded, never independent.",
+        )
+        for phrase in required:
+            with self.subTest(phrase=phrase):
+                _, errors = release.prompt_budget_errors(skill_text.replace(phrase, ""))
+                self.assertTrue(any("missing lean execution contract" in error for error in errors))
+        self.assertLess(skill_text.index("Before Worker dispatch or work"), skill_text.index("Worker executes"))
+        self.assertLess(skill_text.index("Worker executes"), skill_text.index("Objector checks result"))
+
+
+    def test_standing_worker_objector_roles_do_not_trigger_heavy_default(self):
+        skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
+        _, errors = release.prompt_budget_errors(skill_text + "\nAlways run Worker and Objector checks.\n")
+        self.assertFalse(any("automatic extra-role escalation" in error for error in errors))
+
     def test_all_skill_frontmatter_uses_supported_loader_fields_only(self):
         metadata, metadata_errors = release.read_distribution_metadata(SKILL_ROOT)
         self.assertEqual(metadata_errors, [])
@@ -43,13 +134,13 @@ class ReleasePromptBudgetTests(unittest.TestCase):
         _, errors = release.prompt_budget_errors(skill_text)
         self.assertTrue(any("missing lean execution contract" in error for error in errors))
 
-    def test_rejects_paraphrased_automatic_role_default(self):
+    def test_rejects_automatic_aligner_escalation(self):
         skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")
         _, errors = release.prompt_budget_errors(
             skill_text
             + "\nAutomatically spawn Worker, Objector, and Aligner agents for persistent work.\n"
         )
-        self.assertTrue(any("automatic multi-role execution" in error for error in errors))
+        self.assertTrue(any("automatic extra-role escalation" in error for error in errors))
 
     def test_rejects_approval_before_every_local_edit(self):
         skill_text = (SKILL_ROOT / "SKILL.md").read_text(encoding="utf-8")

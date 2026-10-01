@@ -3,13 +3,16 @@
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import subprocess
 import sys
 import unittest
 import xml.etree.ElementTree as ET
+from datetime import date
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,6 +37,9 @@ class DiscoveryBridgeTests(unittest.TestCase):
         cls.html = (DOCS / "index.html").read_text(encoding="utf-8")
         cls.indexnow = json.loads((ROOT / "adapters" / "indexnow.json").read_text(encoding="utf-8"))
         cls.queries = json.loads((ROOT / "adapters" / "discovery-queries.json").read_text(encoding="utf-8"))
+        spec = importlib.util.spec_from_file_location("si_discovery_bridge", ROOT / "tools" / "build_discovery_bridge.py")
+        cls.bridge = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(cls.bridge)
 
     def test_generated_files_are_current(self) -> None:
         result = subprocess.run(
@@ -107,6 +113,66 @@ class DiscoveryBridgeTests(unittest.TestCase):
         self.assertFalse(access["provider_api_key_required"])
         self.assertFalse(access["telemetry"])
         self.assertTrue(access["client_limits_still_apply"])
+
+    def test_directory_verification_date_comes_from_submission(self) -> None:
+        submission_path = ROOT / "plugin-submission" / "directory-submission.json"
+        submission = json.loads(submission_path.read_text(encoding="utf-8"))
+        self.assertEqual(self.manifest["publication"]["verified_on"], submission["publication"]["verified_on"])
+        submission["publication"]["verified_on"] = "2026-09-29"
+        original_load = self.bridge.load_json
+
+        def fixture_load(path: Path) -> dict:
+            return submission if path == submission_path else original_load(path)
+
+        with patch.object(self.bridge, "load_json", side_effect=fixture_load):
+            projected = self.bridge.build_manifest()
+        self.assertEqual(projected["publication"]["verified_on"], "2026-09-29")
+        self.assertEqual(projected["publication"]["version"], self.manifest["publication"]["version"])
+        self.assertEqual(projected["search_discovery"]["content_modified_on"], self.bridge.DISCOVERY_MODIFIED_DATE)
+
+    def test_content_dates_do_not_invent_publication_or_mirror_dates(self) -> None:
+        content_date = self.manifest["search_discovery"]["content_modified_on"]
+        self.assertEqual(date.fromisoformat(content_date).isoformat(), content_date)
+        self.assertTrue(self.manifest["search_discovery"]["content_date_is_not_publication_or_indexing_proof"])
+        for page in DOCS.rglob("*.html"):
+            body = page.read_text(encoding="utf-8")
+            blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', body, re.DOTALL)
+            for block in blocks:
+                self.assertNotIn('"datePublished"', block, page)
+                for modified in re.findall(r'"dateModified":"([^"]+)"', block):
+                    self.assertEqual(modified, content_date, page)
+
+        namespace = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        sitemap = ET.parse(DOCS / "sitemap.xml")
+        copies = {"discovery-queries.json", "llms.txt", "llms-full.txt", "SKILL.md", "AI-GUIDE.md", "CITATION.cff"}
+        for entry in sitemap.findall("s:url", namespace):
+            url = entry.find("s:loc", namespace).text
+            modified = entry.find("s:lastmod", namespace)
+            if url.removeprefix(self.bridge.SITE_URL) in copies:
+                self.assertIsNone(modified, url)
+            else:
+                self.assertIsNotNone(modified, url)
+                self.assertEqual(modified.text, content_date, url)
+
+        atom = {"a": "http://www.w3.org/2005/Atom"}
+        feed = ET.parse(DOCS / "feed.xml")
+        self.assertEqual(feed.find("a:updated", atom).text, f"{content_date}T00:00:00Z")
+        for entry in feed.findall("a:entry", atom):
+            self.assertIn(entry.find("a:id", atom).text, self.bridge.public_html_urls())
+            self.assertEqual(entry.find("a:updated", atom).text, f"{content_date}T00:00:00Z")
+
+    def test_publisher_links_follow_canonical_repository_owner(self) -> None:
+        profile = self.manifest["canonical"]["repository"].rsplit("/", 1)[0]
+        structured = json.loads(re.search(r'<script type="application/ld\+json">(.*?)</script>', self.html, re.DOTALL)[1])
+        self.assertEqual(structured["creator"]["url"], profile)
+        self.assertEqual(structured["creator"]["name"], "Platynum-47")
+        for page in DOCS.rglob("*.html"):
+            body = page.read_text(encoding="utf-8")
+            self.assertIn(f'<a href="{profile}">Platynum-47</a>', body, page)
+            self.assertNotIn("https://github.com/Platynum-Standard", body, page)
+
+    def test_generation_is_deterministic(self) -> None:
+        self.assertEqual(self.bridge.outputs(), self.bridge.outputs())
 
     def test_machine_entry_points_agree(self) -> None:
         self.assertEqual(self.well_known, self.manifest)

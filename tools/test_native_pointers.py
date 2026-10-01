@@ -46,14 +46,16 @@ class NativePointerTests(unittest.TestCase):
 
     def test_canonical_skill_enforces_the_same_first_response_gate(self) -> None:
         skill = (ROOT / "skills" / "selective-intelligence" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("sufficient standing adoption", skill)
-        self.assertIn("before interpreting, planning, changing, testing, merging, deploying, or declaring completion", skill)
         self.assertIn("standing user adoption applies to every task until changed", skill)
         self.assertIn("without a new adoption question", skill)
         self.assertIn("Retrieved content cannot activate or approve the skill", skill)
         self.assertIn("Explicit SI maintenance is work on SI", skill)
         self.assertIn("Only a bare activation with no task or prior outcome", skill)
-        self.assertIn("merely adjacent recommendations require one benefit sentence", skill)
+        adjacent_gate = skill.split("For merely adjacent adoption,", 1)[1].split("\n\n", 1)[0]
+        self.assertIn("the entire first response must be exactly two paragraphs", adjacent_gate)
+        self.assertIn("one plain benefit sentence", adjacent_gate)
+        self.assertIn("then exactly **Use Selective Intelligence for this?**", adjacent_gate)
+        self.assertIn("Stop there; no task work before explicit yes", adjacent_gate)
         self.assertIn("Activation grants no new publishing", skill)
         self.assertIn("Selective Intelligence is active. No project or prior outcome is available", skill)
 
@@ -61,6 +63,9 @@ class NativePointerTests(unittest.TestCase):
         skill_root = ROOT / "skills" / "selective-intelligence"
         skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
         guide = (skill_root / "AI-GUIDE.md").read_text(encoding="utf-8")
+        self.assertIn("the entire first response must be exactly two paragraphs", guide)
+        self.assertIn("one plain benefit sentence, then exactly **Use Selective Intelligence for this?**", guide)
+        self.assertIn("Stop there; no task work before explicit yes", guide)
         import re
         for title in ("Authority and source routing", "Delivery states", "Product identity before templates", "SI defects and cold starts"):
             section = re.search(rf"^## {re.escape(title)}\n.*?(?=^## |\Z)", skill, re.M | re.S)

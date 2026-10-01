@@ -158,7 +158,12 @@ class DeliveryTests(unittest.TestCase):
         target.unlink()
         outside = self.root / "outside.txt"
         outside.write_text("must not be copied")
-        target.symlink_to(outside)
+        try:
+            target.symlink_to(outside)
+        except OSError as exc:
+            if os.name != "nt" or getattr(exc, "winerror", None) != 1314:
+                raise
+            self.skipTest("Windows fixture requires unavailable symlink privilege (1314)")
         with self.assertRaises(ValueError):
             self.build()
         self.assertEqual(self.snapshot(), before)
@@ -252,7 +257,12 @@ class DeliveryTests(unittest.TestCase):
         original = self.portable / "subskills/si-worker"
         outside = self.root / "outside-role"
         original.rename(outside)
-        original.symlink_to(outside, target_is_directory=True)
+        try:
+            original.symlink_to(outside, target_is_directory=True)
+        except OSError as exc:
+            if os.name != "nt" or getattr(exc, "winerror", None) != 1314:
+                raise
+            self.skipTest("Windows fixture requires unavailable symlink privilege (1314)")
         with self.assertRaises(ValueError):
             self.build()
         self.assertEqual(self.snapshot(), before)

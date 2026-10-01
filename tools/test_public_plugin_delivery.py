@@ -127,7 +127,12 @@ class PublicPluginDeliveryTests(unittest.TestCase):
         outside.write_text("# temporary test sentinel\n")
         source = self.skill / "scripts/intent_contract.py"
         source.unlink()
-        source.symlink_to(outside)
+        try:
+            source.symlink_to(outside)
+        except OSError as exc:
+            if os.name != "nt" or getattr(exc, "winerror", None) != 1314:
+                raise
+            self.skipTest("Windows fixture requires unavailable symlink privilege (1314)")
         with self.assertRaisesRegex(ValueError, "symlink"):
             public_plugin.projected_files()
 
@@ -171,7 +176,12 @@ class PublicPluginDeliveryTests(unittest.TestCase):
         target = self.root / "protected.zip"
         target.write_bytes(b"unrelated file")
         self.destination.parent.mkdir(parents=True)
-        self.destination.symlink_to(target)
+        try:
+            self.destination.symlink_to(target)
+        except OSError as exc:
+            if os.name != "nt" or getattr(exc, "winerror", None) != 1314:
+                raise
+            self.skipTest("Windows fixture requires unavailable symlink privilege (1314)")
         with self.assertRaisesRegex(ValueError, "symlink"):
             public_plugin.write_archive(self.destination)
         self.assertEqual(target.read_bytes(), b"unrelated file")

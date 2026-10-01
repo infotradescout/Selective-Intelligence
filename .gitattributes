@@ -1,0 +1,3 @@
+tools/refresh_embedded_skill.py text eol=lf
+adapters/refresh_embedded_skill.py text eol=lf
+skills/selective-intelligence/evals/model-runs/*.json text eol=lf

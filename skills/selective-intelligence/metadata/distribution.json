@@ -41,7 +41,7 @@
   "developer_judgment_over_pattern_matching": true,
   "always_on_after_activation_or_approved_adoption": true,
   "token_efficiency_is_first_operating_priority": true,
-  "execution_default": "lean_single_context",
+  "execution_default": "lean_orchestrator_worker_objector",
   "council_escalation": "explicit_or_high_consequence",
   "full_checkpoint": "consequence_triggered",
   "prompt_budget": {
@@ -169,7 +169,6 @@
     "references/non-developer-surface.md",
     "references/operational-safety-gates.md",
     "references/permissions-and-budgets.md",
-    "references/platynum-interrupt-wiring.md",
     "references/portability-conformance.md",
     "references/product-design-intelligence.md",
     "references/public-profile-tier-parity.md",
@@ -177,7 +176,6 @@
     "references/prompt-queue.md",
     "references/repository-intelligence.md",
     "references/step1-intent-control-status.md",
-    "references/token-efficiency-and-language.md",
     "references/tool-interoperability.md",
     "references/ui-ux-and-output.md",
     "schemas/lane.schema.json",
@@ -322,7 +320,8 @@
     "tests/test_product_model_handoff_completeness.py",
     "tests/test_product_model_repair_handoff.py",
     "tests/test_prompt_queue_continuity.py",
-    "evals/results-1.0.8.json"
+    "evals/results-1.0.8.json",
+    "evals/model-runs/gpt-6.1-sol-role-workflow-169b911.json"
   ],
   "whole_run_usage_governor": {
     "scope": "entire_run",

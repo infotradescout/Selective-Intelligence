@@ -10,6 +10,7 @@
     "public_site": "https://infotradescout.github.io/Selective-Intelligence/",
     "public_plugin_directory": "https://chatgpt.com/plugins/plugins_6a89b55ab8e88191addc1c063e779ca7?q=Selective+Intelligence",
     "repository": "https://github.com/infotradescout/Selective-Intelligence",
+    "releases": "https://github.com/infotradescout/Selective-Intelligence/releases",
     "skill": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/SKILL.md",
     "skill_raw": "https://raw.githubusercontent.com/infotradescout/Selective-Intelligence/main/skills/selective-intelligence/SKILL.md",
     "skill_public_mirror": "https://infotradescout.github.io/Selective-Intelligence/SKILL.md",
@@ -243,6 +244,8 @@
     "pointer_is_not_user_approval": true
   },
   "search_discovery": {
+    "content_modified_on": "2026-09-30",
+    "content_date_is_not_publication_or_indexing_proof": true,
     "sitemap": "https://infotradescout.github.io/Selective-Intelligence/sitemap.xml",
     "problem_hub": "https://infotradescout.github.io/Selective-Intelligence/problems/",
     "proof_tests": "https://infotradescout.github.io/Selective-Intelligence/try/",
@@ -269,7 +272,7 @@
     "current": "https://github.com/infotradescout/Selective-Intelligence/blob/main/skills/selective-intelligence/evals/results-1.0.5.json",
     "cross_client_equivalence_claimed": false,
     "publication_is_not_adoption_proof": true,
-    "source_contract_sha256": "bafe37b72b6b580e473306e01a24b4a8787bb0369633d94e7a4512ea5565f967"
+    "source_contract_sha256": "69c4c0937dccfd3985d6f3fb2e4ee035739928fdcd7cdd25db1469f20a1e5092"
   },
   "companion": {
     "name": "Platynum-47",

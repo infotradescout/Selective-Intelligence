@@ -7,6 +7,7 @@ No live model, external IDE or production product is exercised.
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -102,10 +103,43 @@ class TransactionTests(unittest.TestCase):
         target = self.workspace / "first.txt"
         target.write_text("old")
         target.chmod(0o640)
+        supported_mode = target.stat().st_mode & 0o777
+        if os.name == "posix":
+            self.assertEqual(supported_mode, 0o640)
         self.apply()
-        self.assertEqual(target.stat().st_mode & 0o777, 0o640)
+        self.assertEqual(target.stat().st_mode & 0o777, supported_mode)
         self.assertEqual(target.read_text(), "new first")
         self.assertEqual(sorted(p.name for p in self.workspace.iterdir()), ["first.txt", "second.txt"])
+
+    def test_supplied_line_endings_and_utf8_bytes_match_write_evidence(self):
+        files = {"lf.txt": "a\n", "crlf.txt": "a\r\n", "unicode.txt": "café\n"}
+        result = self.apply(files)
+        records = {record["relativePath"]: record for record in result["written"]}
+        for name, content in files.items():
+            with self.subTest(name=name):
+                expected = content.encode("utf-8")
+                self.assertEqual((self.workspace / name).read_bytes(), expected)
+                self.assertEqual(records[name]["bytes"], len(expected))
+                self.assertEqual(records[name]["sha256"], hashlib.sha256(expected).hexdigest())
+
+    @unittest.skipUnless(os.name == "nt", "Windows read-only attribute semantics")
+    def test_windows_read_only_rejection_preserves_original_bytes_and_attribute(self):
+        target = self.workspace / "first.txt"
+        original = b"original\x00bytes\xff"
+        target.write_bytes(original)
+        target.chmod(0o444)
+        supported_mode = target.stat().st_mode & 0o777
+        self.assertEqual(supported_mode, 0o444)
+        try:
+            with self.assertRaises((E.EngineError, OSError)):
+                self.apply({"first.txt": "replacement\n"})
+            self.assertEqual(target.read_bytes(), original)
+            self.assertEqual(target.stat().st_mode & 0o777, supported_mode)
+            self.assertEqual(LS.load_session(self.sid)["artifacts"], [])
+            self.assertFalse(list(self.workspace.glob(".si-stage-*")))
+        finally:
+            # Only this synthetic fixture is made writable for test cleanup.
+            target.chmod(0o666)
 
     def test_correction_during_apply_is_saved_after_the_cooperative_batch(self):
         entered = threading.Event()

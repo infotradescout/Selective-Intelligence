@@ -91,7 +91,7 @@ class WorkerBindingTests(unittest.TestCase):
         return True, ""
 
     def write_file(self, target, content, **kwargs):
-        target.write_text(content, encoding="utf-8")
+        target.write_text(content, encoding="utf-8", newline="")
         data = content.encode("utf-8")
         return {"allowed": True}, {
             "evidenceId": "test-write", "sha256": hashlib.sha256(data).hexdigest(),
@@ -125,7 +125,7 @@ class WorkerBindingTests(unittest.TestCase):
     def test_current_bound_artifact_is_applied(self):
         artifact = self.artifact()
         result = self.apply(artifact)
-        self.assertEqual((self.workspace / "result.txt").read_text(), artifact["files"]["result.txt"])
+        self.assertEqual((self.workspace / "result.txt").read_bytes(), artifact["files"]["result.txt"].encode("utf-8"))
         self.assertEqual(result["session"]["queue"]["task-one"]["status"], "verifying")
         self.assertEqual(result["written"][0]["authorized_checkpoint_id"], artifact["authorized_checkpoint_id"])
         self.assertEqual(result["written"][0]["authorized_intent_hash"], artifact["authorized_intent_hash"])
@@ -211,6 +211,7 @@ class WorkerBindingTests(unittest.TestCase):
             artifact[field] = packet[field]
         result = self.apply(json.loads(json.dumps(artifact)))
         self.assertEqual(len(result["written"]), 1)
+        self.assertEqual((self.workspace / "result.txt").read_bytes(), artifact["files"]["result.txt"].encode("utf-8"))
 
     def test_existing_invalid_producer_is_still_denied(self):
         artifact = self.artifact()

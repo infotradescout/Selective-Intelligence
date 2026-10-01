@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -17,7 +18,8 @@ REPOSITORY_ROOT = SKILL_ROOT.parents[1]
 
 
 def _run(name: str, argv: list[str]) -> dict[str, Any]:
-    proc = subprocess.run(argv, cwd=SKILL_ROOT, capture_output=True, text=True, check=False)
+    proc = subprocess.run(argv, cwd=SKILL_ROOT, capture_output=True, text=True, check=False,
+                          env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"})
     output = (proc.stdout + proc.stderr).encode("utf-8", errors="replace")
     return {
         "name": name,

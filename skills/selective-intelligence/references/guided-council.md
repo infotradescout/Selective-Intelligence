@@ -1,6 +1,6 @@
 # Guided Council
 
-Use this reference only after the Council lane is selected because the person requested it or a documented high-consequence trigger applies. The Council is a controlled exception, not the default Selective Intelligence runtime and not a required set of subscriptions.
+Use this reference only after the Council lane is selected because the person requested it or a documented high-consequence trigger applies. The Orchestrator, Worker, and Objector roles already apply to every work turn; Council adds formal packets and controls, not required subscriptions.
 
 ## Contents
 
@@ -48,11 +48,11 @@ When the checks pass, direct the person to the response message menu and the cur
 - Keep the user or existing human quorum as final authority.
 - Synthesize the result without hiding objections or uncertainty.
 
-### Intent Objector — only for competing interpretations
+### Intent Objector — Step 1 on every work turn
 
-- Run before the Worker in a context distinct from the Orchestrator.
+- Run before Worker dispatch or work; the Orchestrator may first inspect bounded read-only evidence to form a candidate. Use a distinct context when available.
 - Challenge the candidate interpretation itself against the authoritative seed.
-- Record one substantive competing interpretation and the observable consequence that distinguishes it.
+- For material work, record a plausible wrong interpretation and its observable consequence. Keep trivial self-contained checks lightweight; escalate unresolved material ambiguity to the user.
 - Resolve the challenge as candidate supported or candidate revised and bind the record to the exact candidate digest and evidence.
 - Never treat a role label, boolean, fluent restatement, hash, or downstream agreement as proof that intent was challenged.
 
@@ -110,7 +110,7 @@ High-risk or self-referential work should use the strongest practical grade prop
 Inspect capabilities rather than assuming a named plan or model exposes them.
 
 1. State the Council trigger and the exact risk the review must reduce.
-2. Start with a Worker and one independent Objector or verifier. Add an Intent Objector only when competing interpretations caused the escalation.
+2. Preserve the Step 1 intent check before Worker dispatch or work and Objector result review afterward. For material work, challenge a plausible wrong reading and its consequence. Use separate bounded contexts when available; do not claim same-context checks are independent.
 3. Give each selected role one packet, a bounded evidence set, and a return contract. Do not load role files for roles that are not selected.
 4. Do not allow Worker and Objector to mutate the same artifact concurrently.
 5. Add an Aligner only when findings genuinely conflict. Add Reserve only for real continuity or capacity risk.
@@ -144,7 +144,7 @@ Use only the stages selected for the risk. The full form is:
 ```text
 user outcome
   → candidate Intent Reconstruction
-  → bound Intent Challenge when competing readings triggered Council
+  → bound Intent Challenge before Worker dispatch or work
   → sufficient Intent Lock
   → Worker Packet
   → Worker result and proof

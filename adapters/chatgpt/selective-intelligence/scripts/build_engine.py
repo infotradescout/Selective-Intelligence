@@ -942,7 +942,15 @@ def apply_worker_artifact(
         raise EngineError("file application failed; earlier changes were restored: " + str(exc)) from exc
     finally:
         for stage in stages:
-            stage.unlink(missing_ok=True)
+            try:
+                stage.unlink(missing_ok=True)
+            except PermissionError:
+                if os.name != "nt" or stage.is_symlink() or not stage.is_file():
+                    raise
+                # Only the transaction's own read-only temporary file is
+                # made writable for cleanup; preserve the original target.
+                stage.chmod(stage.stat().st_mode | 0o200)
+                stage.unlink(missing_ok=True)
         for parent in reversed(created_dirs):
             try:
                 parent.rmdir()
