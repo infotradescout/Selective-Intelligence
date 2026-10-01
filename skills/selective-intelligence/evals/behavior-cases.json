@@ -167,7 +167,7 @@
       "required_invariants": [
         {"id": "I1", "statement": "Choose an integrated selection-and-configuration workspace rather than a marketing landing page."},
         {"id": "I2", "statement": "Keep upstream supplier identity and handoff mechanics out of the customer experience."},
-        {"id": "I3", "statement": "Use real stone inventory in the stone designer and preserve choices across compare, configure, estimate, save, and request."},
+        {"id": "I3", "statement": "Use real stone inventory in browsing, make cabinet and metal-building configuration functional, and preserve choices across compare, configure, estimate, save, and request."},
         {"id": "I4", "statement": "Label unconfirmed cabinet and building values as planning estimates, not real prices."},
         {"id": "I5", "statement": "Make every visible primary control perform its promised state transition."}
       ],
