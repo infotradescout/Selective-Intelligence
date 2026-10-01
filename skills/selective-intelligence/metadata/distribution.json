@@ -320,7 +320,8 @@
     "tests/test_product_model_handoff_completeness.py",
     "tests/test_product_model_repair_handoff.py",
     "tests/test_prompt_queue_continuity.py",
-    "evals/results-1.0.8.json"
+    "evals/results-1.0.8.json",
+    "evals/model-runs/gpt-6.1-sol-role-workflow-169b911.json"
   ],
   "whole_run_usage_governor": {
     "scope": "entire_run",

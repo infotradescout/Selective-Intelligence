@@ -2,14 +2,14 @@
   "schema_version": 1,
   "skill": "selective-intelligence",
   "version": "1.0.8",
-  "observed_at": "2026-09-30T22:15:39.013740+00:00",
+  "observed_at": "2026-10-01T00:46:49.040653+00:00",
   "status": "local_release_candidate_pass",
   "deterministic_controls": {
     "result": "pass",
     "passed": 81,
     "failed": 0,
     "executed_controls_sha256": "60a8b2013fac63ac11b835dc412047514e50325045d5dd51340c282d96ccfcdb",
-    "scope": "Fresh local controls --skip-release. Full model/client equivalence, publication, installation, and runtime adoption are separate proof.",
+    "scope": "Retained 81-control evidence from the earlier recorded run. Execution scripts and unit-test Git objects are unchanged through tested169. Packaging doctor re-executes its controls; full model/client equivalence, publication, installation and runtime adoption remain separate proof.",
     "coverage": [
       "fresh blocked micro pack validates structurally",
       "Start Pack initializes one truthful project index",
@@ -103,16 +103,62 @@
   "behavior_suite": {
     "artifact": "evals/behavior-cases.json",
     "case_count": 17,
-    "status": "restricted_core_only_response_evaluation_failed_full_workflow_open"
+    "status": "current_role_mediated_synthetic_response_evaluation_pass",
+    "suite_digest": "0eafca90ec1e45eb230b92df577880994757e0c6ca22502fff4d4716d090d4bc",
+    "criterion_correction": "The current seed requires real stone inventory in browsing and functional cabinet/metal-building configuration. One reviewed I3 correction removed an unrequested stone-designer demand. Historical suite/grades remain unchanged.",
+    "historical_suite_digest": "5c052d69caeb2ca74e1901e9dae90af56faa1599127eb2b6d0eebbf20854b772"
   },
   "model_behavior_evaluation": {
-    "result": "fail",
-    "reason": "Restricted core-only response evaluation on the unchanged 17-case suite produced 25 passing and 9 failing runs across two fresh suite contexts. Independent grading assessed each invariant. This is not the full Orchestrator/Worker/Objector workflow, 34 isolated cold starts, application execution, or free-client conformance. Prior failed runs remain preserved; no public passing behavior claim.",
-    "evidence": [],
-    "local_failure_artifact_sha256": "efab51be360bededa30eab87dd89414a08c1ba3472d7dc97bb618c86fd4b3d38",
-    "local_failure_suite_digest": "5c052d69caeb2ca74e1901e9dae90af56faa1599127eb2b6d0eebbf20854b772",
-    "tested_source_revision": "5d5017f10a537d9a6f5368fae7bd42385941d8c8",
-    "observed_at": "2026-09-30T22:14:14.043437+00:00"
+    "result": "pass",
+    "evidence": [
+      {
+        "model_client": "GPT-6.1 Sol independent Codex-agent evaluation",
+        "observed_at": "2026-10-01T00:44:23.616414+00:00",
+        "artifact": "evals/model-runs/gpt-6.1-sol-role-workflow-169b911.json",
+        "sha256": "c4771e361dd5dd1cee44350a4b3a0df966a81e5c92f8ab9e71beae25d65f0f40"
+      }
+    ],
+    "tested_source_revision": "169b9110565ca6a525dbf4c833ac701dc5792998",
+    "passed_runs": 34,
+    "failed_runs": 0,
+    "criteria_evaluated": 216,
+    "scope": "Current 17-case suite, two fresh Worker/Objector suite contexts and a shared Orchestrator, with independent prework challenge, disposition, postreview and separate semantic grader. Complete reviewed Worker response text was adopted verbatim in final Orchestrator reports. This is synthetic response behavior, not 34 isolated cold starts, application execution, supported-client parity, genuine free-client conformance or production use.",
+    "configured_model": "gpt-6.1-sol",
+    "identity_limit": "GPT-6.1 Sol identifies the explicitly selected Codex-agent configuration; no ChatGPT Pro product session or provider-side model attestation is claimed. observed_at is the assembled capture observation time, not an invented per-response execution timestamp.",
+    "format_correction": "Independent grader wrapped its 34 original improvement-frontier strings in one-item lists. Verdicts, criteria, evidence and response text were unchanged. Original grades and failed assembly are retained; the corrected actual capture passes the unchanged validator.",
+    "process_limits": "Late read-ledger timing and recovered truncated tool views are recorded locally. Workers initially saw a shared prework-disposition file before filtering their own repetition; no other Worker response, oracle, previous grade or held-out oracle was supplied. No strict whole-method compliance claim is made.",
+    "historical_trials": [
+      {
+        "source": "546e",
+        "scope": "restricted core-only",
+        "passed": 26,
+        "failed": 8,
+        "capture_sha256": "5eac88472e5dedb0aa4cb31763b77d2d58dd58d83a67c26dcb6c5e878fdb5ea0"
+      },
+      {
+        "source": "5d5017f",
+        "scope": "restricted core-only",
+        "passed": 25,
+        "failed": 9,
+        "capture_sha256": "efab51be360bededa30eab87dd89414a08c1ba3472d7dc97bb618c86fd4b3d38"
+      },
+      {
+        "source": "192b52c",
+        "scope": "role-mediated Worker responses",
+        "passed": 29,
+        "failed": 5,
+        "capture_sha256": "f25e72daf7a6a2e6cb595ef08708388581c8774402ea3e7c6dc15dcbc4a15a9c"
+      },
+      {
+        "source": "192b52c",
+        "scope": "separately graded final reports",
+        "passed": 25,
+        "failed": 9,
+        "capture_sha256": "29f6336292223df8b64bb5709510e859aae2f2d4a127293031a040339fe9c2f1",
+        "structurally_valid": false
+      }
+    ],
+    "historical_limit": "Original local captures, grades and negative observations remain unchanged. The new source/suite pass does not retroactively upgrade these failures. Only the current dedicated capture is included in this release manifest."
   },
   "free_tier_conformance": {
     "result": "fail",
@@ -130,20 +176,29 @@
     ]
   },
   "publication_inputs_remaining": [
-    "Authenticated publisher workflow for plugin publication.",
-    "A passing no-paid client observation for this candidate; prior failed observations below are carried forward from results-1.0.7.json, not rerun.",
-    "Complete repeated cold-start behavioral evidence across supported clients."
+    "A passing no-paid client observation for this exact candidate; the historical failed Perplexity observation is retained, not rerun or relabeled.",
+    "Authenticated existing publisher workflow for Plugin Directory publication after candidate proof passes.",
+    "Complete repeated cold-start behavioral evidence across supported clients. The current two suite contexts do not discharge isolated cold-start or supported-client parity proof."
   ],
   "historical_observation_provenance": {
     "free_tier_conformance": "Carried forward from evals/results-1.0.7.json; no new no-paid client claim."
   },
-  "delivery_state": "Local candidate only. Windows fixes and source/discovery tests are proved within their recorded scope. Final quality/package checks, passing full-workflow behavior and genuine free-client conformance, publication, installation and live adoption remain separate.",
+  "delivery_state": "Local release candidate. Windows fixes and affected source/discovery checks are proved. Current role-mediated synthetic behavior passed; archive integrity, genuine free-client acceptance, publication, installation and live adoption are separate states.",
   "authorization_observation": "Owner explicitly authorized this existing public release scope and independent GPT-6.1 Sol Objector review on 2026-09-30; model/client and publisher gates remain.",
   "causal_correction": {
     "observed_at": "2026-09-30T22:53:21.027801+00:00",
-    "status": "implemented_response_verification_pending",
-    "scope": "Explicit terminology data-label/test/generated-surface coverage and operation-switching entity/filter/draft/scroll preservation. Existing refusal, ambiguity recommendation and release-risk rules remain their canonical owners.",
+    "status": "implemented_current_role_response_evaluation_pass",
+    "scope": "Existing Worker/Objector/evidence-report owners preserve applicable requirement/state coverage, concrete challenge and disposition, deferred work and proof limits. Earlier terminology/state coverage correction remains. Master activation, execution scripts and safeguards are unchanged.",
     "historical_restricted_core_response_result": "25 passed / 9 failed, preserved unchanged",
-    "current_targeted_source_checks": "26 affected native/discovery/personal/public-package tests passed; original full gate is not repeated."
+    "current_targeted_source_checks": "26 affected native/discovery/personal/public-package tests passed after the existing-role repair. The retained full gate was not repeated."
+  },
+  "historical_restricted_core_evaluation": {
+    "result": "fail",
+    "reason": "Restricted core-only response evaluation on the unchanged 17-case suite produced 25 passing and 9 failing runs across two fresh suite contexts. Independent grading assessed each invariant. This is not the full Orchestrator/Worker/Objector workflow, 34 isolated cold starts, application execution, or free-client conformance. Prior failed runs remain preserved; no public passing behavior claim.",
+    "evidence": [],
+    "local_failure_artifact_sha256": "efab51be360bededa30eab87dd89414a08c1ba3472d7dc97bb618c86fd4b3d38",
+    "local_failure_suite_digest": "5c052d69caeb2ca74e1901e9dae90af56faa1599127eb2b6d0eebbf20854b772",
+    "tested_source_revision": "5d5017f10a537d9a6f5368fae7bd42385941d8c8",
+    "observed_at": "2026-09-30T22:14:14.043437+00:00"
   }
 }
