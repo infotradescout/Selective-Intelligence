@@ -137,6 +137,98 @@ class AgentTests(unittest.TestCase):
             bootstrap.prepare(Path("/tmp/not-the-agent-source"))
 
 
+class RegistrationIdentityTests(unittest.TestCase):
+    """Bind readback to the created ID and preserve every uncertain operation."""
+
+    def check_rejected(self, created, observed, *, expect_readback=True):
+        calls = []
+        def fake(method, path, payload=None):
+            calls.append((method, path))
+            return created if method == "POST" else observed
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {
+            "OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"
+        }, clear=True), patch.object(agent.urllib.request, "build_opener", side_effect=AssertionError("network forbidden")):
+            state = Path(directory) / "registration.json"
+            with self.assertRaises(RuntimeError):
+                agent.register(state, request=fake)
+            intent = state.read_bytes()
+            self.assertFalse(state.with_name(state.name + ".verified.json").exists())
+            created_path = state.with_name(state.name + ".created.json")
+            self.assertEqual(created_path.exists(), expect_readback)
+            if expect_readback:
+                self.assertEqual(json.loads(created_path.read_text())["agent_id"], "agent_fixture")
+            expected = [("POST", "/agents")]
+            if expect_readback:
+                expected.append(("GET", "/agents/agent_fixture"))
+            self.assertEqual(calls, expected)
+            with self.assertRaises(FileExistsError):
+                agent.register(state, request=fake)
+            self.assertEqual(calls, expected)
+            self.assertEqual(state.read_bytes(), intent)
+
+    def test_missing_readback_identity_is_rejected(self):
+        self.check_rejected({"id": "agent_fixture"}, agent.definition())
+
+    def test_different_readback_identity_is_rejected(self):
+        self.check_rejected({"id": "agent_fixture"}, {**agent.definition(), "id": "agent_other"})
+
+    def test_malformed_readback_identity_is_rejected(self):
+        for identity in (None, "", 1, True, [], {}, "agent_fixture\n"):
+            with self.subTest(identity=identity):
+                self.check_rejected({"id": "agent_fixture"}, {**agent.definition(), "id": identity})
+
+    def test_nonobject_creation_is_rejected(self):
+        for created in (None, [], "agent_fixture", 42):
+            with self.subTest(created=created):
+                self.check_rejected(created, {}, expect_readback=False)
+
+    def test_nonobject_readback_is_rejected(self):
+        for observed in (None, [], "agent_fixture", 42):
+            with self.subTest(observed=observed):
+                self.check_rejected({"id": "agent_fixture"}, observed)
+
+    def test_malformed_tool_item_is_rejected(self):
+        for tool in (None, "web_search", [], 42):
+            with self.subTest(tool=tool):
+                self.check_rejected({"id": "agent_fixture"}, {
+                    **agent.definition(), "id": "agent_fixture", "tools": [tool]
+                })
+
+    def test_matching_identity_allows_provider_metadata(self):
+        calls = []
+        def fake(method, path, payload=None):
+            calls.append((method, path))
+            return {**agent.definition(), "id": "agent_fixture", "object": "agent", "created_at": 1}
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {
+            "OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"
+        }, clear=True), patch.object(agent.urllib.request, "build_opener", side_effect=AssertionError("network forbidden")):
+            state = Path(directory) / "registration.json"
+            result = agent.register(state, request=fake)
+            self.assertEqual(result["agent_id"], "agent_fixture")
+            self.assertEqual(result["sessions_started"], 0)
+            self.assertEqual(json.loads(state.with_name(state.name + ".verified.json").read_text()), result)
+            self.assertEqual(calls, [("POST", "/agents"), ("GET", "/agents/agent_fixture")])
+
+    def test_readback_failure_retains_id_and_never_recreates(self):
+        calls = []
+        def fake(method, path, payload=None):
+            calls.append((method, path))
+            if method == "POST":
+                return {"id": "agent_fixture"}
+            raise TimeoutError("synthetic readback timeout")
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {
+            "OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"
+        }, clear=True), patch.object(agent.urllib.request, "build_opener", side_effect=AssertionError("network forbidden")):
+            state = Path(directory) / "registration.json"
+            with self.assertRaises(TimeoutError):
+                agent.register(state, request=fake)
+            self.assertEqual(json.loads(state.with_name(state.name + ".created.json").read_text())["agent_id"], "agent_fixture")
+            self.assertFalse(state.with_name(state.name + ".verified.json").exists())
+            with self.assertRaises(FileExistsError):
+                agent.register(state, request=fake)
+            self.assertEqual(calls, [("POST", "/agents"), ("GET", "/agents/agent_fixture")])
+
+
 class SourceTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
