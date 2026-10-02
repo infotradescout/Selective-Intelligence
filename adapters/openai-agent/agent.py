@@ -152,15 +152,21 @@ def register(state: Path, model: str = MODEL, request: Any = api_request) -> dic
     # An exclusive intent receipt prevents blind retries after a lost response.
     write_new(state, operation)
     created = request("POST", "/agents", payload)
+    if not isinstance(created, dict):
+        raise RuntimeError("Creation result is not an object; reconcile the project before retrying")
     agent_id = created.get("id")
     if not isinstance(agent_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", agent_id):
         raise RuntimeError("Creation result has no valid agent ID; reconcile the project before retrying")
     received = {**operation, "status": "created_readback_pending", "agent_id": agent_id}
     write_new(state.with_name(state.name + ".created.json"), received)
     observed = request("GET", "/agents/" + agent_id)
+    if not isinstance(observed, dict) or observed.get("id") != agent_id:
+        raise RuntimeError("Readback agent ID does not match the created agent; do not start a session")
     if any(observed.get(field) != payload[field] for field in ("name", "model", "instructions", "multi_agent", "metadata")):
         raise RuntimeError("Saved agent differs from the requested definition; do not start a session")
-    if not isinstance(observed.get("tools"), list) or [tool.get("type") for tool in observed["tools"]] != ["web_search"]:
+    if (not isinstance(observed.get("tools"), list)
+            or any(not isinstance(tool, dict) for tool in observed["tools"])
+            or [tool.get("type") for tool in observed["tools"]] != ["web_search"]):
         raise RuntimeError("Saved agent tool types differ from the requested definition")
     result = {**received, "status": "registered_readback_verified_not_live_tested", "sessions_started": 0}
     write_new(state.with_name(state.name + ".verified.json"), result)
