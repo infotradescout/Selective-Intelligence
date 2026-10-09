@@ -1,117 +1,120 @@
-# Selective Intelligence — dedicated agent candidate
+# Selective Intelligence — local agent reconciliation
 
-## Owner's direction
+The offline export now matches the exact reviewed agent preparation: name
+Selective Intelligence, model `gpt-6-astra`, its full corrected instructions,
+and `multi_agent.enabled: false`. The default definition adds no tools,
+metadata, alternate model, or subagent configuration to that prepared packet.
+Omitted tools default to an empty list in the current OpenAI create contract.
 
-Build an SI agent instead of pursuing plugin repair/resubmission. Leave the
-existing plugin, public repository, portable core, and installed copies alone.
-This adapter changes delivery, not SI's canonical behavior. It creates neither a
-new SaaS nor a mandatory paid edition. It does not unpublish an existing plugin.
+This is an isolated local reconciliation of the existing PR61 adapter owners,
+originally imported byte-for-byte from `46be3f6fa78fdb7e76b99c9f7040a836615e7cc2`.
+It also preserves the registration identity repair from the current separately
+owned PR61 head `72264189b82353f9ac58ade4442e64fc62b05028`: creation must return
+an object with a valid ID, and readback must return an object with that exact ID
+before any verified receipt. Uncertain intent and created-ID receipts are retained;
+there is no second creation attempt. The existing empty-tools comparison remains
+bound to the reviewed local packet rather than importing PR61's web-search default.
+It is based on the accepted SI source `e194759bb6507f5f651d0d69edd19fdafdbb8b2c`,
+tree `6da6833f5c0703c909ebb4d4df4060857ea48b73`. It changes no existing
+worktree, installation, plugin listing, remote PR, or public release.
 
-The first target is OpenAI's current Managed Agents API, corresponding to the
-Agents area of the supplied Platform screenshot. It is not legacy Agent Builder,
-a custom GPT, a public directory listing, or a claim that an API definition alone
-creates a public-facing application.
+The public-fetch origin is now `https://github.com/flavorgood/Selective-Intelligence.git`,
+the verified destination after the repository migration. Git redirects remain
+disabled. The accepted offline archive's manifest retains its recorded
+`infotradescout` origin through `RESOURCE_MANIFEST_REPOSITORY`; its source pin,
+bytes, and fingerprint remain unchanged. That recorded origin is never fetched.
 
-## What ships here
+## Exact preparation and source boundary
 
-`agent.py` builds the reusable agent definition and its hosted session environment.
-It also offers an explicit registration-only operation with readback verification;
-it cannot start a session, delete an agent, share it publicly, or run inference.
-`session_request()` prepares, but does not send, a task request for a provider-returned
-agent ID and an explicit project lane.
+`prepared-definition.json` is the unchanged reviewed preparation artifact,
+SHA256 `cfb5e0dff556d6fc99a2aa4ff5c7e800e80d22a1e2859478e274476ea9aba0a1`.
+The helper checks that packet before exporting it. Only Git's possible CRLF
+checkout conversion is normalized for this check; JSON instruction escapes and
+the resulting instruction string remain unchanged. A different model or modified
+packet fails closed. The existing web-search default and ON/max3 configuration
+were removed because they are absent from the reviewed preparation.
 
-`bootstrap.py` prepares the complete existing canonical skill in a fresh isolated
-sandbox from exact commit `3015ede746c84dfb5deac94a622b650701a21e15`, tree
-`51d2ccb7133785685beb08f1ce74616fe4a1ccb7`. This is the verified PR #60 source
-candidate, not a claim that #60 was merged or released. No existing plugin ZIP,
-manifest, activation reference, or installed directory is rewritten.
+Corrected e194 is local-only. Exact canonical resources can now be delivered
+without source publication, using the pinned offline archive described below.
+Actual hosted installation has not been proved. `SOURCE_READY_FOR_HOSTED_USE` remains false:
+the public-fetch bootstrap, registration, direct API requests and valid
+session-request preparation remain blocked before external activity. The default
+export retains the blocked fetch template. The optional resource export instead
+contains the locally verified offline installation setup; it does not pass through
+the public-fetch gate. Neither export proves hosted or model acceptance.
 
-The bootstrap fetches only the fixed public GitHub source, verifies commit/tree
-identity and actual canonical skill bytes before execution, rejects modified or
-redirected copies, disables Git credential helpers, and does not install packages
-or run downloaded installation scripts. It requires Python 3 and Git in the
-hosted environment. Failure of setup prevents the agent from starting. Git identity
-checks establish source integrity, not independent security certification.
+Do not flip this guard just to register. The owning PR must prove the required
+hosted resources using the exact input archive, under applicable execution authority.
+Referenced SI roles, tools, and checkpoints are not provisioned by instruction
+text. With subagents OFF, same-context review is degraded; an independent
+reviewer must use a distinct supported, authorized context.
 
-The dedicated agent reads the original SI skill and relevant roles. Managed
-multi-agent support is enabled with up to three concurrent subagents; the SI
-workflow still determines when separate contexts are warranted. Web search is
-configured. Sandbox network access is restricted to github.com for source setup.
-No GitHub write credential, deployment connector, database, Drive connection,
-or Infinity service is fabricated or automatically inherited from ChatGPT.
-Additional integrations and network domains need their own authorized configuration.
+## Offline operation
 
-## Verification and current limits
+The optional `--source-resources <exact-e194-archive>` export embeds two inline
+inputs: this bootstrap and the complete 119-file canonical skill ZIP. Setup uses
+only Python's standard library, installs the verified files without fetching or
+executing source installers, and disables outbound network access. The archive is
+1,959,856 bytes, SHA256 `af55e8d64536987897409263a43a5483405294f3f825da13b6c6c4207138ccd6`.
+It fits the current 5 MiB per-file / 10 MiB request inline limits. This is canonical
+skill resource delivery, not a full Git checkout or hosted/model acceptance.
 
-Nineteen offline tests pass, including real local Git fixture checks, modified
-source detection despite assume-unchanged, export integrity, output preservation,
-credential isolation, registration readback, and no blind retry after an uncertain
-creation response. Registration tests use synthetic provider responses. These
-are adapter/source-integrity tests, not model, live tool, or hosted sandbox acceptance.
+`bootstrap.py --build-resources <local-repository> --output <new-archive>` builds
+from pinned e194 Git objects, verifies every archive byte against its Git blob,
+and includes the complete source file manifest. It does not read mutable working
+files, fetch missing objects, or include Git history, configuration or credentials.
+`bootstrap.py --install-resources <archive> --destination <new-isolated-directory>`
+checks the pinned fingerprint, provenance, paths, modes, file set and blobs before
+creating an exclusive destination. Existing and redirected destinations are
+preserved. If installation fails after directory reservation, partial output is
+retained for reconciliation and no success receipt is written; do not overwrite it.
 
-The full pinned repository could not be cloned in this execution container because
-DNS/network access was unavailable. Its identity and relevant governing sources
-were read through the connected GitHub app. Full pinned-source bootstrap, complete
-repository/project-index refresh, independent review, account registration,
-provider billing/model entitlement, fresh task behavior, checkpoint recovery,
-external integrations, and public access remain unverified. Do not convert this
-candidate into a production claim using the offline test count.
+Run in a new local export directory:
 
-No OpenAI project credential or authenticated browser connection was available.
-The Desktop Commander device was reported offline by its connector; that says
-nothing about whether the user's PC is physically running. No API request,
-billable agent session, new hosting service, or public publication was performed.
-
-## Maintainer operations
-
-These commands are for the executing maintainer/agent; they are not setup homework
-for the product owner. Exports require no key, account, package installation, or network.
-
-```bash
-python -B adapters/openai-agent/agent.py export --output /new/export/path
-python -B -m unittest discover -s adapters/openai-agent -p test_agent.py -v
+```powershell
+python -B adapters/openai-agent/agent.py export --output <new-absolute-local-directory> --source-resources <exact-e194-archive>
+python -B -m unittest discover -s adapters/openai-agent -p test_resources.py -v
 ```
 
-Account registration requires an authorized application API key and explicit project
-binding configured outside chat as `OPENAI_API_KEY` and `OPENAI_PROJECT_ID`:
+Export requires no credentials, account call, model run, package installation,
+or network. It preserves existing destinations and reports source identity,
+definition/bootstrap/environment hashes, zero API calls, and explicit
+registration/session blocks. The definition's instruction body is also exported
+as `instructions.md`.
 
-```bash
-python -B adapters/openai-agent/agent.py register \
-  --output /secure/new/registration.json --approve-registration
-```
+The existing registration-only controls remain: explicit project binding,
+fixed official TLS origin, no redirects or automatic retries, exclusive
+pre-request intent receipt, retained provider ID, and readback verification.
+The added identity checks run against synthetic replies under a test-only source
+gate override with the network opener blocked. Their negative control reproduces
+the missing identity/type checks in the prior local implementation; a passing
+repair cannot prove that a provider, hosted environment or client accepted it.
+They are exercised with synthetic replies under a test-only source-gate override.
+The CLI requires `--approve-registration` as before, and source delivery
+still blocks it. The helper cannot start sessions, run inference, publish,
+delete agents, or create credentials.
 
-Keep credentials outside the sandbox and repository. The fixed-origin client uses
-TLS, refuses redirects, and sends no automatic retries. An exclusive intent receipt
-is saved before creation; returned IDs and readback evidence are separate receipts.
-If a response is lost, reconcile that exact project/definition before another
-registration attempt. Do not delete the intent receipt just to retry.
+## Evidence and remaining work
 
-OpenAI model/tool/sandbox execution is separately billed; the free SI core remains
-unchanged. Do not start billable sessions without an explicit applicable budget.
-The exported environment and returned agent ID are inputs to a subsequent authorized
-session, not a running agent. The helper does not implement a chat UI or session driver.
+The affected adapter checks exercise exact OFF configuration, packet integrity,
+checkout line endings, export preservation, source-delivery blocks,
+registration/readback/retry controls, and real disposable local Git fixtures.
+They are offline checks, not hosted-agent, model, API account, public listing,
+or customer acceptance. Accepted SI core/profile/directory proof at e194 is
+reused and its unchanged suites are not rerun here.
 
-## Next acceptance checkpoint
+Fresh native independent review is separate from the standing Meta Muse route.
+Muse review remains pending until its owner-selected authenticated side chat
+can be inspected and its packet/response recorded. No Muse pass is inferred.
 
-1. In an authorized project, register this definition and retain/read back its ID.
-2. Verify the exact-source bootstrap in the real hosted sandbox. Run a bounded
-   synthetic file task, inspect real subagent/tool items, and verify its artifact.
-3. Continue that same session from saved project state, prove no repeated side effect,
-   then attach individually approved operational connectors. Public access and
-   cross-session/cross-machine recovery require their own acceptance.
+Keep PR61 under its existing owner. Its remote head is unchanged by this
+local work. Later agent saving requires applicable authorization and an
+existing supported project/account; any session additionally requires
+authorized model/tool/sandbox execution. No keys, grants, spending,
+registration, session, push, merge, installation, or publication occurred.
 
-Reuse original SI checkpoint/controller owners. Keep work outside `/workspace/si-source`
-to preserve the installed source. One agent definition is not project-data storage;
-a new environment template starts a fresh workspace. Do not claim durable external
-recovery just because a session ID or template exists.
+Official contracts checked in this continuation:
 
-## API sources checked on 2026-10-01
-
-- https://developers.openai.com/api/docs/guides/agents-api/quickstart
-- https://developers.openai.com/api/docs/guides/agents-api/configuration
-- https://developers.openai.com/api/docs/guides/agents-api/environments/openai-hosted
-- https://developers.openai.com/api/docs/guides/agents-api/multi-agent
-- https://developers.openai.com/api/reference/python/resources/beta/subresources/agents/methods/create
-- https://developers.openai.com/api/reference/python/resources/beta/subresources/agents/subresources/sessions/methods/create
-
-Review status: same-context/degraded review only, not independent review.
+- [Create an agent](https://developers.openai.com/api/reference/python/resources/beta/subresources/agents/methods/create)
+- [Plugin listing metadata](https://developers.openai.com/plugins/deploy/submission#listing-metadata)
+- [Hosted environment input files and limits](https://developers.openai.com/api/docs/guides/agents-api/environments/files)

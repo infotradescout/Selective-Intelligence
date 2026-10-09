@@ -14,15 +14,72 @@ import agent
 import bootstrap
 
 
+def directory_alias(alias: Path, target: Path) -> None:
+    """Exercise a real redirected directory without granting Windows privileges."""
+    try:
+        alias.symlink_to(target, target_is_directory=True)
+    except OSError as exc:
+        if os.name != "nt" or getattr(exc, "winerror", None) != 1314:
+            raise
+        # A junction exercises the same resolve-versus-absolute boundary.
+        subprocess.run(
+            ["cmd.exe", "/d", "/c", "mklink", "/J", str(alias), str(target)],
+            check=True, capture_output=True, text=True,
+        )
+
+
 class AgentTests(unittest.TestCase):
     def test_definition_preserves_source_and_roles(self):
         value = agent.definition()
         self.assertEqual(value["name"], "Selective Intelligence")
-        self.assertEqual(value["metadata"]["si_source"], bootstrap.SOURCE_COMMIT)
-        self.assertEqual(value["multi_agent"], {"enabled": True, "max_concurrent_subagents": 3})
-        self.assertIn("SKILL.md", value["instructions"])
+        self.assertEqual(bootstrap.SOURCE_COMMIT, "e194759bb6507f5f651d0d69edd19fdafdbb8b2c")
+        self.assertEqual(bootstrap.SOURCE_TREE, "6da6833f5c0703c909ebb4d4df4060857ea48b73")
+        self.assertEqual(value, json.loads((agent.ROOT / "prepared-definition.json").read_bytes()))
+        self.assertEqual(value["multi_agent"], {"enabled": False})
+        self.assertEqual(set(value), {"name", "model", "instructions", "multi_agent"})
+        self.assertIn("essential logo, photos", value["instructions"])
         self.assertIn("Objector", value["instructions"])
         self.assertNotIn("api_key", json.dumps(value))
+
+    def test_prepared_definition_tamper_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            raw = (agent.ROOT / "prepared-definition.json").read_bytes()
+            (root / "prepared-definition.json").write_bytes(raw.replace(b"gpt-6-astra", b"gpt-6-sol"))
+            with patch.object(agent, "ROOT", root), self.assertRaisesRegex(ValueError, "reviewed packet"):
+                agent.definition()
+
+    def test_crlf_checkout_preserves_reviewed_definition(self):
+        expected = agent.definition()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            raw = (agent.ROOT / "prepared-definition.json").read_bytes()
+            (root / "prepared-definition.json").write_bytes(raw.replace(b"\n", b"\r\n"))
+            with patch.object(agent, "ROOT", root):
+                self.assertEqual(agent.definition(), expected)
+
+    def test_unreviewed_model_rejected(self):
+        with self.assertRaisesRegex(ValueError, "reviewed only"):
+            agent.definition("gpt-6-sol")
+
+    def test_registration_local_source_block_prevents_receipt_and_request(self):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+            os.environ, {"OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"}
+        ), patch.object(agent, "api_request") as request:
+            state = Path(directory) / "receipt.json"
+            with self.assertRaisesRegex(RuntimeError, "local-only"):
+                agent.register(state, request=request)
+            request.assert_not_called()
+            self.assertFalse(state.exists())
+
+    def test_hosted_bootstrap_is_blocked_before_git_or_source_write(self):
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / "source"
+            with patch.object(bootstrap, "DESTINATION", destination), patch.object(bootstrap, "git") as git:
+                with self.assertRaisesRegex(RuntimeError, "local-only"):
+                    bootstrap.prepare(destination)
+                git.assert_not_called()
+                self.assertFalse(destination.exists())
 
     def test_invalid_model_rejected(self):
         for model in ("", "gpt\nheader", "model; rm -rf /", "x" * 129):
@@ -42,7 +99,10 @@ class AgentTests(unittest.TestCase):
         for identity, prompt, lane in (("../bad", "work", "test"), ("agent_1", " ", "test"), ("agent_1", "work", "../x")):
             with self.subTest(identity=identity, lane=lane), self.assertRaises(ValueError):
                 agent.session_request(identity, prompt, lane)
-        value = agent.session_request("agent_test", "Inspect this fixture", "fixture")
+        with self.assertRaisesRegex(RuntimeError, "local-only"):
+            agent.session_request("agent_test", "Inspect this fixture", "fixture")
+        with patch.object(bootstrap, "require_hosted_source"):
+            value = agent.session_request("agent_test", "Inspect this fixture", "fixture")
         self.assertEqual(value["agent_id"], "agent_test")
         self.assertEqual(value["metadata"]["si_lane"], "fixture")
         self.assertNotIn("agent", value)
@@ -53,15 +113,20 @@ class AgentTests(unittest.TestCase):
             receipt = agent.export(output)
             self.assertEqual(receipt["api_calls"], 0)
             self.assertFalse(receipt["plugin_modified"])
-            self.assertEqual(json.loads((output / "agent.json").read_text()), agent.definition())
+            self.assertFalse(receipt["registration_allowed"])
+            self.assertFalse(receipt["session_preparation_allowed"])
+            self.assertFalse(receipt["multi_agent_enabled"])
+            self.assertEqual(receipt["source_delivery"], "local_only_not_publicly_fetchable")
+            self.assertEqual(json.loads((output / "agent.json").read_text(encoding="utf-8")), agent.definition())
+            self.assertEqual((output / "instructions.md").read_bytes(), agent.definition()["instructions"].encode("utf-8"))
             with self.assertRaises(ValueError):
                 agent.export(output)
 
-    def test_symlink_output_rejected(self):
+    def test_redirected_output_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "real").mkdir()
-            (root / "alias").symlink_to(root / "real", target_is_directory=True)
+            directory_alias(root / "alias", root / "real")
             with self.assertRaises(ValueError):
                 agent.export(root / "alias" / "export")
 
@@ -77,7 +142,7 @@ class AgentTests(unittest.TestCase):
         def fake(method, path, payload=None):
             calls.append((method, path))
             return {"id": "agent_fixture", **agent.definition()}
-        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"}):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"}), patch.object(bootstrap, "require_hosted_source"):
             state = Path(directory) / "registration.json"
             result = agent.register(state, request=fake)
             self.assertEqual(result["sessions_started"], 0)
@@ -85,26 +150,26 @@ class AgentTests(unittest.TestCase):
             with self.assertRaises(FileExistsError):
                 agent.register(state, request=fake)
             self.assertEqual(len(calls), 2)
-            self.assertNotIn("synthetic-key", state.read_text())
+            self.assertNotIn("synthetic-key", state.read_text(encoding="utf-8"))
 
     def test_uncertain_registration_is_not_retried(self):
         calls = []
         def fail(*args):
             calls.append(args)
             raise TimeoutError("simulated lost response")
-        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"}):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"}), patch.object(bootstrap, "require_hosted_source"):
             state = Path(directory) / "registration.json"
             with self.assertRaises(TimeoutError):
                 agent.register(state, request=fail)
             with self.assertRaises(FileExistsError):
                 agent.register(state, request=fail)
             self.assertEqual(len(calls), 1)
-            self.assertEqual(json.loads(state.read_text())["status"], "registration_attempted_reconcile_before_retry")
+            self.assertEqual(json.loads(state.read_text(encoding="utf-8"))["status"], "registration_attempted_reconcile_before_retry")
 
     def test_readback_mismatch_preserves_created_identity(self):
         def fake(method, path, payload=None):
             return {"id": "agent_fixture", **agent.definition(), "model": "different"} if method == "GET" else {"id": "agent_fixture"}
-        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"}):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"}), patch.object(bootstrap, "require_hosted_source"):
             state = Path(directory) / "registration.json"
             with self.assertRaises(RuntimeError):
                 agent.register(state, request=fake)
@@ -113,8 +178,8 @@ class AgentTests(unittest.TestCase):
 
     def test_tool_readback_mismatch_rejected(self):
         def fake(method, path, payload=None):
-            return {"id": "agent_fixture", **agent.definition(), "tools": []}
-        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"}):
+            return {"id": "agent_fixture", **agent.definition(), "tools": [{"type": "web_search"}]}
+        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"}), patch.object(bootstrap, "require_hosted_source"):
             with self.assertRaises(RuntimeError):
                 agent.register(Path(directory) / "registration.json", request=fake)
 
@@ -123,6 +188,16 @@ class AgentTests(unittest.TestCase):
             for endpoint in ("/agents/../../files", "/agents/sessions", "https://example.org/agents"):
                 with self.subTest(endpoint=endpoint), self.assertRaises(ValueError):
                     agent.api_request("POST", endpoint, {})
+
+    def test_direct_requests_cannot_bypass_local_source_block(self):
+        with patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"}), patch.object(
+            agent.urllib.request, "Request", side_effect=AssertionError("request constructed")
+        ) as construct, patch.object(agent.urllib.request, "build_opener", side_effect=AssertionError("network opener")) as opener:
+            for method, endpoint in (("POST", "/agents"), ("GET", "/agents/agent_fixture")):
+                with self.subTest(method=method), self.assertRaisesRegex(RuntimeError, "local-only"):
+                    agent.api_request(method, endpoint, {})
+            construct.assert_not_called()
+            opener.assert_not_called()
 
     def test_credentials_not_in_git_environment(self):
         with patch.dict(os.environ, {"OPENAI_API_KEY": "synthetic-key", "GITHUB_TOKEN": "synthetic-token", "GIT_CONFIG_COUNT": "5"}):
@@ -147,7 +222,7 @@ class RegistrationIdentityTests(unittest.TestCase):
             return created if method == "POST" else observed
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {
             "OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"
-        }, clear=True), patch.object(agent.urllib.request, "build_opener", side_effect=AssertionError("network forbidden")):
+        }, clear=True), patch.object(bootstrap, "require_hosted_source"), patch.object(agent.urllib.request, "build_opener", side_effect=AssertionError("network forbidden")):
             state = Path(directory) / "registration.json"
             with self.assertRaises(RuntimeError):
                 agent.register(state, request=fake)
@@ -201,7 +276,7 @@ class RegistrationIdentityTests(unittest.TestCase):
             return {**agent.definition(), "id": "agent_fixture", "object": "agent", "created_at": 1}
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {
             "OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"
-        }, clear=True), patch.object(agent.urllib.request, "build_opener", side_effect=AssertionError("network forbidden")):
+        }, clear=True), patch.object(bootstrap, "require_hosted_source"), patch.object(agent.urllib.request, "build_opener", side_effect=AssertionError("network forbidden")):
             state = Path(directory) / "registration.json"
             result = agent.register(state, request=fake)
             self.assertEqual(result["agent_id"], "agent_fixture")
@@ -218,7 +293,7 @@ class RegistrationIdentityTests(unittest.TestCase):
             raise TimeoutError("synthetic readback timeout")
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {
             "OPENAI_API_KEY": "synthetic-key", "OPENAI_PROJECT_ID": "proj_fixture"
-        }, clear=True), patch.object(agent.urllib.request, "build_opener", side_effect=AssertionError("network forbidden")):
+        }, clear=True), patch.object(bootstrap, "require_hosted_source"), patch.object(agent.urllib.request, "build_opener", side_effect=AssertionError("network forbidden")):
             state = Path(directory) / "registration.json"
             with self.assertRaises(TimeoutError):
                 agent.register(state, request=fake)
@@ -229,16 +304,17 @@ class RegistrationIdentityTests(unittest.TestCase):
             self.assertEqual(calls, [("POST", "/agents"), ("GET", "/agents/agent_fixture")])
 
 
+
 class SourceTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
-        subprocess.run(["git", "init", "--template=", str(self.root)], check=True, capture_output=True)
+        bootstrap.git(self.root, "init", "--template=")
         self.skill = self.root / "skills" / "selective-intelligence" / "SKILL.md"
         self.skill.parent.mkdir(parents=True)
-        self.skill.write_text("# Synthetic SI source fixture\n")
-        subprocess.run(["git", "-C", str(self.root), "add", "."], check=True)
-        subprocess.run(["git", "-C", str(self.root), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-m", "fixture"], check=True, capture_output=True)
+        self.skill.write_text("# Synthetic SI source fixture\n", encoding="utf-8", newline="\n")
+        bootstrap.git(self.root, "add", ".")
+        bootstrap.git(self.root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-m", "fixture")
         self.commit = bootstrap.git(self.root, "rev-parse", "HEAD")
         self.tree = bootstrap.git(self.root, "rev-parse", "HEAD^{tree}")
 
@@ -267,7 +343,7 @@ class SourceTests(unittest.TestCase):
     def test_redirected_source_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             alias = Path(directory) / "source"
-            alias.symlink_to(self.root, target_is_directory=True)
+            directory_alias(alias, self.root)
             with self.assertRaises(ValueError):
                 bootstrap.verify_checkout(alias, self.commit, self.tree)
 
